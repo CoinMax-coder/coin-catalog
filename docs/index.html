@@ -540,6 +540,7 @@ function renderEdit() {
     else if (!old || rec.value !== (old.value || "") || !rec.valueDate) rec.valueDate = Date.now();
     if (old) for (const p of old.photos || []) if (!rec.photos.includes(p)) await del("photos", p);
     await put("coins", rec);
+    keepStorage();
     draft = null; await refresh(); toast("Saved");
     let state = null; try { state = history.state; } catch (e) {}
     if (old && state && state.v && state.v.name === "edit") { history.back(); return; }
@@ -575,7 +576,14 @@ function renderHelp() {
       <button class="btn primary" id="save-b" type="button">Save a backup file</button>
       <button class="btn" id="load-b" type="button">Load a backup file</button>
     </div>
-    <p class="count" id="b-status"></p>`;
+    <p class="count" id="b-status"></p>
+    <p class="count" id="keep-status"></p>`;
+  keepStorage().then((ok) => {
+    const el = document.getElementById("keep-status"); if (!el) return;
+    el.textContent = ok === true ? "✓ This device is set to keep your coins permanently."
+      : ok === false ? "This device may clear your coins if it runs low on space. Install the app to the home screen to keep them safe, and save backups."
+      : "";
+  });
   document.getElementById("save-b").onclick = saveBackup;
   document.getElementById("load-b").onclick = () => document.getElementById("pick-backup").click();
 }
@@ -616,6 +624,7 @@ async function onPicked(e) {
     } catch (err) { /* skip unreadable file */ }
   }
   await refresh();
+  keepStorage();
   toast(n === files.length ? `Added ${n} ${n === 1 ? "coin" : "coins"}. Tap one to fill in its details.` : `Added ${n} of ${files.length}. Some files could not be opened.`, 5000);
   query = ""; go({ name: "home" }, false);
 }
@@ -731,6 +740,17 @@ function toast(msg, ms = 2600) {
   clearTimeout(toastT); toastT = setTimeout(() => { toastEl.hidden = true; }, ms);
 }
 
+/* ---------- permanent storage ---------- */
+// Ask the browser not to clear the coins when the device runs low on space.
+// Chrome grants this on its own (no pop-up), most reliably once the app is installed.
+async function keepStorage() {
+  try {
+    if (!navigator.storage || !navigator.storage.persist) return null;
+    if (await navigator.storage.persisted()) return true;
+    return await navigator.storage.persist();
+  } catch (e) { return null; }
+}
+
 /* ---------- start ---------- */
 (async () => {
   let seeded = false;
@@ -742,6 +762,7 @@ function toast(msg, ms = 2600) {
   }
   try { history.replaceState({ v: view }, ""); } catch (e) {}
   render();
+  keepStorage();
   if ("serviceWorker" in navigator && window.isSecureContext && window.top === window.self) {
     navigator.serviceWorker.register("sw.js").catch(() => {});
   }
