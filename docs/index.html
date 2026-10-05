@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1d2c55">
+<meta name="description" content="A large-print photo catalog for a coin collection.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Dad's Coin Catalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Cormorant+SC:wght@600&display=swap">
+<style>
+/* Layout: one column, coin-album feel. Navy album board, brass accents, big tap targets, 20px base type. */
+:root {
+  --bg: #f3f4f7;
+  --surface: #ffffff;
+  --ink: #141a2b;
+  --muted: #4a5266;
+  --line: #c9cedb;
+  --album: #1d2c55;
+  --album-ink: #ffffff;
+  --brass: #9a6b12;
+  --brass-soft: #f4e7c8;
+  --danger: #a3241c;
+  --danger-soft: #fbe4e1;
+  --focus: #2457d6;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mark: "Cormorant SC", Georgia, "Times New Roman", serif;
+  --step-0: 1.25rem;
+  --step-1: 1.5rem;
+  --step-2: 1.9rem;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1424; --surface: #1a2136; --ink: #f2f3f7; --muted: #b9bfd0; --line: #39425c;
+  --album: #2b3d70; --album-ink: #ffffff; --brass: #e2b65a; --brass-soft: #3a2f17;
+  --danger: #ff8a7f; --danger-soft: #3d1c1a; --focus: #8fb0ff; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f1424; --surface: #1a2136; --ink: #f2f3f7; --muted: #b9bfd0; --line: #39425c;
+  --album: #2b3d70; --album-ink: #ffffff; --brass: #e2b65a; --brass-soft: #3a2f17;
+  --danger: #ff8a7f; --danger-soft: #3d1c1a; --focus: #8fb0ff; color-scheme: dark }
+
+* { box-sizing: border-box }
+html, body { background: var(--bg); color: var(--ink) }
+body { font-family: var(--font-body); font-size: var(--step-0); line-height: 1.5; margin: 0 }
+button, input, select, textarea { font: inherit; color: inherit }
+:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important } }
+
+.bar { background: var(--album); color: var(--album-ink); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5 }
+.bar-in { max-width: 960px; margin: 0 auto; padding: 14px 16px; display: flex; align-items: center; gap: 12px; min-height: 76px }
+.bar h1 { font-family: var(--font-mark); font-weight: 600; font-size: 2rem; letter-spacing: .02em; margin: 0; flex: 1; min-width: 0; line-height: 1.1 }
+.bar .back { background: transparent; color: var(--album-ink); border: 2px solid currentColor; border-radius: var(--radius); padding: 8px 16px; min-height: 56px; cursor: pointer; font-weight: 700 }
+.bar .icon-btn { background: transparent; color: var(--album-ink); border: 2px solid transparent; border-radius: var(--radius); min-height: 56px; padding: 8px 12px; cursor: pointer; font-weight: 700 }
+
+main { max-width: 960px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 120px; display: grid; gap: 20px }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 64px; padding: 12px 22px; border-radius: var(--radius); border: 2px solid var(--line); background: var(--surface); font-weight: 700; cursor: pointer; text-align: center }
+.btn.primary { background: var(--brass); border-color: var(--brass); color: var(--surface); font-size: var(--step-1) }
+:root:not([data-theme="light"]) .btn.primary { color: #1a1406 }
+:root[data-theme="light"] .btn.primary { color: #ffffff }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .btn.primary { color: #ffffff } }
+.btn.danger { color: var(--danger); border-color: var(--danger) }
+.btn.danger-solid { background: var(--danger); border-color: var(--danger); color: var(--surface) }
+.btn.wide { width: 100% }
+.btn svg { width: 30px; height: 30px; flex: none }
+.row { display: flex; flex-wrap: wrap; gap: 12px }
+.row > .btn { flex: 1 1 220px }
+
+.search { display: flex; gap: 10px; align-items: center }
+.search input { flex: 1; min-width: 0; min-height: 60px; padding: 10px 16px; border: 2px solid var(--line); border-radius: var(--radius); background: var(--surface) }
+.count { color: var(--muted); margin: 0 }
+
+.note { background: var(--brass-soft); border: 2px solid var(--brass); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 10px }
+.note p { margin: 0 }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 16px }
+.card { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 12px; text-align: left; cursor: pointer; display: grid; gap: 10px; align-content: start }
+.card:hover { border-color: var(--brass) }
+.card .ph { aspect-ratio: 1; max-width: 100%; border-radius: 50%; overflow: hidden; background: var(--bg); display: grid; place-items: center; border: 3px solid var(--line) }
+.card .ph img { width: 100%; height: 100%; object-fit: cover }
+.card .t { font-weight: 700; font-size: var(--step-0); line-height: 1.25 }
+.card .s { color: var(--muted); font-size: 1.1rem }
+.tag { display: inline-block; background: var(--brass-soft); color: var(--ink); border: 1px solid var(--brass); border-radius: 999px; padding: 0 10px; font-size: 1rem; font-weight: 700 }
+
+.empty { text-align: center; padding: 30px 10px; color: var(--muted) }
+
+/* detail */
+.photo-big { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 12px; display: grid; gap: 12px }
+.photo-big .frame { aspect-ratio: 1; max-width: 100%; background: var(--bg); border-radius: 10px; overflow: hidden; display: grid; place-items: center; cursor: zoom-in }
+.photo-big .frame img { width: 100%; height: 100%; object-fit: contain }
+.seg { display: flex; gap: 8px; flex-wrap: wrap }
+.seg button { flex: 1 1 120px; min-height: 56px; border-radius: var(--radius); border: 2px solid var(--line); background: var(--surface); font-weight: 700; cursor: pointer }
+.seg button[aria-pressed="true"] { background: var(--album); color: var(--album-ink); border-color: var(--album) }
+dl.facts { margin: 0; background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 6px 16px }
+dl.facts div { display: grid; grid-template-columns: minmax(110px, 38%) 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line) }
+dl.facts div:last-child { border-bottom: 0 }
+dl.facts dt { color: var(--muted); font-weight: 700 }
+dl.facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap }
+
+.detail { display: grid; gap: 20px; align-items: start }
+@media (min-width: 860px) { .detail { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) } }
+.detail > * { min-width: 0 }
+/* form */
+form { display: grid; gap: 18px }
+.field { display: grid; gap: 6px }
+.field label { font-weight: 700 }
+.field .hint { color: var(--muted); font-size: 1.05rem }
+.field input, .field select, .field textarea { width: 100%; min-height: 60px; padding: 10px 14px; border: 2px solid var(--line); border-radius: var(--radius); background: var(--surface) }
+.field textarea { min-height: 120px; resize: vertical }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 18px }
+.slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px }
+.slot { background: var(--surface); border: 2px dashed var(--line); border-radius: var(--radius); padding: 10px; display: grid; gap: 8px; text-align: center }
+.slot .ph { aspect-ratio: 1; max-width: 100%; border-radius: 50%; overflow: hidden; background: var(--bg); display: grid; place-items: center; color: var(--muted) }
+.slot .ph img { width: 100%; height: 100%; object-fit: cover }
+.slot .btn { min-height: 56px; padding: 8px 10px; font-size: 1.1rem }
+
+/* zoom viewer */
+.viewer { position: fixed; inset: 0; background: #000; z-index: 20; display: grid; grid-template-rows: 1fr auto }
+.viewer .stage { overflow: hidden; touch-action: none; position: relative }
+.viewer .stage img { position: absolute; left: 50%; top: 50%; max-width: none; transform-origin: center; user-select: none; -webkit-user-drag: none }
+.viewer .tools { display: flex; gap: 10px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: #111; flex-wrap: wrap }
+.viewer .tools .btn { flex: 1 1 100px; background: #222; color: #fff; border-color: #555 }
+
+/* confirm sheet + toast */
+.sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 30; display: grid; place-items: end center; padding: 16px }
+.sheet { background: var(--surface); color: var(--ink); border-radius: var(--radius); padding: 20px; width: min(560px, 100%); display: grid; gap: 16px; margin-bottom: env(safe-area-inset-bottom, 0px) }
+.sheet h2 { margin: 0; font-size: var(--step-1) }
+.sheet p { margin: 0 }
+.toast { position: fixed; left: 16px; right: 16px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); margin: 0 auto; max-width: 560px; background: var(--album); color: var(--album-ink); padding: 16px 20px; border-radius: var(--radius); font-weight: 700; z-index: 40; text-align: center }
+h2.sec { font-size: var(--step-1); margin: 8px 0 0 }
+.help p { margin: 0 0 10px }
+.help ol { margin: 0; padding-left: 1.4em; display: grid; gap: 6px }
+.busy { color: var(--muted); font-weight: 700 }
+</style>
+
+<header class="bar"><div class="bar-in" id="bar"></div></header>
+<main id="app" aria-live="polite"></main>
+<input type="file" id="pick-camera" accept="image/*" capture="environment" hidden>
+<input type="file" id="pick-files" accept="image/jpeg,image/png,.jpg,.jpeg,.png" multiple hidden>
+<input type="file" id="pick-backup" accept="application/json,.json" hidden>
+
+<script>
+(() => {
+"use strict";
+
+/* ---------- storage (IndexedDB, with in-memory fallback) ---------- */
+const DB_NAME = "coin-catalog", DB_VER = 1;
+let dbp = null, memory = { coins: new Map(), photos: new Map() };
+function openDB() {
+  if (dbp) return dbp;
+  dbp = new Promise((resolve) => {
+    try {
+      const req = indexedDB.open(DB_NAME, DB_VER);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains("coins")) db.createObjectStore("coins", { keyPath: "id" });
+        if (!db.objectStoreNames.contains("photos")) db.createObjectStore("photos", { keyPath: "id" });
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => resolve(null);
+    } catch (e) { resolve(null); }
+  });
+  return dbp;
+}
+async function tx(store, mode, fn) {
+  const db = await openDB();
+  if (!db) return fn(null, memory[store]);
+  return new Promise((resolve, reject) => {
+    const t = db.transaction(store, mode), s = t.objectStore(store);
+    let out; const r = fn(s);
+    if (r && "onsuccess" in r) r.onsuccess = () => { out = r.result; };
+    t.oncomplete = () => resolve(out);
+    t.onerror = () => reject(t.error);
+  });
+}
+const put = (store, val) => tx(store, "readwrite", (s, m) => m ? m.set(val.id, val) : s.put(val));
+const get = (store, id) => tx(store, "readonly", (s, m) => m ? m.get(id) : s.get(id));
+const del = (store, id) => tx(store, "readwrite", (s, m) => m ? m.delete(id) : s.delete(id));
+const all = (store) => tx(store, "readonly", (s, m) => m ? [...m.values()] : s.getAll());
+
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+/* ---------- photos ---------- */
+function loadImage(blob) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(blob), img = new Image();
+    img.onload = () => res({ img, url }); img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("bad image")); };
+    img.src = url;
+  });
+}
+async function makeThumb(blob) {
+  const { img, url } = await loadImage(blob);
+  const size = 360, c = document.createElement("canvas");
+  const side = Math.min(img.naturalWidth, img.naturalHeight);
+  c.width = c.height = size;
+  c.getContext("2d").drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, size, size);
+  URL.revokeObjectURL(url);
+  return new Promise((res) => c.toBlob((b) => res(b || blob), "image/jpeg", 0.85));
+}
+async function savePhoto(file) {
+  const id = uid();
+  const thumb = await makeThumb(file);
+  await put("photos", { id, blob: file, thumb, name: file.name || "", added: Date.now() });
+  return id;
+}
+const urlCache = new Map();
+async function photoURL(id, kind = "thumb") {
+  const key = id + ":" + kind;
+  if (urlCache.has(key)) return urlCache.get(key);
+  const p = await get("photos", id);
+  if (!p) return "";
+  const u = URL.createObjectURL(kind === "thumb" ? p.thumb : p.blob);
+  urlCache.set(key, u);
+  return u;
+}
+
+/* ---------- example coins (drawn, clearly marked) ---------- */
+function drawExample(label, sub, metal) {
+  const c = document.createElement("canvas"); c.width = c.height = 600;
+  const g = c.getContext("2d");
+  g.fillStyle = "#20242c"; g.fillRect(0, 0, 600, 600);
+  const grad = g.createRadialGradient(240, 220, 40, 300, 300, 270);
+  grad.addColorStop(0, metal[0]); grad.addColorStop(1, metal[1]);
+  g.fillStyle = grad; g.beginPath(); g.arc(300, 300, 260, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = "rgba(0,0,0,.35)"; g.lineWidth = 10; g.beginPath(); g.arc(300, 300, 228, 0, Math.PI * 2); g.stroke();
+  g.fillStyle = "rgba(0,0,0,.55)"; g.textAlign = "center";
+  g.font = "bold 88px Georgia, serif"; g.fillText(label, 300, 320);
+  g.font = "bold 44px Georgia, serif"; g.fillText(sub, 300, 400);
+  g.font = "bold 30px Arial"; g.fillText("EXAMPLE", 300, 190);
+  return new Promise((res) => c.toBlob(res, "image/jpeg", 0.9));
+}
+async function seedExamples() {
+  const ex = [
+    { country: "United States", year: "1943", denomination: "Lincoln cent", mint: "D", grade: "VF-20 Very Fine", paid: "1.50", notes: "Steel wartime cent. Light spotting on the back.", draw: ["1¢", "1943", ["#eef1f4", "#8d96a3"]] },
+    { country: "United States", year: "1921", denomination: "Morgan dollar", mint: "S", grade: "EF-40 Extremely Fine", paid: "38.00", notes: "Bought at the county coin show.", draw: ["$1", "1921", ["#f4f4f4", "#9aa0a8"]] },
+    { country: "Canada", year: "1967", denomination: "25 cents", mint: "", grade: "MS-63 Uncirculated", paid: "6.00", notes: "Centennial bobcat design.", draw: ["25¢", "1967", ["#f6f6f2", "#a7a9a3"]] },
+  ];
+  for (const e of ex) {
+    const blob = await drawExample(...e.draw);
+    const pid = await savePhoto(blob);
+    const { draw, ...fields } = e;
+    await put("coins", { id: uid(), created: Date.now(), photos: [pid], example: true, ...fields });
+  }
+}
+
+/* ---------- state + navigation ---------- */
+let coins = [];
+let view = { name: "home" };
+let query = "";
+let draft = null;
+const app = document.getElementById("app"), bar = document.getElementById("bar");
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+async function refresh() {
+  coins = (await all("coins")) || [];
+  coins.sort((a, b) => b.created - a.created);
+}
+function go(next, push = true) {
+  view = next;
+  if (push) { try { history.pushState({ v: next }, ""); } catch (e) {} }
+  render();
+  window.scrollTo(0, 0);
+}
+window.addEventListener("popstate", (e) => {
+  closeViewer(); closeSheet();
+  view = (e.state && e.state.v) || { name: "home" };
+  render();
+});
+function back() { try { if (history.state && history.state.v && view.name !== "home") { history.back(); return; } } catch (e) {} go({ name: "home" }, false); }
+
+const ICON = {
+  camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h3l2-3h6l2 3h3v13H4z"/><circle cx="12" cy="13" r="4"/></svg>',
+  card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5V3h10v2M8 12h8M8 15h5"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+};
+
+function title(c) {
+  const t = [c.year, c.denomination].filter(Boolean).join(" ");
+  return t || "Coin with no details yet";
+}
+function subtitle(c) { return [c.country, c.mint ? "Mint mark " + c.mint : ""].filter(Boolean).join(" · "); }
+
+/* ---------- views ---------- */
+function setBar(text, withBack, right = "") {
+  bar.innerHTML = (withBack ? '<button class="back" id="b-back" type="button">‹ Back</button>' : "") +
+    `<h1>${esc(text)}</h1>` + right;
+  const b = document.getElementById("b-back"); if (b) b.onclick = back;
+  const h = document.getElementById("b-help"); if (h) h.onclick = () => go({ name: "help" });
+}
+
+async function renderHome() {
+  setBar("My Coins", false, '<button class="icon-btn" id="b-help" type="button">Help &amp; backup</button>');
+  const q = query.trim().toLowerCase();
+  const list = q ? coins.filter((c) => [c.country, c.year, c.denomination, c.mint, c.grade, c.notes].join(" ").toLowerCase().includes(q)) : coins;
+  const examples = coins.filter((c) => c.example).length;
+  app.innerHTML = `
+    <div class="row">
+      <button class="btn primary" id="add-one" type="button">${ICON.plus} Add a coin</button>
+      <button class="btn" id="add-many" type="button">${ICON.card} Add photos from SD card</button>
+    </div>
+    ${examples ? `<div class="note"><p><strong>${examples} example coins</strong> are shown so you can see how it works. They are not yours.</p><button class="btn" id="rm-ex" type="button">Remove the examples</button></div>` : ""}
+    <div class="search"><input id="q" type="search" placeholder="Search: year, country, coin…" aria-label="Search your coins" value="${esc(query)}"></div>
+    <p class="count">${q ? `${list.length} of ${coins.length} coins match` : `${coins.length} ${coins.length === 1 ? "coin" : "coins"} in your collection`}</p>
+    ${list.length ? `<div class="grid" id="grid"></div>` : `<div class="empty">${coins.length ? "No coins match that search." : "No coins yet. Tap “Add a coin” to start."}</div>`}
+  `;
+  document.getElementById("add-one").onclick = () => startAdd();
+  document.getElementById("add-many").onclick = () => pickFiles("many");
+  const rm = document.getElementById("rm-ex");
+  if (rm) rm.onclick = async () => { for (const c of coins.filter((x) => x.example)) await removeCoin(c); await refresh(); toast("Examples removed"); render(); };
+  const qi = document.getElementById("q");
+  qi.oninput = () => { query = qi.value; const pos = qi.selectionStart; renderHome().then(() => { const n = document.getElementById("q"); n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} }); };
+  const grid = document.getElementById("grid");
+  if (grid) {
+    for (const c of list) {
+      const b = document.createElement("button");
+      b.className = "card"; b.type = "button";
+      b.innerHTML = `<div class="ph"><img alt="" loading="lazy"></div><div class="t">${esc(title(c))}</div><div class="s">${esc(subtitle(c)) || "&nbsp;"}</div>${c.example ? '<div><span class="tag">Example</span></div>' : ""}`;
+      b.onclick = () => go({ name: "coin", id: c.id });
+      grid.appendChild(b);
+      if (c.photos && c.photos[0]) photoURL(c.photos[0]).then((u) => { if (u) b.querySelector("img").src = u; });
+    }
+  }
+}
+
+async function renderCoin() {
+  const c = coins.find((x) => x.id === view.id);
+  if (!c) return go({ name: "home" }, false);
+  setBar(title(c), true);
+  const side = view.side || 0;
+  const photos = c.photos || [];
+  const labels = ["Front", "Back", "Photo 3", "Photo 4"];
+  app.innerHTML = `<div class="detail"><div style="display:grid;gap:20px">
+    <div class="photo-big">
+      <div class="frame" id="frame" role="button" tabindex="0" aria-label="Open photo to zoom">${photos.length ? '<img alt="Coin photo">' : '<span class="busy">No photo</span>'}</div>
+      ${photos.length > 1 ? `<div class="seg">${photos.map((_, i) => `<button type="button" data-i="${i}" aria-pressed="${i === side}">${labels[i] || "Photo " + (i + 1)}</button>`).join("")}</div>` : ""}
+      ${photos.length ? '<button class="btn wide" id="zoom" type="button">Zoom in on this photo</button>' : ""}
+    </div>
+    ${c.example ? '<div class="note"><p>This is an example coin, not part of your collection.</p></div>' : ""}
+    </div><div style="display:grid;gap:20px">
+    <dl class="facts">
+      ${[["Country", c.country], ["Year", c.year], ["Coin", c.denomination], ["Mint mark", c.mint], ["Condition", c.grade], ["Price paid", c.paid ? "$" + c.paid : ""], ["Notes", c.notes]]
+        .map(([k, v]) => `<div><dt>${k}</dt><dd>${v ? esc(v) : '<span style="color:var(--muted)">Not filled in</span>'}</dd></div>`).join("")}
+    </dl>
+    <div class="row">
+      <button class="btn primary" id="edit" type="button">Change details</button>
+      <button class="btn danger" id="del" type="button">Delete this coin</button>
+    </div></div></div>`;
+  if (photos.length) {
+    photoURL(photos[side], "full").then((u) => { const i = app.querySelector("#frame img"); if (i) i.src = u; });
+    const open = () => openViewer(photos[side]);
+    document.getElementById("frame").onclick = open;
+    document.getElementById("frame").onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } };
+    document.getElementById("zoom").onclick = open;
+  }
+  app.querySelectorAll(".seg button").forEach((b) => b.onclick = () => { view.side = +b.dataset.i; render(); });
+  document.getElementById("edit").onclick = () => { draft = { ...c, photos: [...photos] }; go({ name: "edit", id: c.id }); };
+  document.getElementById("del").onclick = () => confirmSheet("Delete this coin?", `“${title(c)}” and its photos will be removed from this device.`, "Delete", async () => {
+    await removeCoin(c); await refresh(); toast("Coin deleted"); go({ name: "home" }, false); try { history.replaceState({ v: { name: "home" } }, ""); } catch (e) {}
+  });
+}
+
+const GRADES = ["", "P-1 Poor", "FR-2 Fair", "AG-3 About Good", "G-4 Good", "VG-8 Very Good", "F-12 Fine", "VF-20 Very Fine", "EF-40 Extremely Fine", "AU-50 About Uncirculated", "MS-60 Uncirculated", "MS-63 Uncirculated", "MS-65 Gem Uncirculated", "MS-67 Superb Gem", "PR Proof", "Not sure"];
+
+function renderEdit() {
+  const isNew = !view.id;
+  if (!draft) draft = { photos: [] };
+  setBar(isNew ? "Add a coin" : "Change details", true);
+  const d = draft;
+  const gradeOpts = GRADES.includes(d.grade || "") ? GRADES : [...GRADES, d.grade];
+  app.innerHTML = `
+    <form id="f" novalidate>
+      <div class="field"><label>Photos</label><span class="hint">Add the front and the back. Photos are optional.</span>
+        <div class="slots">${[0, 1].map((i) => `
+          <div class="slot"><div class="ph" data-ph="${i}">${d.photos[i] ? '<img alt="">' : (i ? "Back" : "Front")}</div>
+            <button class="btn" type="button" data-cam="${i}">Take photo</button>
+            <button class="btn" type="button" data-file="${i}">Choose file</button>
+            ${d.photos[i] ? `<button class="btn danger" type="button" data-rm="${i}">Remove</button>` : ""}
+          </div>`).join("")}</div>
+      </div>
+      <div class="two">
+        <div class="field"><label for="f-year">Year</label><input id="f-year" inputmode="numeric" autocomplete="off" value="${esc(d.year)}" placeholder="e.g. 1943"></div>
+        <div class="field"><label for="f-country">Country</label><input id="f-country" list="countries" autocomplete="off" value="${esc(d.country)}" placeholder="e.g. United States"></div>
+      </div>
+      <div class="two">
+        <div class="field"><label for="f-den">Coin</label><input id="f-den" list="dens" autocomplete="off" value="${esc(d.denomination)}" placeholder="e.g. Lincoln cent"></div>
+        <div class="field"><label for="f-mint">Mint mark</label><select id="f-mint">${["", "None (Philadelphia)", "P", "D", "S", "O", "CC", "W", "Other"].map((m) => `<option ${m === (d.mint || "") ? "selected" : ""} value="${esc(m)}">${m || "Choose…"}</option>`).join("")}${d.mint && !["", "None (Philadelphia)", "P", "D", "S", "O", "CC", "W", "Other"].includes(d.mint) ? `<option selected value="${esc(d.mint)}">${esc(d.mint)}</option>` : ""}</select></div>
+      </div>
+      <div class="two">
+        <div class="field"><label for="f-grade">Condition</label><select id="f-grade">${gradeOpts.map((g) => `<option ${g === (d.grade || "") ? "selected" : ""} value="${esc(g)}">${g || "Choose…"}</option>`).join("")}</select></div>
+        <div class="field"><label for="f-paid">Price paid ($)</label><input id="f-paid" inputmode="decimal" autocomplete="off" value="${esc(d.paid)}" placeholder="e.g. 12.50"></div>
+      </div>
+      <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" placeholder="Where you got it, anything special">${esc(d.notes)}</textarea></div>
+      <button class="btn primary wide" type="submit">Save this coin</button>
+      <button class="btn wide" type="button" id="cancel">Cancel</button>
+    </form>
+    <datalist id="countries">${["United States", "Canada", "Mexico", "United Kingdom", "Germany", "France", "Italy", "Spain", "Australia", "China", "Japan", "India", "South Africa", "Ireland", "Netherlands", "Switzerland"].map((x) => `<option value="${x}">`).join("")}</datalist>
+    <datalist id="dens">${["Lincoln cent", "Indian Head cent", "Wheat cent", "Jefferson nickel", "Buffalo nickel", "Roosevelt dime", "Mercury dime", "Washington quarter", "State quarter", "Kennedy half dollar", "Walking Liberty half", "Franklin half", "Morgan dollar", "Peace dollar", "Eisenhower dollar", "Sacagawea dollar", "1 cent", "5 cents", "10 cents", "25 cents", "50 cents", "1 dollar"].map((x) => `<option value="${x}">`).join("")}</datalist>`;
+  const keep = () => {
+    d.year = val("f-year"); d.country = val("f-country"); d.denomination = val("f-den");
+    d.mint = val("f-mint"); d.grade = val("f-grade"); d.paid = val("f-paid").replace(/^\$/, ""); d.notes = val("f-notes");
+  };
+  d.photos.forEach((pid, i) => pid && photoURL(pid).then((u) => { const im = app.querySelector(`[data-ph="${i}"] img`); if (im) im.src = u; }));
+  app.querySelectorAll("[data-cam]").forEach((b) => b.onclick = () => { keep(); pickFiles("slot", +b.dataset.cam, true); });
+  app.querySelectorAll("[data-file]").forEach((b) => b.onclick = () => { keep(); pickFiles("slot", +b.dataset.file, false); });
+  app.querySelectorAll("[data-rm]").forEach((b) => b.onclick = () => { keep(); d.photos[+b.dataset.rm] = null; renderEdit(); });
+  document.getElementById("cancel").onclick = () => { draft = null; back(); };
+  document.getElementById("f").onsubmit = async (e) => {
+    e.preventDefault(); keep();
+    const rec = { ...d, photos: d.photos.filter(Boolean), id: d.id || uid(), created: d.created || Date.now() };
+    const old = coins.find((x) => x.id === rec.id);
+    if (old) for (const p of old.photos || []) if (!rec.photos.includes(p)) await del("photos", p);
+    await put("coins", rec);
+    draft = null; await refresh(); toast("Saved");
+    let state = null; try { state = history.state; } catch (e) {}
+    if (old && state && state.v && state.v.name === "edit") { history.back(); return; }
+    go({ name: "coin", id: rec.id }, false);
+    try { history.replaceState({ v: view }, ""); } catch (e) {}
+  };
+}
+const val = (id) => (document.getElementById(id).value || "").trim();
+
+function renderHelp() {
+  setBar("Help & backup", true);
+  app.innerHTML = `
+    <section class="help">
+      <h2 class="sec">Photos from the microscope</h2>
+      <p>The microscope saves its pictures on an SD card.</p>
+      <ol>
+        <li><strong>On a computer:</strong> put the SD card in the computer, then tap “Add photos from SD card” and open the card.</li>
+        <li><strong>On a phone:</strong> plug the SD card into a small card reader that fits the phone, then tap “Add photos from SD card”. If you only see recent pictures, tap the ☰ menu or “Browse” and choose the card.</li>
+      </ol>
+      <p>Each photo you pick becomes a new coin. You can fill in the details later.</p>
+    </section>
+    <section class="help">
+      <h2 class="sec">Keep a backup</h2>
+      <p>Your coins are kept on this device only. Save a backup now and then, and keep the file somewhere safe, such as a USB stick or Google Drive.</p>
+      <p>To move your coins to another phone or computer, save a backup here and load it there.</p>
+    </section>
+    <div class="row">
+      <button class="btn primary" id="save-b" type="button">Save a backup file</button>
+      <button class="btn" id="load-b" type="button">Load a backup file</button>
+    </div>
+    <p class="count" id="b-status"></p>`;
+  document.getElementById("save-b").onclick = saveBackup;
+  document.getElementById("load-b").onclick = () => document.getElementById("pick-backup").click();
+}
+
+async function render() {
+  if (view.name === "coin") return renderCoin();
+  if (view.name === "edit") return renderEdit();
+  if (view.name === "help") return renderHelp();
+  return renderHome();
+}
+
+/* ---------- picking files ---------- */
+let pickCtx = null;
+function pickFiles(mode, slot = 0, camera = false) {
+  pickCtx = { mode, slot };
+  const el = document.getElementById(camera ? "pick-camera" : "pick-files");
+  el.multiple = mode === "many";
+  el.value = ""; el.click();
+}
+async function onPicked(e) {
+  const files = [...(e.target.files || [])].filter((f) => /^image\//.test(f.type) || /\.(jpe?g|png)$/i.test(f.name));
+  if (!files.length || !pickCtx) return;
+  if (pickCtx.mode === "slot") {
+    toast("Adding photo…");
+    try { draft.photos[pickCtx.slot] = await savePhoto(files[0]); } catch (err) { toast("That file could not be opened as a photo"); }
+    renderEdit();
+    return;
+  }
+  files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+  let n = 0;
+  for (const f of files) {
+    toast(`Adding photo ${n + 1} of ${files.length}…`, 60000);
+    try {
+      const pid = await savePhoto(f);
+      await put("coins", { id: uid(), created: Date.now() - n, photos: [pid], notes: "Photo: " + (f.name || "") });
+      n++;
+    } catch (err) { /* skip unreadable file */ }
+  }
+  await refresh();
+  toast(n === files.length ? `Added ${n} ${n === 1 ? "coin" : "coins"}. Tap one to fill in its details.` : `Added ${n} of ${files.length}. Some files could not be opened.`, 5000);
+  query = ""; go({ name: "home" }, false);
+}
+document.getElementById("pick-camera").onchange = onPicked;
+document.getElementById("pick-files").onchange = onPicked;
+function startAdd() { draft = { photos: [] }; go({ name: "edit" }); }
+
+async function removeCoin(c) {
+  for (const p of c.photos || []) await del("photos", p);
+  await del("coins", c.id);
+}
+
+/* ---------- backup ---------- */
+const blobToDataURL = (b) => new Promise((res) => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(b); });
+async function saveBackup() {
+  const st = document.getElementById("b-status");
+  st.textContent = "Preparing backup…";
+  const photos = (await all("photos")) || [];
+  const out = { app: "coin-catalog", version: 1, saved: new Date().toISOString(), coins: coins.filter((c) => !c.example), photos: [] };
+  const needed = new Set(out.coins.flatMap((c) => c.photos || []));
+  for (const p of photos) if (needed.has(p.id)) out.photos.push({ id: p.id, name: p.name, data: await blobToDataURL(p.blob) });
+  const blob = new Blob([JSON.stringify(out)], { type: "application/json" });
+  const name = `coin-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  try {
+    if (window.showSaveFilePicker) {
+      const h = await showSaveFilePicker({ suggestedName: name, types: [{ description: "Coin backup", accept: { "application/json": [".json"] } }] });
+      const w = await h.createWritable(); await w.write(blob); await w.close();
+    } else {
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    }
+    st.textContent = `Backup saved as ${name} (${out.coins.length} ${out.coins.length === 1 ? "coin" : "coins"}).`;
+  } catch (e) {
+    st.textContent = e && e.name === "AbortError" ? "Backup cancelled." : "The backup could not be saved here. In the finished app this saves a file you can keep.";
+  }
+}
+document.getElementById("pick-backup").onchange = async (e) => {
+  const f = e.target.files && e.target.files[0]; if (!f) return;
+  const st = document.getElementById("b-status");
+  try {
+    const data = JSON.parse(await f.text());
+    if (data.app !== "coin-catalog") throw new Error("not ours");
+    st.textContent = "Loading backup…";
+    const have = new Set(coins.map((c) => c.id));
+    let added = 0;
+    for (const p of data.photos || []) {
+      const blob = await (await fetch(p.data)).blob();
+      await put("photos", { id: p.id, blob, thumb: await makeThumb(blob), name: p.name || "", added: Date.now() });
+    }
+    for (const c of data.coins || []) { if (!have.has(c.id)) added++; await put("coins", c); }
+    await refresh();
+    const n = (data.coins || []).length;
+    st.textContent = `Loaded ${n} ${n === 1 ? "coin" : "coins"} (${added} new).`;
+    toast("Backup loaded");
+  } catch (err) { st.textContent = "That file is not a coin backup. Choose a file whose name starts with “coin-backup”."; }
+  e.target.value = "";
+};
+
+/* ---------- zoom viewer ---------- */
+let viewerEl = null;
+async function openViewer(pid) {
+  const u = await photoURL(pid, "full");
+  closeViewer();
+  viewerEl = document.createElement("div");
+  viewerEl.className = "viewer"; viewerEl.setAttribute("role", "dialog"); viewerEl.setAttribute("aria-label", "Zoomed photo");
+  viewerEl.innerHTML = `<div class="stage"><img alt="Coin photo, zoomed"></div>
+    <div class="tools"><button class="btn" data-z="out" type="button">− Smaller</button><button class="btn" data-z="in" type="button">+ Bigger</button><button class="btn" data-z="close" type="button">Close</button></div>`;
+  document.body.appendChild(viewerEl);
+  const stage = viewerEl.querySelector(".stage"), img = viewerEl.querySelector("img");
+  let s = 1, base = 1, x = 0, y = 0;
+  const apply = () => { img.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(${s * base})`; };
+  img.onload = () => { base = Math.min(stage.clientWidth / img.naturalWidth, stage.clientHeight / img.naturalHeight); apply(); };
+  img.src = u;
+  const zoom = (f) => { s = Math.min(12, Math.max(1, s * f)); if (s === 1) { x = 0; y = 0; } apply(); };
+  viewerEl.querySelector('[data-z="in"]').onclick = () => zoom(1.6);
+  viewerEl.querySelector('[data-z="out"]').onclick = () => zoom(1 / 1.6);
+  viewerEl.querySelector('[data-z="close"]').onclick = closeViewer;
+  const pts = new Map(); let lastDist = 0;
+  stage.onpointerdown = (e) => { stage.setPointerCapture(e.pointerId); pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); };
+  stage.onpointermove = (e) => {
+    if (!pts.has(e.pointerId)) return;
+    const prev = pts.get(e.pointerId); pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 2) {
+      const [a, b] = [...pts.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (lastDist) zoom(d / lastDist); lastDist = d;
+    } else if (pts.size === 1 && s > 1) { x += e.clientX - prev.x; y += e.clientY - prev.y; apply(); }
+  };
+  const up = (e) => { pts.delete(e.pointerId); lastDist = 0; };
+  stage.onpointerup = up; stage.onpointercancel = up;
+  stage.onwheel = (e) => { e.preventDefault(); zoom(e.deltaY < 0 ? 1.2 : 1 / 1.2); };
+  stage.ondblclick = () => zoom(s > 1 ? 1 / s : 3);
+  viewerEl.querySelector('[data-z="close"]').focus();
+}
+function closeViewer() { if (viewerEl) { viewerEl.remove(); viewerEl = null; } }
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeViewer(); closeSheet(); } });
+
+/* ---------- confirm sheet + toast ---------- */
+let sheetEl = null;
+function confirmSheet(head, body, okText, onOk) {
+  closeSheet();
+  sheetEl = document.createElement("div"); sheetEl.className = "sheet-bg";
+  sheetEl.innerHTML = `<div class="sheet" role="alertdialog" aria-modal="true"><h2>${esc(head)}</h2><p>${esc(body)}</p>
+    <div class="row"><button class="btn" type="button" data-a="no">Keep it</button><button class="btn danger-solid" type="button" data-a="yes">${esc(okText)}</button></div></div>`;
+  document.body.appendChild(sheetEl);
+  sheetEl.querySelector('[data-a="no"]').onclick = closeSheet;
+  sheetEl.querySelector('[data-a="yes"]').onclick = async () => { closeSheet(); await onOk(); };
+  sheetEl.querySelector('[data-a="no"]').focus();
+}
+function closeSheet() { if (sheetEl) { sheetEl.remove(); sheetEl = null; } }
+let toastEl = null, toastT = 0;
+function toast(msg, ms = 2600) {
+  if (!toastEl) { toastEl = document.createElement("div"); toastEl.className = "toast"; toastEl.setAttribute("role", "status"); document.body.appendChild(toastEl); }
+  toastEl.textContent = msg; toastEl.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => { toastEl.hidden = true; }, ms);
+}
+
+/* ---------- start ---------- */
+(async () => {
+  let seeded = false;
+  try { seeded = localStorage.getItem("coin-catalog-seeded") === "1"; } catch (e) {}
+  await refresh();
+  if (!coins.length && !seeded) {
+    await seedExamples(); await refresh();
+    try { localStorage.setItem("coin-catalog-seeded", "1"); } catch (e) {}
+  }
+  try { history.replaceState({ v: view }, ""); } catch (e) {}
+  render();
+  if ("serviceWorker" in navigator && window.isSecureContext && window.top === window.self) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+})();
+})();
+</script>
+
+</body>
+</html>
