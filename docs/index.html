@@ -1004,15 +1004,60 @@ async function onPicked(e) {
   }
   // Microscope files are numbered in the order they were taken, so sort by name.
   files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
-  const items = [];
+  const items = [], already = await knownPictures();
+  let skipped = 0, bad = 0;
   for (const f of files) {
-    toast(`Reading picture ${items.length + 1} of ${files.length}…`, 60000);
-    try { items.push({ pid: await savePhoto(f), name: f.name || "" }); } catch (err) { /* skip unreadable file */ }
+    toast(`Reading picture ${items.length + skipped + bad + 1} of ${files.length}…`, 60000);
+    try {
+      // Skip pictures that are already in the collection (or picked twice), so coins aren't doubled.
+      if (await already.has(f)) { skipped++; continue; }
+      items.push({ pid: await savePhoto(f), name: f.name || "" });
+      await already.add(f);
+    } catch (err) { bad++; }
   }
-  if (!items.length) { toast("Those files could not be opened as pictures", 5000); return; }
-  toast(items.length === files.length ? "Check the order, then tap Make coins" : `${files.length - items.length} files could not be opened and were skipped`, 4000);
-  review = { items, pairs: null, page: 0 };
+  if (!items.length) {
+    toast(skipped ? (skipped === 1 ? "That picture is already in your collection" : `All ${skipped} pictures are already in your collection`) : "Those files could not be opened as pictures", 6000);
+    return;
+  }
+  toast(bad ? `${bad} ${bad === 1 ? "file" : "files"} could not be opened and ${bad === 1 ? "was" : "were"} skipped` : "Check the order, then tap Make coins", 4000);
+  review = { items, pairs: null, page: 0, skipped };
   query = ""; go({ name: "review" });
+}
+
+/* ---------- spotting pictures already brought in ---------- */
+// Pictures match when their contents are identical. Only same-sized files are compared, so this stays quick.
+const printCache = new WeakMap();
+async function fingerprint(blob) {
+  if (printCache.has(blob)) return printCache.get(blob);
+  const fp = await makePrint(blob);
+  printCache.set(blob, fp);
+  return fp;
+}
+async function makePrint(blob) {
+  try {
+    if (crypto && crypto.subtle) {
+      const h = new Uint8Array(await crypto.subtle.digest("SHA-256", await blob.arrayBuffer()));
+      return blob.size + ":" + [...h].map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+  } catch (e) {}
+  return blob.size + ":" + (blob.name || "");
+}
+async function knownPictures() {
+  const used = new Set(coins.flatMap((c) => c.photos || []));
+  const bySize = new Map(), prints = new Set();
+  for (const p of (await all("photos")) || []) {
+    if (!used.has(p.id) || !p.blob) continue;
+    if (!bySize.has(p.blob.size)) bySize.set(p.blob.size, []);
+    bySize.get(p.blob.size).push(p.blob);
+  }
+  const hashSize = async (size) => {
+    for (const b of bySize.get(size) || []) prints.add(await fingerprint(b));
+    bySize.delete(size);
+  };
+  return {
+    async has(file) { await hashSize(file.size); return prints.has(await fingerprint(file)); },
+    async add(file) { prints.add(await fingerprint(file)); },
+  };
 }
 
 /* ---------- import review: pair fronts and backs, reorder 6 at a time ---------- */
@@ -1028,6 +1073,7 @@ function renderReview() {
   const coinCount = pairs ? Math.ceil(items.length / 2) : items.length;
   const label = (i) => pairs ? `Coin ${Math.floor(i / 2) + 1} · ${i % 2 ? "Back" : "Front"}` : `Coin ${i + 1}`;
   app.innerHTML = `
+    ${review.skipped ? `<div class="note"><p>${review.skipped} ${review.skipped === 1 ? "picture was" : "pictures were"} left out because ${review.skipped === 1 ? "it was" : "they were"} already brought in before.</p></div>` : ""}
     <div class="ask">
       <p>Did you take a picture of the front and the back of each coin?</p>
       <div class="seg">
