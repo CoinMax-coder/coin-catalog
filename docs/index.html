@@ -8,12 +8,11 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="fonts.css">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
 <title>Dad's Coin Catalog</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Cormorant+SC:wght@600&display=swap">
 <style>
 /* Layout: one column, coin-album feel. Navy album board, brass accents, big tap targets, 20px base type. */
 :root {
@@ -137,7 +136,61 @@ h2.sec { font-size: var(--step-1); margin: 8px 0 0 }
 .help p { margin: 0 0 10px }
 .help ol { margin: 0; padding-left: 1.4em; display: grid; gap: 6px }
 .busy { color: var(--muted); font-weight: 700 }
-
+/* albums */
+.albs { display: grid; gap: 12px }
+.alb { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 14px 16px; text-align: left; cursor: pointer; display: grid; gap: 6px; min-height: 64px }
+.alb:hover { border-color: var(--brass) }
+.alb-t { font-weight: 700 }
+.alb-s { color: var(--muted); font-size: 1.1rem }
+.prog { height: 14px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); overflow: hidden }
+.prog span { display: block; height: 100%; background: var(--brass) }
+.album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 128px), 1fr)); gap: 14px; background: var(--album); padding: 16px; border-radius: var(--radius) }
+.slotc { background: transparent; border: 0; color: var(--album-ink); cursor: pointer; display: grid; gap: 6px; justify-items: center; align-content: start; padding: 4px; border-radius: 10px; text-align: center }
+.slotc .ring { width: 100%; aspect-ratio: 1; border-radius: 50%; border: 3px dashed rgba(255,255,255,.55); background: rgba(0,0,0,.28); display: grid; place-items: center; overflow: hidden; font-size: 2rem; color: rgba(255,255,255,.7) }
+.slotc.has .ring { border: 3px solid var(--brass); background: #000 }
+.slotc .ring img { width: 100%; height: 100%; object-fit: cover }
+.slotc .lab { font-weight: 700; font-size: 1.1rem; line-height: 1.2 }
+.slotc .s { font-size: 1rem; opacity: .85 }
+.slotc.focus { outline: 4px solid var(--brass); outline-offset: 2px }
+/* judging */
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px }
+.pair figure { margin: 0; display: grid; gap: 6px; align-content: start }
+.pair .frame { aspect-ratio: 1; background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); overflow: hidden; display: grid; place-items: center; cursor: zoom-in }
+.pair .frame img { width: 100%; height: 100%; object-fit: contain; background: #000 }
+.pair figcaption { font-weight: 700; font-size: 1.05rem; line-height: 1.3 }
+.busy.pad { padding: 10px; text-align: center; font-size: 1rem; font-weight: 400 }
+.gradecard { background: var(--surface); border: 2px solid var(--brass); border-radius: var(--radius); padding: 16px; display: grid; gap: 10px }
+.gradecard h2 { margin: 0; font-size: var(--step-2); font-family: var(--font-mark) }
+.gradecard p { margin: 0 }
+.gradecard .hint, .g-step { color: var(--muted) }
+.btn:disabled { opacity: .45; cursor: default }
+/* insurance report */
+.report { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 14px }
+.rep-head h2 { margin: 0 0 4px; font-size: var(--step-1) }
+.rep-head p { margin: 0 }
+.rep-tot { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 10px 0 0 }
+.rep-tot dt { color: var(--muted); font-size: 1rem }
+.rep-tot dd { margin: 0; font-weight: 700; font-size: var(--step-1) }
+.rep-item { border-top: 2px solid var(--line); padding-top: 12px; display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); break-inside: avoid; page-break-inside: avoid }
+@media (min-width: 640px) { .rep-item { grid-template-columns: 260px minmax(0, 1fr) } .rep-item.nophoto { grid-template-columns: minmax(0, 1fr) } .rep-item h3 { grid-column: 1 / -1 } }
+.rep-item h3 { margin: 0; font-size: var(--step-0) }
+.rep-ph { display: flex; gap: 10px }
+.rep-ph figure { margin: 0; flex: 1; max-width: 125px; text-align: center; font-size: .95rem; color: var(--muted) }
+.rep-ph img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 50%; border: 1px solid var(--line) }
+.rep-item dl { margin: 0; display: grid; gap: 2px }
+.rep-item dl div { display: grid; grid-template-columns: minmax(0, 9em) minmax(0, 1fr); gap: 10px }
+.rep-item dt { color: var(--muted) }
+.rep-item dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap }
+.rep-foot { color: var(--muted); font-size: 1rem; margin: 0; border-top: 2px solid var(--line); padding-top: 10px }
+@media print {
+  :root, :root:not([data-theme="light"]), :root[data-theme="dark"] { --bg: #fff; --surface: #fff; --ink: #000; --muted: #444; --line: #bbb; color-scheme: light }
+  body { font-size: 12pt }
+  .bar, .no-print, .toast, .sheet-bg { display: none !important }
+  main { padding: 0; max-width: none }
+  .report { border: 0; padding: 0 }
+  .rep-item { grid-template-columns: auto minmax(0, 1fr) } .rep-item.nophoto { grid-template-columns: minmax(0, 1fr) } .rep-item h3 { grid-column: 1 / -1 }
+  .rep-ph figure { width: 1.2in; flex: none }
+}
 /* collection value */
 .worth { background: var(--surface); border: 2px solid var(--brass); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 4px; text-align: left; cursor: pointer; width: 100% }
 .worth .k { color: var(--muted); font-weight: 700 }
@@ -267,6 +320,170 @@ async function seedExamples() {
   }
 }
 
+/* ---------- built-in catalog: United States series ---------- */
+// dates: "1911-1920:P D S" means every year in the range, struck at those mints.
+// "S*VDB" is a variety with its own album spot. "P!" means the coin really carries a P mint mark.
+// No mintages: the app only lists facts that are stable and well documented.
+const SILVER = { dime: "0.0723 troy oz of pure silver", quarter: "0.1808 troy oz of pure silver", half: "0.3617 troy oz of pure silver", dollar: "0.7734 troy oz of pure silver" };
+const SERIES = [
+  { id: "indian-cent", group: "Cents", name: "Indian Head cent", den: "Indian Head cent", from: 1859, to: 1909, aliases: ["indian head cent", "indian cent", "indian penny"],
+    metal: "Copper-nickel (1859–1864), then bronze", weight: "4.67 g (copper-nickel), 3.11 g (bronze)", size: "19 mm", designer: "James B. Longacre",
+    mintMark: "Back, below the wreath (1908 and 1909 only)",
+    dates: "1859-1907:P; 1908-1909:P S", keys: ["1877", "1908-S", "1909-S"],
+    hp: "the feather tips, the ribbon by the ear, and the word LIBERTY on the headband",
+    grading: { g: "The head is outlined. LIBERTY on the headband is worn away.", vg: "At least 3 letters of LIBERTY show on the headband.", f: "All of LIBERTY can be read on the headband, even if weak.", vf: "LIBERTY is sharp. The feather ends and the ribbon show detail.", ef: "The diamond pattern on the ribbon shows. Light wear on the hair and feather tips.", au: "Only a trace of wear on the hair above the ear and the feather tips." } },
+  { id: "wheat-cent", group: "Cents", name: "Lincoln Wheat cent", den: "Lincoln cent", from: 1909, to: 1958, aliases: ["lincoln cent", "wheat cent", "lincoln wheat", "wheat penny", "lincoln penny"],
+    metal: "Bronze. 1943: zinc-coated steel. 1944–1946: brass from shell cases", weight: "3.11 g (1943 steel: 2.7 g)", size: "19 mm", designer: "Victor David Brenner",
+    mintMark: "Front, below the date",
+    dates: "1909:P P*VDB S S*VDB; 1910:P S; 1911-1920:P D S; 1921:P S; 1922:D P*No_D; 1923:P S; 1924-1931:P D S; 1932-1934:P D; 1935-1954:P D S; 1955:P P*Doubled_die D S; 1956-1958:P D",
+    keys: ["1909-S VDB", "1909-S", "1914-D", "1922 No D", "1931-S", "1955 Doubled die"],
+    hp: "Lincoln's cheek and jaw, and the lines in the wheat ears on the back",
+    grading: { g: "Date and lettering can be read. The wheat ears are worn nearly flat.", vg: "About half the lines in the upper wheat ears show.", f: "The wheat lines are worn but most can be seen. Some hair detail shows.", vf: "The cheek and jaw are separate. All the wheat lines show, a little worn on top.", ef: "Light wear only on the cheek, the jaw and the tops of the wheat ears.", au: "Just a trace of rub on the cheekbone and the highest wheat lines." } },
+  { id: "memorial-cent", group: "Cents", name: "Lincoln Memorial cent", den: "Lincoln cent", from: 1959, to: 2008, aliases: ["lincoln cent", "lincoln memorial", "memorial cent", "lincoln penny"],
+    metal: "Bronze (brass 1962–1982), copper-plated zinc from 1982", weight: "3.11 g, then 2.5 g (zinc)", size: "19 mm", designer: "Victor David Brenner (front), Frank Gasparro (back)",
+    mintMark: "Front, below the date (none on 1965–1967 coins)",
+    dates: "1959-1964:P D; 1965-1967:P; 1968-1971:P D S; 1972:P P*Doubled_die D S; 1973-1974:P D S; 1975-2008:P D", keys: ["1972 Doubled die"],
+    hp: "Lincoln's cheek and jaw, and the hair above his ear",
+    grading: { f: "The hair is worn but separate from the face.", vf: "Most of the hair detail is clear. Light wear on the cheek and jaw.", ef: "Light wear on the cheek and jaw only.", au: "Just a trace of rub on the cheekbone." } },
+  { id: "v-nickel", group: "Nickels", name: "Liberty Head “V” nickel", den: "Liberty nickel", from: 1883, to: 1912, aliases: ["liberty nickel", "v nickel", "liberty head nickel"],
+    metal: "75% copper, 25% nickel", weight: "5.0 g", size: "21.2 mm", designer: "Charles E. Barber",
+    mintMark: "Back, left of the word CENTS (1912 only)",
+    dates: "1883:P*No_CENTS P; 1884-1911:P; 1912:P D S", keys: ["1885", "1886", "1912-S"],
+    hp: "the coronet with LIBERTY, the hair curls, and the wreath on the back",
+    grading: { g: "The head is outlined. LIBERTY on the coronet is worn away.", vg: "At least 3 letters of LIBERTY show.", f: "All of LIBERTY shows, even if some letters are weak.", vf: "LIBERTY is sharp. The corn ears in the wreath show some detail.", ef: "Light wear on the hair above the forehead and the top of the wreath.", au: "Only a trace of rub on the cheek and hair." } },
+  { id: "buffalo-nickel", group: "Nickels", name: "Buffalo nickel", den: "Buffalo nickel", from: 1913, to: 1938, aliases: ["buffalo", "indian head nickel"],
+    metal: "75% copper, 25% nickel", weight: "5.0 g", size: "21.2 mm", designer: "James Earle Fraser",
+    mintMark: "Back, below the words FIVE CENTS",
+    dates: "1913:P D S P*Type_2 D*Type_2 S*Type_2; 1914-1920:P D S; 1921:P S; 1923:P S; 1924-1929:P D S; 1930:P S; 1931:S; 1934:P D; 1935-1936:P D S; 1937:P D D*3-legged S; 1938:D",
+    keys: ["1913-D Type 2", "1913-S Type 2", "1921-S", "1926-S", "1937-D 3-legged"],
+    hp: "the bison's horn, head and hip, and the Indian's cheek and braid",
+    grading: { g: "The date is worn but can be read. The horn is worn away.", vg: "Part of the horn shows. The date is clear.", f: "The horn shows but is worn. The braid and feathers have some detail.", vf: "The full horn shows. The hair braid is clear.", ef: "The horn and tail are sharp with light wear. Light wear on the bison's hip.", au: "Just a trace of rub on the bison's hip and the Indian's cheek." } },
+  { id: "jefferson-nickel", group: "Nickels", name: "Jefferson nickel (1938–1964)", den: "Jefferson nickel", from: 1938, to: 1964, aliases: ["jefferson"],
+    metal: "75% copper, 25% nickel. Mid-1942 to 1945: 35% silver wartime alloy", weight: "5.0 g", size: "21.2 mm", designer: "Felix Schlag",
+    mintMark: "Back, right of the building. On 1942–1945 silver nickels, a large letter above the dome", silver: "Wartime silver nickels: 0.0563 troy oz of pure silver",
+    dates: "1938-1941:P D S; 1942:P D P!*silver S*silver; 1943-1945:P! D S; 1946-1949:P D S; 1950:P D; 1951-1954:P D S; 1955-1964:P D", keys: ["1939-D", "1950-D"],
+    hp: "Jefferson's cheekbone and hair, and the steps of Monticello on the back",
+    grading: { g: "Monticello is worn nearly flat. The lettering and date can be read.", vg: "Some of the building's details show.", f: "The hair is worn but the jaw line shows. The building's pillars show but are worn.", vf: "The hair and cheek show some detail. The building's pillars are clear.", ef: "Light wear on the cheek and hair. Some of Monticello's steps may show.", au: "Just a trace of rub on the cheekbone. Five or six clear steps (“Full Steps”) add value." } },
+  { id: "mercury-dime", group: "Dimes", name: "Mercury dime", den: "Mercury dime", from: 1916, to: 1945, aliases: ["mercury"],
+    metal: "90% silver, 10% copper", weight: "2.5 g", size: "17.9 mm", designer: "Adolph A. Weinman", silver: SILVER.dime,
+    mintMark: "Back, left of the bundle of sticks, near the bottom",
+    dates: "1916-1920:P D S; 1921:P D; 1923:P S; 1924-1929:P D S; 1930:P S; 1931:P D S; 1934:P D; 1935-1945:P D S", keys: ["1916-D", "1921", "1921-D"],
+    hp: "the hair above Liberty's forehead, the wing feathers, and the bands on the bundle of sticks",
+    grading: { g: "The date and letters can be read. The wing feathers are worn away.", vg: "About half the wing feathers show. The lines in the bundle of sticks are faint.", f: "All the wing feathers show, though worn. The diagonal bands on the bundle show.", vf: "The wing feathers are clear. All the up-and-down lines on the bundle show.", ef: "Light wear on the hair, the wing tips and the bands across the bundle.", au: "A trace of rub on the cheek, hair and the middle bands. Fully split bands (“Full Bands”) add value." } },
+  { id: "roosevelt-dime", group: "Dimes", name: "Roosevelt dime (silver, 1946–1964)", den: "Roosevelt dime", from: 1946, to: 1964, aliases: ["roosevelt"],
+    metal: "90% silver, 10% copper", weight: "2.5 g", size: "17.9 mm", designer: "John R. Sinnock", silver: SILVER.dime,
+    mintMark: "Back, left of the bottom of the torch",
+    dates: "1946-1955:P D S; 1956-1964:P D", keys: ["1949-S"],
+    hp: "the hair above Roosevelt's ear, and the torch flame and lines on the back",
+    grading: { f: "The hair is worn but separate from the ear. The torch lines are faint.", vf: "Most hair lines show. The torch lines are clear, the flame worn.", ef: "Light wear on the hair above the ear and the top of the flame.", au: "A trace of rub on the hair above the ear and the cheek." } },
+  { id: "slq-quarter", group: "Quarters", name: "Standing Liberty quarter", den: "Standing Liberty quarter", from: 1916, to: 1930, aliases: ["standing liberty"],
+    metal: "90% silver, 10% copper", weight: "6.25 g", size: "24.3 mm", designer: "Hermon A. MacNeil", silver: SILVER.quarter,
+    mintMark: "Front, above and to the left of the date",
+    dates: "1916:P; 1917:P D S P*Type_2 D*Type_2 S*Type_2; 1918:P D S S*8_over_7; 1919-1920:P D S; 1921:P; 1923:P S; 1924:P D S; 1925:P; 1926-1929:P D S; 1930:P S",
+    keys: ["1916", "1918-S 8 over 7", "1921", "1923-S", "1927-S"],
+    hp: "Liberty's head, right knee and shield, and the date (it wears off easily on 1916–1924 coins)",
+    grading: { g: "The date may be weak but can be read. Liberty's figure is mostly flat.", vg: "The date is clear. The shield's outline and some of the gown show.", f: "Liberty's knee shows wear. The shield's inner rim shows.", vf: "The gown lines on the right leg show. The shield details are mostly clear.", ef: "Light wear on the knee, the head and the middle of the shield.", au: "A trace of rub on the knee and head. A fully struck head (“Full Head”) adds value." } },
+  { id: "washington-quarter", group: "Quarters", name: "Washington quarter (silver, 1932–1964)", den: "Washington quarter", from: 1932, to: 1964, aliases: ["washington quarter"],
+    metal: "90% silver, 10% copper", weight: "6.25 g", size: "24.3 mm", designer: "John Flanagan", silver: SILVER.quarter,
+    mintMark: "Back, below the eagle's wreath",
+    dates: "1932:P D S; 1934:P D; 1935-1937:P D S; 1938:P S; 1939-1948:P D S; 1949:P D; 1950-1954:P D S; 1955-1964:P D", keys: ["1932-D", "1932-S"],
+    hp: "the hair around Washington's ear and above the forehead, and the eagle's breast feathers",
+    grading: { g: "The date and letters can be read. The eagle's feathers are worn away.", vg: "Some hair lines show. The wing feathers are faint.", f: "The hair is worn but the curls show. About half the breast feathers show.", vf: "The hair curls show detail. Most of the breast feathers show.", ef: "Light wear on the hair above the ear and on the eagle's breast.", au: "A trace of rub on the highest hair curls and the eagle's breast." } },
+  { id: "state-quarter", group: "Quarters", name: "50 State quarters", den: "State quarter", from: 1999, to: 2008, aliases: ["state quarter"],
+    metal: "Copper-nickel on a copper core", weight: "5.67 g", size: "24.3 mm", designer: "William Cousins (front), a different design for each state",
+    mintMark: "Front, right of Washington's ponytail",
+    states: ["Delaware", "Pennsylvania", "New Jersey", "Georgia", "Connecticut", "Massachusetts", "Maryland", "South Carolina", "New Hampshire", "Virginia",
+      "New York", "North Carolina", "Rhode Island", "Vermont", "Kentucky", "Tennessee", "Ohio", "Louisiana", "Indiana", "Mississippi",
+      "Illinois", "Alabama", "Maine", "Missouri", "Arkansas", "Michigan", "Florida", "Texas", "Iowa", "Wisconsin",
+      "California", "Minnesota", "Oregon", "Kansas", "West Virginia", "Nevada", "Nebraska", "Colorado", "North Dakota", "South Dakota",
+      "Montana", "Washington", "Idaho", "Wyoming", "Utah", "Oklahoma", "New Mexico", "Arizona", "Alaska", "Hawaii"], keys: [],
+    hp: "Washington's hair around the ear and his cheek, and the highest part of the design on the back" },
+  { id: "walking-half", group: "Half dollars", name: "Walking Liberty half dollar", den: "Walking Liberty half", from: 1916, to: 1947, aliases: ["walking liberty"],
+    metal: "90% silver, 10% copper", weight: "12.5 g", size: "30.6 mm", designer: "Adolph A. Weinman", silver: SILVER.half,
+    mintMark: "1916 and some 1917: front, below IN GOD WE TRUST. After that: back, lower left near the rim",
+    dates: "1916-1921:P D S; 1923:S; 1927-1928:S; 1929:D S; 1933:S; 1934-1937:P D S; 1938:P D; 1939:P D S; 1940:P S; 1941-1946:P D S; 1947:P D",
+    keys: ["1916-S", "1921", "1921-D", "1921-S", "1938-D"],
+    hp: "Liberty's left hand, the skirt lines over her left leg, and her head; the eagle's breast and leg feathers on the back",
+    grading: { g: "The rims are worn into some letters. Liberty is outlined.", vg: "The motto can be read. Some skirt lines show.", f: "All the skirt lines show, though worn. Some of the eagle's feathers show.", vf: "The skirt lines are clear. Small wear on her hand and head. Most feathers show.", ef: "Light wear on her hand and head, and on the eagle's breast and leg.", au: "Just a trace of rub on her left hand, her head and the eagle's breast." } },
+  { id: "franklin-half", group: "Half dollars", name: "Franklin half dollar", den: "Franklin half", from: 1948, to: 1963, aliases: ["franklin"],
+    metal: "90% silver, 10% copper", weight: "12.5 g", size: "30.6 mm", designer: "John R. Sinnock", silver: SILVER.half,
+    mintMark: "Back, above the beam that holds the bell",
+    dates: "1948:P D; 1949:P D S; 1950:P D; 1951-1954:P D S; 1955-1956:P; 1957-1963:P D", keys: ["1949-S", "1955"],
+    hp: "the hair at Franklin's temple and behind his ear, and the lines across the bottom of the Liberty Bell",
+    grading: { f: "The hair is worn but the strands are separate. The bell lines are faint.", vf: "The hair shows some detail. Most of the bell lines show.", ef: "Light wear on the hair and the bell's lower lines.", au: "A trace of rub on the cheek and hair. Fully clear bottom bell lines (“Full Bell Lines”) add value." } },
+  { id: "kennedy-half", group: "Half dollars", name: "Kennedy half dollar (silver, 1964–1970)", den: "Kennedy half", from: 1964, to: 1970, aliases: ["kennedy"],
+    metal: "1964: 90% silver. 1965–1970: 40% silver", weight: "12.5 g (1964), 11.5 g (1965–1970)", size: "30.6 mm", designer: "Gilroy Roberts (front), Frank Gasparro (back)",
+    silver: "1964: 0.3617 troy oz. 1965–1970: 0.1479 troy oz of pure silver",
+    mintMark: "1964: back, left of the eagle's claw that holds the branch. 1968–1970: front, above the date. None on 1965–1967",
+    dates: "1964:P D; 1965-1967:P; 1968-1970:D", keys: ["1970-D"],
+    hp: "Kennedy's cheek and the hair above his ear; the eagle's head and the middle of the shield on the back" },
+  { id: "morgan-dollar", group: "Dollars", name: "Morgan dollar", den: "Morgan dollar", from: 1878, to: 1921, aliases: ["morgan"],
+    metal: "90% silver, 10% copper", weight: "26.73 g", size: "38.1 mm", designer: "George T. Morgan", silver: SILVER.dollar,
+    mintMark: "Back, below the wreath, above the letters DO in DOLLAR",
+    dates: "1878:P CC S; 1879-1885:P CC O S; 1886-1888:P O S; 1889-1893:P CC O S; 1894-1904:P O S; 1921:P D S",
+    keys: ["1884-S", "1889-CC", "1892-S", "1893-CC", "1893-O", "1893-S", "1894", "1895", "1895-O", "1895-S", "1901", "1903-S", "1904-S"],
+    hp: "the hair above Liberty's ear and forehead, the cotton leaves in her cap, and the eagle's breast feathers",
+    grading: { g: "The date and letters can be read. The hair is worn flat. Most of the eagle's feathers are gone.", vg: "Some hair lines show. A few wing feathers show.", f: "The hair above the ear is worn but its outline shows. About half the eagle's breast feathers show.", vf: "The hair lines above the ear show. Most of the breast feathers show.", ef: "Light wear on the hair above the ear, the cheek, and the eagle's breast.", au: "A trace of rub on the cheek, the hair above the eye and ear, and the eagle's breast." } },
+  { id: "peace-dollar", group: "Dollars", name: "Peace dollar", den: "Peace dollar", from: 1921, to: 1935, aliases: ["peace dollar"],
+    metal: "90% silver, 10% copper", weight: "26.73 g", size: "38.1 mm", designer: "Anthony de Francisci", silver: SILVER.dollar,
+    mintMark: "Back, below the word ONE, near the tip of the eagle's wing",
+    dates: "1921:P; 1922-1923:P D S; 1924-1925:P S; 1926-1927:P D S; 1928:P S; 1934:P D S; 1935:P S", keys: ["1921", "1928", "1934-S"],
+    hp: "the hair above Liberty's ear and forehead, and the eagle's feathers at the top of its leg and wing",
+    grading: { g: "The date and letters can be read. The hair is worn flat.", vg: "Some hair strands show. The eagle's outline is clear.", f: "The hair is worn but splits into strands in places. Some feathers show.", vf: "The hair strands are mostly clear. Most of the feathers show.", ef: "Light wear on the hair above the ear and on the eagle's leg and wing.", au: "A trace of rub on the cheek, the hair and the eagle's leg." } },
+  { id: "ike-dollar", group: "Dollars", name: "Eisenhower dollar", den: "Eisenhower dollar", from: 1971, to: 1978, aliases: ["eisenhower", "ike dollar"],
+    metal: "Copper-nickel on a copper core (silver-clad versions were sold to collectors)", weight: "22.68 g", size: "38.1 mm", designer: "Frank Gasparro",
+    mintMark: "Front, above the date",
+    dates: "1971-1974:P D; 1976:P D; 1977-1978:P D", keys: [],
+    hp: "Eisenhower's cheek and the hair above his ear; the eagle's head and claws on the back" },
+];
+const GROUPS = ["Cents", "Nickels", "Dimes", "Quarters", "Half dollars", "Dollars"];
+const seriesById = (id) => SERIES.find((s) => s.id === id) || null;
+const normMint = (m) => (!m || /^none/i.test(m) || m === "P") ? "P" : m;
+
+function slotsOf(s) {
+  if (s.cache) return s.cache;
+  const out = [];
+  if (s.states) {
+    s.states.forEach((st, i) => {
+      for (const m of ["P", "D"]) out.push({ key: st + " " + m, label: st + " " + m, year: String(s.from + Math.floor(i / 5)), mint: m, shown: true, variety: st });
+    });
+  } else {
+    for (const seg of s.dates.split(";")) {
+      const [yr, toks] = seg.trim().split(":");
+      const [a, b] = yr.split("-").map(Number);
+      for (let y = a; y <= (b || a); y++) for (const t of toks.trim().split(/\s+/)) {
+        const [m0, v0] = t.split("*");
+        const shown = m0.endsWith("!"), mint = m0.replace("!", ""), variety = (v0 || "").replace(/_/g, " ");
+        const label = y + (mint !== "P" || shown ? "-" + mint : "") + (variety ? " " + variety : "");
+        out.push({ key: label, label, year: String(y), mint, shown, variety });
+      }
+    }
+  }
+  for (const sl of out) sl.isKey = s.keys.includes(sl.label);
+  return (s.cache = out);
+}
+// The coin's series: the one it was picked from, else a guess from the coin name and year.
+function seriesOf(c) {
+  if (c.series) return seriesById(c.series);
+  if (c.country && !/^(united states|usa?|u\.s\.?a?\.?|america)$/i.test(c.country.trim())) return null;
+  const d = (c.denomination || "").toLowerCase(), y = parseInt(c.year, 10);
+  return SERIES.find((s) => s.aliases.some((a) => d.includes(a)) && (!y || (y >= s.from && y <= s.to))) || null;
+}
+function slotOf(c, s) {
+  if (!s) return null;
+  const sl = slotsOf(s);
+  if (c.slot) { const x = sl.find((z) => z.key === c.slot); if (x) return x; }
+  if (s.states) return null;
+  const y = String(c.year || "").trim(), m = normMint(c.mint);
+  return sl.find((z) => z.year === y && z.mint === m && !z.variety) || sl.find((z) => z.year === y && z.mint === m) || null;
+}
+// What the edit form fields should say for an album spot.
+function fieldsForSlot(s, sl) {
+  return { series: s.id, slot: sl.key, year: sl.year, country: "United States",
+    mint: sl.mint === "P" && !sl.shown ? "None (Philadelphia)" : sl.mint,
+    denomination: s.states ? "State quarter – " + sl.variety : s.den };
+}
+
 /* ---------- state + navigation ---------- */
 let coins = [];
 let view = { name: "home" };
@@ -296,6 +513,8 @@ const ICON = {
   camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h3l2-3h6l2 3h3v13H4z"/><circle cx="12" cy="13" r="4"/></svg>',
   card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5V3h10v2M8 12h8M8 15h5"/></svg>',
   plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  album: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="2"/><circle cx="16" cy="9" r="2"/><circle cx="8" cy="15" r="2"/><circle cx="16" cy="15" r="2" stroke-dasharray="2 2"/></svg>',
+  print: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2"/><rect x="6" y="14" width="12" height="7"/></svg>',
 };
 
 function title(c) {
@@ -307,7 +526,7 @@ function subtitle(c) { return [c.country, c.mint ? "Mint mark " + c.mint : ""].f
 /* ---------- money + values ---------- */
 // Values are Dad's own estimates, typed in from a price guide, a dealer, or recent sold prices.
 const toNum = (s) => { const n = parseFloat(String(s ?? "").replace(/[$,\s]/g, "")); return isFinite(n) && n >= 0 ? n : null; };
-const money = (n) => "$" + n.toLocaleString("en-US", { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 });
+const dollars = (n) => "$" + n.toLocaleString("en-US", { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 });
 const cleanMoney = (s) => { const n = toNum(s); return n === null ? "" : String(Math.round(n * 100) / 100); };
 const longDate = (t) => new Date(t).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 function totals() {
@@ -343,6 +562,10 @@ async function renderHome() {
       <button class="btn primary" id="add-one" type="button">${ICON.plus} Add a coin</button>
       <button class="btn" id="add-many" type="button">${ICON.card} Add photos from SD card</button>
     </div>
+    <div class="row">
+      <button class="btn" id="albums" type="button">${ICON.album} Albums</button>
+      <button class="btn" id="report" type="button">${ICON.print} Insurance report</button>
+    </div>
     ${worthCard()}
     ${examples ? `<div class="note"><p><strong>${examples} example coins</strong> are shown so you can see how it works. They are not yours.</p><button class="btn" id="rm-ex" type="button">Remove the examples</button></div>` : ""}
     <div class="search"><input id="q" type="search" placeholder="Search: year, country, coin…" aria-label="Search your coins" value="${esc(query)}"></div>
@@ -351,6 +574,8 @@ async function renderHome() {
   `;
   document.getElementById("add-one").onclick = () => startAdd();
   document.getElementById("add-many").onclick = () => pickFiles("many");
+  document.getElementById("albums").onclick = () => go({ name: "albums" });
+  document.getElementById("report").onclick = () => go({ name: "report" });
   const wc = document.getElementById("worth"); if (wc) wc.onclick = () => go({ name: "values" });
   const rm = document.getElementById("rm-ex");
   if (rm) rm.onclick = async () => { for (const c of coins.filter((x) => x.example)) await removeCoin(c); await refresh(); toast("Examples removed"); render(); };
@@ -374,7 +599,7 @@ function worthCard() {
   if (!coins.length) return "";
   const sub = !t.mine.length ? "Example coins are not counted" : t.valued.length === t.mine.length ? `All ${t.mine.length} ${t.mine.length === 1 ? "coin has" : "coins have"} a value` : `${t.valued.length} of ${t.mine.length} ${t.mine.length === 1 ? "coin has" : "coins have"} a value`;
   return `<button class="worth" id="worth" type="button"><span class="k">My collection is worth about</span>
-    <span class="v">${t.valued.length ? money(t.value) : "No values yet"}</span><span class="s">${sub} · See values ›</span></button>`;
+    <span class="v">${t.valued.length ? dollars(t.value) : "No values yet"}</span><span class="s">${sub} · See values ›</span></button>`;
 }
 
 function valueRow(c) {
@@ -383,7 +608,7 @@ function valueRow(c) {
   const v = toNum(c.value);
   b.innerHTML = `<div class="ph"><img alt="" loading="lazy"></div>
     <div><div class="t">${esc(title(c))}</div><div class="s">${esc([c.grade, c.example ? "Example" : ""].filter(Boolean).join(" · ")) || "&nbsp;"}</div></div>
-    <div class="amt${v === null ? " none" : ""}">${v === null ? "Add value" : money(v)}</div>`;
+    <div class="amt${v === null ? " none" : ""}">${v === null ? "Add value" : dollars(v)}</div>`;
   b.onclick = () => valueSheet(c);
   if (c.photos && c.photos[0]) photoURL(c.photos[0]).then((u) => { if (u) b.querySelector("img").src = u; });
   return b;
@@ -398,9 +623,9 @@ function renderValues() {
   const gain = t.bothValue - t.bothPaid;
   app.innerHTML = `
     <div class="worth" style="cursor:default"><span class="k">My collection is worth about</span>
-      <span class="v">${money(t.value)}</span>
+      <span class="v">${dollars(t.value)}</span>
       <span class="s">${t.mine.length ? `${t.valued.length} of ${t.mine.length} ${t.mine.length === 1 ? "coin has" : "coins have"} a value.` : "Add your own coins to see their total."}</span>
-      ${t.both.length ? `<span class="s">For the ${t.both.length === 1 ? "coin" : t.both.length + " coins"} where you noted the price, you paid ${money(t.bothPaid)}. ${t.both.length === 1 ? "It is" : "They are"} worth ${money(t.bothValue)} now, ${gain >= 0 ? "up" : "down"} ${money(Math.abs(gain))}.</span>` : ""}
+      ${t.both.length ? `<span class="s">For the ${t.both.length === 1 ? "coin" : t.both.length + " coins"} where you noted the price, you paid ${dollars(t.bothPaid)}. ${t.both.length === 1 ? "It is" : "They are"} worth ${dollars(t.bothValue)} now, ${gain >= 0 ? "up" : "down"} ${dollars(Math.abs(gain))}.</span>` : ""}
       ${coins.some((c) => c.example) ? '<span class="s">Example coins are not counted.</span>' : ""}
     </div>
     <div class="note"><p>Values are your own estimates. Tap a coin to type in what it is worth, or to look up what similar coins sold for recently.</p></div>
@@ -450,6 +675,7 @@ async function renderCoin() {
   const side = view.side || 0;
   const photos = c.photos || [];
   const labels = ["Front", "Back", "Photo 3", "Photo 4"];
+  const s = seriesOf(c), sl = slotOf(c, s);
   app.innerHTML = `<div class="detail"><div style="display:grid;gap:20px">
     <div class="photo-big">
       <div class="frame" id="frame" role="button" tabindex="0" aria-label="Open photo to zoom">${photos.length ? '<img alt="Coin photo">' : '<span class="busy">No photo</span>'}</div>
@@ -459,14 +685,22 @@ async function renderCoin() {
     ${c.example ? '<div class="note"><p>This is an example coin, not part of your collection.</p></div>' : ""}
     </div><div style="display:grid;gap:20px">
     <dl class="facts">
-      ${[["Country", c.country], ["Year", c.year], ["Coin", c.denomination], ["Mint mark", c.mint], ["Condition", c.grade], ["Price paid", c.paid ? "$" + c.paid : ""], ["Worth now", toNum(c.value) !== null ? money(toNum(c.value)) + (c.valueDate ? ` (as of ${longDate(c.valueDate)})` : "") : ""], ["Notes", c.notes]]
+      ${[["Country", c.country], ["Year", c.year], ["Coin", c.denomination], ["Mint mark", c.mint], ["Condition", c.grade], ["Price paid", c.paid ? "$" + c.paid : ""], ["Worth now", toNum(c.value) !== null ? dollars(toNum(c.value)) + (c.valueDate ? ` (as of ${longDate(c.valueDate)})` : "") : ""], ["Notes", c.notes]]
         .map(([k, v]) => `<div><dt>${k}</dt><dd>${v ? esc(v) : '<span style="color:var(--muted)">Not filled in</span>'}</dd></div>`).join("")}
     </dl>
     <div class="row">
       <button class="btn primary" id="edit" type="button">Change details</button>
       <button class="btn" id="val" type="button">${toNum(c.value) !== null ? "Update value" : "Add value"}</button>
-      <button class="btn danger" id="del" type="button">Delete this coin</button>
-    </div></div></div>`;
+      <button class="btn" id="judge" type="button">Help me judge the condition</button>
+    </div>
+    ${s ? `<h2 class="sec">About the ${esc(s.name)}</h2>
+    ${sl && sl.isKey ? `<div class="note"><p><strong>Key date.</strong> The ${esc(sl.label)} is one of the hardest dates to find in this series.</p></div>` : ""}
+    ${aboutFacts(s)}
+    ${sl ? '<button class="btn wide" id="in-album" type="button">' + ICON.album + " Show it in the album</button>" : ""}` : ""}
+    <button class="btn danger" id="del" type="button">Delete this coin</button>
+    </div></div>`;
+  document.getElementById("judge").onclick = () => go({ name: "grade", id: c.id, side });
+  if (sl) document.getElementById("in-album").onclick = () => go({ name: "album", id: s.id, focus: sl.key });
   if (photos.length) {
     photoURL(photos[side], "full").then((u) => { const i = app.querySelector("#frame img"); if (i) i.src = u; });
     const open = () => openViewer(photos[side]);
@@ -475,7 +709,7 @@ async function renderCoin() {
     document.getElementById("zoom").onclick = open;
   }
   app.querySelectorAll(".seg button").forEach((b) => b.onclick = () => { view.side = +b.dataset.i; render(); });
-  document.getElementById("edit").onclick = () => { draft = { ...c, photos: [...photos] }; go({ name: "edit", id: c.id }); };
+  document.getElementById("edit").onclick = () => { draft = { ...c, photos: [...photos], series: s ? s.id : "", slot: sl ? sl.key : "" }; go({ name: "edit", id: c.id }); };
   document.getElementById("val").onclick = () => valueSheet(c);
   document.getElementById("del").onclick = () => confirmSheet("Delete this coin?", `“${title(c)}” and its photos will be removed from this device.`, "Delete", async () => {
     await removeCoin(c); await refresh(); toast("Coin deleted"); go({ name: "home" }, false); try { history.replaceState({ v: { name: "home" } }, ""); } catch (e) {}
@@ -490,6 +724,7 @@ function renderEdit() {
   setBar(isNew ? "Add a coin" : "Change details", true);
   const d = draft;
   const gradeOpts = GRADES.includes(d.grade || "") ? GRADES : [...GRADES, d.grade];
+  const ser = seriesById(d.series);
   app.innerHTML = `
     <form id="f" novalidate>
       <div class="field"><label>Photos</label><span class="hint">Add the front and the back. Photos are optional.</span>
@@ -500,6 +735,13 @@ function renderEdit() {
             ${d.photos[i] ? `<button class="btn danger" type="button" data-rm="${i}">Remove</button>` : ""}
           </div>`).join("")}</div>
       </div>
+      <div class="field"><label for="f-series">Type of coin</label>
+        <span class="hint">Pick it from the list of U.S. coins and the year, mint mark and name fill in by themselves.</span>
+        <select id="f-series"><option value="">Not on the list, or not sure</option>${GROUPS.map((g) => `<optgroup label="${g}">${SERIES.filter((s) => s.group === g).map((s) => `<option value="${s.id}" ${s.id === d.series ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</optgroup>`).join("")}</select>
+      </div>
+      ${ser ? `<div class="field"><label for="f-slot">${ser.states ? "Which state and mint mark?" : "Which date and mint mark?"}</label>
+        <select id="f-slot"><option value="">Choose…</option>${slotsOf(ser).map((z) => `<option value="${esc(z.key)}" ${d.slot === z.key ? "selected" : ""}>${esc(z.label)}${z.isKey ? " (key date)" : ""}</option>`).join("")}</select>
+      </div>` : ""}
       <div class="two">
         <div class="field"><label for="f-year">Year</label><input id="f-year" inputmode="numeric" autocomplete="off" value="${esc(d.year)}" placeholder="e.g. 1943"></div>
         <div class="field"><label for="f-country">Country</label><input id="f-country" list="countries" autocomplete="off" value="${esc(d.country)}" placeholder="e.g. United States"></div>
@@ -530,10 +772,26 @@ function renderEdit() {
   app.querySelectorAll("[data-cam]").forEach((b) => b.onclick = () => { keep(); pickFiles("slot", +b.dataset.cam, true); });
   app.querySelectorAll("[data-file]").forEach((b) => b.onclick = () => { keep(); pickFiles("slot", +b.dataset.file, false); });
   app.querySelectorAll("[data-rm]").forEach((b) => b.onclick = () => { keep(); d.photos[+b.dataset.rm] = null; renderEdit(); });
+  document.getElementById("f-series").onchange = (e) => {
+    keep(); const s = seriesById(e.target.value);
+    d.series = s ? s.id : ""; d.slot = "";
+    if (s) { d.country = "United States"; if (!s.states) d.denomination = s.den; }
+    renderEdit(); const n = document.getElementById(s ? "f-slot" : "f-series"); if (n) n.focus();
+  };
+  const slotSel = document.getElementById("f-slot");
+  if (slotSel) slotSel.onchange = () => {
+    keep(); const z = slotsOf(ser).find((x) => x.key === slotSel.value);
+    if (z) Object.assign(d, fieldsForSlot(ser, z)); else d.slot = "";
+    renderEdit(); document.getElementById("f-slot").focus();
+  };
   document.getElementById("cancel").onclick = () => { draft = null; back(); };
   document.getElementById("f").onsubmit = async (e) => {
     e.preventDefault(); keep();
     const rec = { ...d, photos: d.photos.filter(Boolean), id: d.id || uid(), created: d.created || Date.now() };
+    // Forget the album spot if the year or mint mark was changed by hand afterwards.
+    const rs = seriesById(rec.series), rz = rs && slotsOf(rs).find((x) => x.key === rec.slot);
+    if (!rz || rz.year !== rec.year || rz.mint !== normMint(rec.mint)) delete rec.slot;
+    if (!rs) delete rec.series;
     const old = coins.find((x) => x.id === rec.id);
     if (rec.value && toNum(rec.value) === null) { toast("“Worth now” needs a dollar amount, like 45 or 12.50"); document.getElementById("f-value").focus(); return; }
     if (!rec.value) rec.valueDate = null;
@@ -549,6 +807,190 @@ function renderEdit() {
   };
 }
 const val = (id) => (document.getElementById(id).value || "").trim();
+
+function aboutFacts(s) {
+  const rows = [["Years made", s.from + "–" + s.to], ["Metal", s.metal], ["Weight", s.weight], ["Size across", s.size], ["Silver in it", s.silver], ["Designer", s.designer], ["Where the mint mark is", s.mintMark]];
+  return `<dl class="facts">${rows.filter((r) => r[1]).map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>`;
+}
+
+/* ---------- albums ---------- */
+// Which of Dad's coins sit in which album spot. Example coins stay out of the albums.
+function albumFill(s) {
+  const map = new Map();
+  for (const c of coins) {
+    if (c.example || seriesOf(c) !== s) continue;
+    const z = slotOf(c, s); if (!z) continue;
+    if (!map.has(z.key)) map.set(z.key, []);
+    map.get(z.key).push(c);
+  }
+  return map;
+}
+const progress = (have, total) => `<div class="prog" role="img" aria-label="${have} of ${total} filled"><span style="width:${total ? Math.round(have / total * 100) : 0}%"></span></div>`;
+
+function renderAlbums() {
+  setBar("Albums", true);
+  const info = SERIES.map((s) => ({ s, have: albumFill(s).size, total: slotsOf(s).length }));
+  const item = ({ s, have, total }) => `<button class="alb" type="button" data-id="${s.id}">
+      <span class="alb-t">${esc(s.name)}</span>
+      <span class="alb-s">${s.from}–${s.to} · ${have ? `<strong>${have} of ${total}</strong> filled` : `${total} spots`}</span>
+      ${progress(have, total)}</button>`;
+  const started = info.filter((x) => x.have);
+  app.innerHTML = `
+    <p class="count">Each album lays out every date and mint mark of one kind of U.S. coin, like a coin folder. Coins you have show their photo. Empty circles are the ones still to find.</p>
+    ${started.length ? `<h2 class="sec">Albums you have started</h2><div class="albs">${started.map(item).join("")}</div>` : ""}
+    ${GROUPS.map((g) => `<h2 class="sec">${g}</h2><div class="albs">${info.filter((x) => x.s.group === g).map(item).join("")}</div>`).join("")}`;
+  app.querySelectorAll(".alb").forEach((b) => b.onclick = () => go({ name: "album", id: b.dataset.id }));
+}
+
+function renderAlbum() {
+  const s = seriesById(view.id);
+  if (!s) return go({ name: "albums" }, false);
+  setBar(s.name, true);
+  const fill = albumFill(s), slots = slotsOf(s), have = slots.filter((z) => fill.has(z.key)).length;
+  const missing = !!view.missing;
+  const shown = missing ? slots.filter((z) => !fill.has(z.key)) : slots;
+  app.innerHTML = `
+    <div style="display:grid;gap:8px"><p class="count"><strong>${have} of ${slots.length}</strong> filled${have === slots.length ? " — complete!" : ""}</p>${progress(have, slots.length)}</div>
+    <div class="seg"><button type="button" data-m="0" aria-pressed="${!missing}">Show all</button><button type="button" data-m="1" aria-pressed="${missing}">Only the ones I need</button></div>
+    <p class="count">${missing ? "These are the coins you still need for this album." : "Tap an empty circle to add that coin."}</p>
+    ${shown.length ? `<div class="album-grid">${shown.map((z) => {
+      const list = fill.get(z.key) || [];
+      return `<button class="slotc${list.length ? " has" : ""}${view.focus === z.key ? " focus" : ""}" type="button" data-k="${esc(z.key)}" aria-label="${esc(z.label)}${z.isKey ? ", key date" : ""}: ${list.length ? "you have it" : "empty, tap to add"}">
+        <span class="ring">${list.length ? '<img alt="">' : '<span aria-hidden="true">+</span>'}</span>
+        <span class="lab">${esc(z.label)}</span>${z.isKey ? '<span class="tag">Key date</span>' : ""}${list.length > 1 ? `<span class="s">${list.length} coins</span>` : ""}</button>`;
+    }).join("")}</div>` : '<div class="empty">You have every coin in this album.</div>'}
+    <h2 class="sec">About the ${esc(s.name)}</h2>
+    ${aboutFacts(s)}`;
+  app.querySelectorAll(".seg button").forEach((b) => b.onclick = () => { view.missing = b.dataset.m === "1"; view.focus = null; try { history.replaceState({ v: view }, ""); } catch (e) {} render(); });
+  app.querySelectorAll(".slotc").forEach((b) => {
+    const z = slots.find((x) => x.key === b.dataset.k), list = fill.get(z.key) || [];
+    if (list.length) {
+      const c = list[0];
+      if (c.photos && c.photos[0]) photoURL(c.photos[0]).then((u) => { if (u) b.querySelector("img").src = u; });
+      b.onclick = () => go({ name: "coin", id: c.id });
+    } else b.onclick = () => { draft = { photos: [], ...fieldsForSlot(s, z) }; go({ name: "edit" }); };
+  });
+  if (view.focus) setTimeout(() => { const f = app.querySelector(".slotc.focus"); if (f) f.scrollIntoView({ block: "center" }); }, 60);
+}
+
+/* ---------- judging the condition ---------- */
+const LADDER = GRADES.slice(1, 14); // P-1 Poor … MS-67 Superb Gem, most worn first
+const TIER = ["", "", "", "g", "vg", "f", "vf", "ef", "au", "ms", "ms", "ms", "ms"];
+const GRADE_TEXT = [
+  "So worn the type of coin is barely recognizable. The date may be gone.",
+  "Worn nearly smooth. You can tell what kind of coin it is and read part of the date.",
+  "Very heavy wear. The letters are worn into the rim. The date can just be read.",
+  "Heavily worn. The design is mostly an outline. The rim is full, and the date and main lettering can be read.",
+  "Well worn, but the main parts of the design are clear and some inside detail shows.",
+  "Even, moderate wear. All the main parts of the design show, with some fine detail.",
+  "Light to moderate wear on the highest points. Most of the fine detail is clear.",
+  "Light wear only on the highest points. All the detail is sharp.",
+  "Just a trace of wear on the very highest points. Much of the mint shine is left.",
+  "No wear at all, but there may be many nicks from other coins and dull shine.",
+  "No wear. A few small nicks and good shine.",
+  "No wear. Only small, scattered nicks and strong shine.",
+  "No wear and almost no marks. Beautiful shine.",
+];
+
+async function renderGrade() {
+  const c = coins.find((x) => x.id === view.id);
+  if (!c) return go({ name: "home" }, false);
+  const s = seriesOf(c);
+  if (view.gi == null) { const i = LADDER.indexOf(c.grade); view.gi = i >= 0 ? i : LADDER.indexOf("VF-20 Very Fine"); }
+  const gi = view.gi, g = LADDER[gi], side = view.side || 0, photos = c.photos || [];
+  // Dad's own coins at this grade are the comparison pictures, his same kind of coin first.
+  const refs = coins.filter((x) => x.id !== c.id && x.grade === g && (x.photos || []).length)
+    .sort((a, b) => (seriesOf(b) === s) - (seriesOf(a) === s));
+  const ri = refs.length ? (view.ri || 0) % refs.length : 0, ref = refs[ri];
+  const twoSided = photos.length > 1 || (ref && ref.photos.length > 1);
+  const tier = TIER[gi], specific = s && s.grading && s.grading[tier];
+  setBar("Judge the condition", true);
+  app.innerHTML = `
+    <div class="pair">
+      <figure><div class="frame" id="g-mine" role="button" tabindex="0" aria-label="Zoom in on your coin">${photos.length ? '<img alt="Your coin">' : '<span class="busy">No photo</span>'}</div>
+        <figcaption>This coin: ${esc(title(c))}</figcaption></figure>
+      <figure><div class="frame" id="g-ref" role="button" tabindex="0" aria-label="Zoom in on the comparison coin">${ref ? '<img alt="Comparison coin">' : `<span class="busy pad">None of your coins is marked ${esc(g.split(" ")[0])} yet. Coins you grade show up here to compare.</span>`}</div>
+        <figcaption>${ref ? `Your ${esc(title(ref))}${ref.example ? " (example)" : ""}, marked ${esc(g.split(" ")[0])}` : "Compare with"}</figcaption></figure>
+    </div>
+    ${twoSided ? `<div class="seg">${["Front", "Back"].map((t, i) => `<button type="button" data-side="${i}" aria-pressed="${i === side}">${t}</button>`).join("")}</div>` : ""}
+    ${refs.length > 1 ? `<button class="btn wide" id="g-next" type="button">Show another coin marked ${esc(g.split(" ")[0])} (${ri + 1} of ${refs.length})</button>` : ""}
+    <section class="gradecard" aria-live="polite">
+      <p class="g-step">Step ${gi + 1} of ${LADDER.length}, from most worn to best</p>
+      <h2>${esc(g)}</h2>
+      <p>${esc(GRADE_TEXT[gi])}</p>
+      ${specific ? `<p><strong>On a ${esc(s.name)}:</strong> ${esc(specific)}</p>` : ""}
+      ${s && s.hp ? `<p class="hint">Wear shows first on ${esc(s.hp)}.</p>` : ""}
+    </section>
+    <div class="row">
+      <button class="btn" id="g-worse" type="button" ${gi === 0 ? "disabled" : ""}>‹ More worn</button>
+      <button class="btn" id="g-better" type="button" ${gi === LADDER.length - 1 ? "disabled" : ""}>Less worn ›</button>
+    </div>
+    <button class="btn primary wide" id="g-set" type="button">${c.grade === g ? "✓ This coin is marked " + esc(g) : "It looks like this. Mark it " + esc(g)}</button>
+    <p class="count">These descriptions follow the usual grading scale, written in plain words. Proof coins are judged by their marks and shine, not wear.</p>`;
+  const pick = (x) => (x.photos[side] || x.photos[0]);
+  if (photos.length) photoURL(pick(c), "full").then((u) => { const i = app.querySelector("#g-mine img"); if (i) i.src = u; });
+  if (ref) photoURL(pick(ref), "full").then((u) => { const i = app.querySelector("#g-ref img"); if (i) i.src = u; });
+  const zoomable = (id, x) => { const el = document.getElementById(id); if (!x || !x.photos.length) return; const open = () => openViewer(pick(x)); el.onclick = open; el.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } }; };
+  zoomable("g-mine", c); zoomable("g-ref", ref);
+  const step = (v) => { Object.assign(view, v); try { history.replaceState({ v: view }, ""); } catch (e) {} render(); };
+  app.querySelectorAll("[data-side]").forEach((b) => b.onclick = () => step({ side: +b.dataset.side }));
+  const nx = document.getElementById("g-next"); if (nx) nx.onclick = () => step({ ri: ri + 1 });
+  document.getElementById("g-worse").onclick = () => step({ gi: Math.max(0, gi - 1), ri: 0 });
+  document.getElementById("g-better").onclick = () => step({ gi: Math.min(LADDER.length - 1, gi + 1), ri: 0 });
+  document.getElementById("g-set").onclick = async () => {
+    if (c.grade === g) return back();
+    await put("coins", { ...c, grade: g }); await refresh(); toast("Condition set to " + g); back();
+  };
+}
+
+/* ---------- insurance report ---------- */
+const money = (n) => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const amount = (v) => { const n = parseFloat(String(v ?? "").replace(/[$,\s]/g, "")); return isFinite(n) ? n : null; };
+function renderReport() {
+  setBar("Insurance report", true);
+  let owner = ""; try { owner = localStorage.getItem("coin-catalog-owner") || ""; } catch (e) {}
+  const list = coins.filter((c) => !c.example).slice().sort((a, b) => title(a).localeCompare(title(b), undefined, { numeric: true }));
+  const paid = list.reduce((t, c) => t + (amount(c.paid) || 0), 0);
+  const hasValue = list.some((c) => amount(c.value) != null);
+  const worth = list.reduce((t, c) => t + (amount(c.value) || 0), 0);
+  const photos = view.photos !== false;
+  app.innerHTML = `
+    <div class="no-print" style="display:grid;gap:16px">
+      <p class="count">This is a list of every coin with its photos and prices, ready to print or save as a PDF for an insurance agent or for the family. Example coins are left out.</p>
+      <div class="field"><label for="r-owner">Owner's name for the report</label><input id="r-owner" autocomplete="name" value="${esc(owner)}" placeholder="e.g. Robert Smith"></div>
+      <div class="seg"><button type="button" data-p="1" aria-pressed="${photos}">With photos</button><button type="button" data-p="0" aria-pressed="${!photos}">Words only (fewer pages)</button></div>
+      <button class="btn primary wide" id="r-print" type="button" ${list.length ? "" : "disabled"}>${ICON.print} Print or save as PDF</button>
+    </div>
+    <article class="report">
+      <header class="rep-head">
+        <h2>Coin Collection Inventory</h2>
+        <p id="r-owner-line">${owner ? "Owner: " + esc(owner) : ""}</p>
+        <p>Prepared ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
+        <dl class="rep-tot">
+          <div><dt>Coins</dt><dd>${list.length}</dd></div>
+          <div><dt>Total price paid</dt><dd>${money(paid)}</dd></div>
+          ${hasValue ? `<div><dt>Total estimated value</dt><dd>${money(worth)}</dd></div>` : ""}
+        </dl>
+      </header>
+      ${list.length ? list.map((c, i) => {
+        const s = seriesOf(c);
+        const rows = [["Country", c.country], ["Mint mark", c.mint], ["Type", s && s.name], ["Metal", s && s.metal], ["Condition", c.grade],
+          ["Price paid", amount(c.paid) != null ? money(amount(c.paid)) : ""], ["Estimated value", amount(c.value) != null ? money(amount(c.value)) : ""], ["Notes", c.notes]];
+        return `<section class="rep-item${photos ? "" : " nophoto"}">
+          <h3>${i + 1}. ${esc(title(c))}</h3>
+          ${photos ? `<div class="rep-ph">${(c.photos || []).slice(0, 2).map((p, k) => `<figure><img alt="" data-pid="${p}"><figcaption>${k ? "Back" : "Front"}</figcaption></figure>`).join("") || '<p class="busy">No photo</p>'}</div>` : ""}
+          <dl>${rows.filter((r) => r[1]).map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+        </section>`;
+      }).join("") : '<div class="empty">No coins yet. Coins you add will be listed here.</div>'}
+      <p class="rep-foot">Prices paid and values were recorded by the owner. Photos were taken by the owner.</p>
+    </article>`;
+  const oi = document.getElementById("r-owner");
+  oi.oninput = () => { try { localStorage.setItem("coin-catalog-owner", oi.value.trim()); } catch (e) {} document.getElementById("r-owner-line").textContent = oi.value.trim() ? "Owner: " + oi.value.trim() : ""; };
+  app.querySelectorAll("[data-p]").forEach((b) => b.onclick = () => { view.photos = b.dataset.p === "1"; try { history.replaceState({ v: view }, ""); } catch (e) {} render(); });
+  const imgs = [...app.querySelectorAll("img[data-pid]")];
+  const ready = Promise.all(imgs.map((im) => photoURL(im.dataset.pid).then((u) => new Promise((res) => { if (!u) return res(); im.onload = im.onerror = res; im.src = u; }))));
+  document.getElementById("r-print").onclick = async () => { toast("Getting the report ready…"); await ready; window.print(); };
+}
 
 function renderHelp() {
   setBar("Help & backup", true);
@@ -566,6 +1008,19 @@ function renderHelp() {
       <h2 class="sec">What my coins are worth</h2>
       <p>Tap “My collection is worth about” on the main screen to see every coin’s value and the total. Tap a coin there to type in what it is worth.</p>
       <p>The values are your own estimates. “Recent sold prices” opens eBay’s list of coins like it that actually sold, which is a good guide. Prices change, so update your best coins now and then.</p>
+    </section>
+    <section class="help">
+      <h2 class="sec">Albums</h2>
+      <p>Tap “Albums” to see each kind of U.S. coin laid out by date and mint mark, like a coin folder. Coins you have show their photo. Tap an empty circle to add that coin; the details fill in by themselves.</p>
+      <p>When you add or change a coin, pick it under “Type of coin” and it goes into the right spot.</p>
+    </section>
+    <section class="help">
+      <h2 class="sec">Judging the condition</h2>
+      <p>Open a coin and tap “Help me judge the condition”. Step through “More worn” and “Less worn” until the words match your coin. Your own coins with the same condition show next to it to compare.</p>
+    </section>
+    <section class="help">
+      <h2 class="sec">Insurance report</h2>
+      <p>Tap “Insurance report” to print a list of all your coins with photos and prices, or save it as a PDF.</p>
     </section>
     <section class="help">
       <h2 class="sec">Keep a backup</h2>
@@ -593,6 +1048,10 @@ async function render() {
   if (view.name === "edit") return renderEdit();
   if (view.name === "help") return renderHelp();
   if (view.name === "values") return renderValues();
+  if (view.name === "albums") return renderAlbums();
+  if (view.name === "album") return renderAlbum();
+  if (view.name === "grade") return renderGrade();
+  if (view.name === "report") return renderReport();
   return renderHome();
 }
 

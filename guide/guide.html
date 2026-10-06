@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My Coin Catalog: A Guide</title>
+<style>
+@font-face { font-family: "Atkinson Hyperlegible"; font-weight: 400; src: url(../src/fonts/atkinson-400.woff2); }
+@font-face { font-family: "Atkinson Hyperlegible"; font-weight: 700; src: url(../src/fonts/atkinson-700.woff2); }
+@font-face { font-family: "Cormorant SC"; font-weight: 600; src: url(../src/fonts/cormorant-sc-600.woff2); }
+:root { --ink: #141a2b; --muted: #3f475a; --album: #1d2c55; --brass: #9a6b12; --brass-soft: #f6ecd2; --line: #c9cedb; --good: #1f6b3a; --good-soft: #e3f2e7; --warn: #8a2b1d; --warn-soft: #fbe7e2; }
+@page { size: letter; margin: 0.6in 0.7in 0.7in; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font-family: "Atkinson Hyperlegible", Arial, sans-serif; font-size: 17pt; line-height: 1.45; color: var(--ink); margin: 0; }
+h1, h2 { font-family: "Cormorant SC", Georgia, serif; font-weight: 600; color: var(--album); line-height: 1.05; margin: 0; }
+h1 { font-size: 46pt; }
+h2 { font-size: 32pt; margin-bottom: 14pt; padding-bottom: 6pt; border-bottom: 3pt solid var(--brass); }
+h3 { font-size: 19pt; margin: 16pt 0 6pt; }
+p { margin: 0 0 10pt; }
+.page { break-after: page; }
+.page:last-child { break-after: auto; }
+ol.steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 12pt; counter-reset: s; }
+ol.steps > li { counter-increment: s; display: grid; grid-template-columns: 34pt 1fr; gap: 10pt; align-items: start; }
+ol.steps > li::before { content: counter(s); width: 34pt; height: 34pt; border-radius: 50%; background: var(--album); color: #fff; font-weight: 700; display: grid; place-items: center; font-size: 17pt; }
+.btnlike { display: inline-block; border: 2pt solid var(--ink); border-radius: 6pt; padding: 0 6pt; font-weight: 700; white-space: nowrap; }
+.btnlike.gold { background: var(--brass); color: #fff; border-color: var(--brass); }
+.shot { width: 2.35in; border: 2pt solid #9aa1b1; border-radius: 14pt; display: block; }
+.withshot { display: grid; grid-template-columns: 1fr 2.35in; gap: 22pt; align-items: start; }
+.box { border-radius: 10pt; padding: 12pt 16pt; margin: 12pt 0; }
+.box p:last-child { margin: 0; }
+.good { background: var(--good-soft); border: 2pt solid var(--good); }
+.warn { background: var(--warn-soft); border: 2pt solid var(--warn); }
+.tip { background: var(--brass-soft); border: 2pt solid var(--brass); }
+.addr { font-size: 22pt; font-weight: 700; color: var(--album); border: 3pt solid var(--album); border-radius: 10pt; padding: 10pt 14pt; text-align: center; margin: 10pt 0 16pt; word-break: break-all; }
+ul.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 8pt; }
+ul.checks li { display: grid; grid-template-columns: 28pt 1fr; gap: 6pt; }
+ul.checks li::before { content: "✓"; color: var(--good); font-weight: 700; font-size: 20pt; line-height: 1.1; }
+ul.risks { list-style: none; padding: 0; margin: 0; display: grid; gap: 10pt; }
+ul.risks li { display: grid; grid-template-columns: 28pt 1fr; gap: 6pt; }
+ul.risks li::before { content: "!"; color: #fff; background: var(--warn); border-radius: 50%; width: 22pt; height: 22pt; display: grid; place-items: center; font-weight: 700; font-size: 14pt; margin-top: 2pt; }
+.cover { display: grid; gap: 8pt; }
+.cover .lede { font-size: 19pt; }
+.three { display: grid; gap: 10pt; }
+.three div { display: grid; grid-template-columns: 54pt 1fr; gap: 12pt; align-items: center; border: 2pt solid var(--line); border-radius: 10pt; padding: 8pt 12pt; break-inside: avoid; }
+.fig { margin: 10pt 0 14pt; }
+.fig svg { width: 100%; height: auto; display: block; } .fig { break-inside: avoid; }
+.cap { font-size: 13pt; color: var(--muted); margin-top: 4pt; }
+.fill { border-bottom: 2pt solid var(--ink); display: inline-block; min-width: 3.4in; height: 20pt; }
+table.help { width: 100%; border-collapse: collapse; font-size: 16pt; }
+table.help td { border-top: 1.5pt solid var(--line); padding: 9pt 6pt; vertical-align: top; }
+table.help td:first-child { font-weight: 700; width: 40%; }
+.small { font-size: 13pt; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- 1. Cover -->
+<section class="page cover">
+  <svg viewBox="0 0 120 120" width="72" height="72" aria-hidden="true">
+    <rect width="120" height="120" rx="24" fill="#1d2c55"/>
+    <defs><radialGradient id="g1" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#f6d98a"/><stop offset=".6" stop-color="#c99630"/><stop offset="1" stop-color="#8a5f12"/></radialGradient></defs>
+    <circle cx="60" cy="60" r="44" fill="url(#g1)"/><circle cx="60" cy="60" r="37" fill="none" stroke="#5a3c08" stroke-opacity=".55" stroke-width="2.5"/>
+    <text x="60" y="76" text-anchor="middle" font-family="Georgia, serif" font-weight="bold" font-size="44" fill="#46290a" fill-opacity=".8">¢</text>
+  </svg>
+  <h1>My Coin Catalog</h1>
+  <p class="lede">A simple app for keeping pictures and notes about every coin in your collection. It works on your phone and on your computer, and it keeps your pictures to yourself.</p>
+  <p>The app's address on the internet is:</p>
+  <div class="addr">coinmax-coder.github.io/coin-catalog</div>
+  <h3>Three things to know</h3>
+  <div class="three">
+    <div><svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><rect x="12" y="4" width="24" height="40" rx="4" fill="none" stroke="#1d2c55" stroke-width="3"/><rect x="18" y="38" width="12" height="2.5" rx="1" fill="#1d2c55"/><circle cx="24" cy="21" r="8" fill="#c99630"/></svg>
+      <p style="margin:0">Your coin pictures stay <strong>on your own phone or computer</strong>. They are never sent anywhere.</p></div>
+    <div><svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><path d="M24 4 L40 10 V24 C40 34 33 41 24 44 C15 41 8 34 8 24 V10 Z" fill="none" stroke="#1f6b3a" stroke-width="3"/><path d="M16 24 l6 6 l11 -12" fill="none" stroke="#1f6b3a" stroke-width="3.5" stroke-linecap="round"/></svg>
+      <p style="margin:0">There is <strong>no account and no password</strong>. The app never asks for money or personal details.</p></div>
+    <div><svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><rect x="10" y="6" width="28" height="36" rx="3" fill="none" stroke="#9a6b12" stroke-width="3"/><path d="M24 14 v14 M17 22 l7 7 l7 -7" fill="none" stroke="#9a6b12" stroke-width="3" stroke-linecap="round"/><path d="M16 35 h16" stroke="#9a6b12" stroke-width="3" stroke-linecap="round"/></svg>
+      <p style="margin:0">Save a <strong>backup</strong> once a month so you never lose your collection (see page 8).</p></div>
+  </div>
+</section>
+
+<!-- 2. Installing -->
+<section class="page">
+  <h2>Putting the app on your phone</h2>
+  <p>You only do this once. Afterwards a gold coin button called <strong>My Coins</strong> opens the app, even without internet.</p>
+  <h3>On an Android phone</h3>
+  <ol class="steps">
+    <li><span>Open <strong>Chrome</strong> and type the address <strong>coinmax-coder.github.io/coin-catalog</strong> in the bar at the top.</span></li>
+    <li><span>Tap the <span class="btnlike">⋮</span> button (three dots) in the top right corner.</span></li>
+    <li><span>Tap <strong>Add to Home screen</strong> or <strong>Install app</strong>, then tap <strong>Install</strong>.</span></li>
+  </ol>
+  <div class="fig">
+    <svg viewBox="0 0 640 230" aria-label="Chrome menu with Add to Home screen">
+      <rect x="10" y="10" width="300" height="210" rx="18" fill="#fff" stroke="#141a2b" stroke-width="3"/>
+      <rect x="24" y="26" width="220" height="34" rx="17" fill="#eef0f4" stroke="#9aa1b1"/>
+      <text x="38" y="49" font-size="15" font-family="Arial" fill="#3f475a">coinmax-coder.github.io/…</text>
+      <circle cx="276" cy="36" r="3.5" fill="#141a2b"/><circle cx="276" cy="44" r="3.5" fill="#141a2b"/><circle cx="276" cy="52" r="3.5" fill="#141a2b"/>
+      <circle cx="276" cy="44" r="20" fill="none" stroke="#c0392b" stroke-width="4"/>
+      <text x="160" y="140" text-anchor="middle" font-size="22" font-family="Arial" font-weight="bold" fill="#1d2c55">Step 2</text>
+      <path d="M330 115 h40" stroke="#141a2b" stroke-width="4" marker-end="url(#ar)"/>
+      <defs><marker id="ar" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#141a2b"/></marker></defs>
+      <rect x="390" y="10" width="240" height="210" rx="12" fill="#fff" stroke="#141a2b" stroke-width="3"/>
+      <text x="410" y="50" font-size="18" font-family="Arial" fill="#3f475a">New tab</text>
+      <text x="410" y="88" font-size="18" font-family="Arial" fill="#3f475a">Bookmarks</text>
+      <rect x="398" y="104" width="224" height="40" rx="6" fill="#f6ecd2" stroke="#c0392b" stroke-width="4"/>
+      <text x="410" y="131" font-size="18" font-family="Arial" font-weight="bold" fill="#141a2b">Add to Home screen</text>
+      <text x="410" y="174" font-size="18" font-family="Arial" fill="#3f475a">Settings</text>
+      <text x="510" y="208" text-anchor="middle" font-size="16" font-family="Arial" font-weight="bold" fill="#1d2c55">Step 3</text>
+    </svg>
+  </div>
+</section>
+<section class="page">
+  <h2>Putting the app on your computer</h2>
+  <h3>On a Windows computer</h3>
+  <ol class="steps">
+    <li><span>Open <strong>Chrome</strong> or <strong>Edge</strong> and type the same address at the top.</span></li>
+    <li><span>Click the small <strong>install</strong> picture at the right end of the address bar (a screen with an arrow), or click <span class="btnlike">⋮</span> and choose <strong>Install</strong>.</span></li>
+    <li><span>The app now opens from the <strong>Start menu</strong> like any other program.</span></li>
+  </ol>
+  <div class="fig">
+    <svg viewBox="0 0 640 70" aria-label="Install button at the end of the address bar">
+      <rect x="4" y="8" width="632" height="54" rx="27" fill="#eef0f4" stroke="#9aa1b1" stroke-width="2"/>
+      <text x="34" y="42" font-size="20" font-family="Arial" fill="#3f475a">coinmax-coder.github.io/coin-catalog</text>
+      <rect x="560" y="20" width="30" height="22" rx="3" fill="none" stroke="#141a2b" stroke-width="2.5"/><path d="M575 24 v12 M569 31 l6 6 l6 -6" fill="none" stroke="#141a2b" stroke-width="2.5"/>
+      <circle cx="575" cy="34" r="24" fill="none" stroke="#c0392b" stroke-width="4"/>
+    </svg>
+  </div>
+</section>
+
+<!-- 3. Adding coins -->
+<section class="page">
+  <h2>Adding your coins</h2>
+  <div class="withshot">
+    <div>
+      <h3 style="margin-top:0">One coin at a time</h3>
+      <ol class="steps">
+        <li><span>Tap the big gold <span class="btnlike gold">+ Add a coin</span> button.</span></li>
+        <li><span>Under <strong>Front</strong>, tap <strong>Take photo</strong> to use the phone's camera, or <strong>Choose file</strong> to pick a microscope picture. Do the same for the <strong>Back</strong>.</span></li>
+        <li><span>Fill in what you know: year, country, coin, mint mark, condition, price paid and notes. Anything can be left empty.</span></li>
+        <li><span>Tap <strong>Save this coin</strong>.</span></li>
+      </ol>
+    </div>
+    <img class="shot" src="add.png" alt="The Add a coin screen">
+  </div>
+</section>
+<section class="page">
+  <h2>Adding pictures from the SD card</h2>
+  <h3 style="margin-top:0">Many microscope pictures at once</h3>
+  <p>Your microscope saves its pictures on a small <strong>SD card</strong>. Each picture you bring in becomes its own coin, and you can fill in the details later.</p>
+  <div class="fig">
+    <svg viewBox="0 0 640 150" aria-label="SD card goes into the computer, or into a card reader plugged into the phone">
+      <g font-family="Arial" font-size="15" fill="#141a2b" text-anchor="middle">
+        <path d="M40 30 h50 l16 16 v74 h-66 z" fill="#1d2c55"/><rect x="50" y="36" width="8" height="18" fill="#c99630"/><rect x="62" y="36" width="8" height="18" fill="#c99630"/><rect x="74" y="36" width="8" height="18" fill="#c99630"/>
+        <text x="73" y="142">SD card</text>
+        <path d="M130 75 h50" stroke="#141a2b" stroke-width="4" marker-end="url(#ar)"/>
+        <rect x="200" y="30" width="150" height="90" rx="6" fill="#fff" stroke="#141a2b" stroke-width="3"/><rect x="180" y="120" width="190" height="10" rx="4" fill="#141a2b"/>
+        <rect x="330" y="78" width="20" height="5" fill="#141a2b"/>
+        <text x="275" y="80" font-weight="bold">Computer</text>
+        <text x="275" y="148">Slide it into the card slot</text>
+        <text x="420" y="82" font-size="22" font-weight="bold">or</text>
+        <rect x="460" y="56" width="44" height="40" rx="6" fill="#9aa1b1"/><path d="M504 70 h24 v12 h-24" fill="#555"/>
+        <rect x="560" y="18" width="62" height="114" rx="10" fill="#fff" stroke="#141a2b" stroke-width="3"/><rect x="528" y="70" width="32" height="12" fill="#555"/>
+        <text x="482" y="116">card reader</text><text x="591" y="148">Phone</text>
+      </g>
+    </svg>
+  </div>
+  <ol class="steps">
+    <li><span>Put the SD card into the computer, or into a small card reader plugged into the phone.</span></li>
+    <li><span>Tap <span class="btnlike">Add photos from SD card</span>.</span></li>
+    <li><span>Open the SD card, select the pictures you want, and tap <strong>Open</strong> or <strong>Select</strong>.</span></li>
+  </ol>
+  <div class="box tip"><p><strong>On a phone:</strong> if you only see recent photos, tap <span class="btnlike">☰</span> or <strong>Browse</strong> and choose the SD card from the list.</p></div>
+</section>
+
+<!-- 4. Looking at coins -->
+<section class="page">
+  <h2>Looking at your coins</h2>
+  <div class="withshot">
+    <div>
+      <p>The first screen shows all your coins as large round pictures, newest first.</p>
+      <ul class="checks">
+        <li><span><strong>Search:</strong> type a year, a country or a word from your notes in the search box, and only matching coins are shown.</span></li>
+        <li><span><strong>Open a coin:</strong> tap its picture to see everything about it.</span></li>
+        <li><span><strong>Go back:</strong> tap <span class="btnlike">‹ Back</span> at the top left.</span></li>
+      </ul>
+      <div class="box tip"><p>When you first open the app you will see <strong>3 example coins</strong>. They are pretend. Tap <strong>Remove the examples</strong> when you are ready.</p></div>
+    </div>
+    <img class="shot" src="home.png" alt="The list of coins">
+  </div>
+</section>
+<section class="page">
+  <h2>Zooming in and making changes</h2>
+  <div class="withshot">
+    <div>
+      <h3 style="margin-top:0">Zooming in</h3>
+      <p>On a coin's page, tap <strong>Zoom in on this photo</strong>. Then use the big <span class="btnlike">+ Bigger</span> and <span class="btnlike">− Smaller</span> buttons, or spread two fingers apart on the picture. Slide one finger to move around. Tap <strong>Close</strong> when done.</p>
+      <h3>Changing or deleting a coin</h3>
+      <p>Tap <strong>Change details</strong> to fix anything. <strong>Delete this coin</strong> always asks you first, so nothing is removed by accident.</p>
+    </div>
+    <img class="shot" src="zoom.png" alt="Zoomed coin picture with Bigger and Smaller buttons">
+  </div>
+</section>
+
+<!-- 5. Backups -->
+<section class="page">
+  <h2>Saving a backup</h2>
+  <div class="withshot">
+    <div>
+      <p>Your coins are kept inside the app on that one phone or computer. A backup is a single file holding <strong>all your coins and pictures</strong>. If the phone is lost or broken, the backup brings everything back.</p>
+      <h3>To save a backup (once a month is good)</h3>
+      <ol class="steps">
+        <li><span>Tap <span class="btnlike">Help &amp; backup</span> at the top of the first screen.</span></li>
+        <li><span>Tap <strong>Save a backup file</strong>. It is named like <strong>coin-backup-2026-10-06.json</strong>.</span></li>
+        <li><span>Copy that file to a <strong>USB stick</strong> and put it somewhere safe.</span></li>
+      </ol>
+    </div>
+    <img class="shot" src="help.png" alt="The Help and backup screen">
+  </div>
+  <h3>To bring coins back, or move them to another device</h3>
+  <ol class="steps">
+    <li><span>On the other phone or computer, open the app and tap <strong>Help &amp; backup</strong>.</span></li>
+    <li><span>Tap <strong>Load a backup file</strong> and pick your backup file.</span></li>
+  </ol>
+  <div class="box tip"><p>The phone and the computer each keep <strong>their own</strong> list of coins. They do not update each other by themselves. A backup file is how you carry your coins from one to the other.</p></div>
+</section>
+
+<!-- 6. Safety -->
+<section class="page">
+  <h2>Is it safe? Where do my pictures go?</h2>
+  <div class="fig">
+    <svg viewBox="0 0 640 170" aria-label="Pictures go from the microscope to the SD card to your own device. Nothing goes to the internet.">
+      <defs><marker id="ar2" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#1f6b3a"/></marker></defs>
+      <g font-family="Arial" font-size="16" text-anchor="middle" fill="#141a2b">
+        <rect x="20" y="40" width="40" height="70" rx="6" fill="#3f475a"/><rect x="28" y="110" width="24" height="18" fill="#3f475a"/><rect x="10" y="128" width="60" height="8" rx="3" fill="#3f475a"/><circle cx="40" cy="58" r="10" fill="#c99630"/>
+        <text x="40" y="160">Microscope</text>
+        <path d="M85 85 h45" stroke="#1f6b3a" stroke-width="4" marker-end="url(#ar2)"/>
+        <path d="M150 55 h36 l12 12 v50 h-48 z" fill="#1d2c55"/><text x="174" y="160">SD card</text>
+        <path d="M215 85 h45" stroke="#1f6b3a" stroke-width="4" marker-end="url(#ar2)"/>
+        <rect x="280" y="30" width="140" height="100" rx="14" fill="#e3f2e7" stroke="#1f6b3a" stroke-width="3"/>
+        <text x="350" y="72" font-weight="bold">Your phone</text><text x="350" y="94" font-weight="bold">or computer</text><text x="350" y="118" font-size="14">pictures stay here</text>
+        <path d="M528 50 a28 28 0 0 1 54 6 a20 20 0 0 1 2 40 h-66 a22 22 0 0 1 10 -46" fill="#eef0f4" stroke="#9aa1b1" stroke-width="3"/>
+        <text x="550" y="130">The internet</text>
+        <path d="M440 80 h50" stroke="#9aa1b1" stroke-width="4" stroke-dasharray="6 6"/>
+        <circle cx="465" cy="80" r="22" fill="#fff" stroke="#8a2b1d" stroke-width="4"/><path d="M450 65 l30 30" stroke="#8a2b1d" stroke-width="4"/>
+        <text x="550" y="155" fill="#8a2b1d" font-weight="bold">nothing is sent</text>
+      </g>
+    </svg>
+  </div>
+  <h3>Why it is safe</h3>
+  <ul class="checks">
+    <li><span><strong>Your pictures stay with you.</strong> When you add a picture, the app copies it into its own storage on that phone or computer. It has no way to upload it, and nobody else can see it.</span></li>
+    <li><span><strong>The internet only delivers the app.</strong> The website sends the app to your device, the same way a shop hands you an empty photo album. What you put in the album stays at home.</span></li>
+    <li><span><strong>No account, no password, no sign-up.</strong> It never asks for your name, email, address, bank details or money.</span></li>
+    <li><span><strong>No ads and no tracking.</strong> The app contacts no one except its own website, to check for updates.</span></li>
+    <li><span><strong>Your SD card is not changed.</strong> The app makes a copy, so your original pictures stay safe on the card.</span></li>
+  </ul>
+</section>
+
+<section class="page">
+  <h2>The few risks, and what to do</h2>
+  <ul class="risks">
+    <li><span><strong>Losing the phone, or clearing it.</strong> If the phone is lost or broken, or Chrome's saved data is wiped, the coins on it are gone. <em>What to do:</em> save a backup once a month and keep the SD card pictures.</span></li>
+    <li><span><strong>The backup file holds everything.</strong> Anyone who has the file can see your coins, pictures and what you paid. <em>What to do:</em> keep it on your own USB stick, and do not email it to anyone you do not know.</span></li>
+    <li><span><strong>Someone using your phone.</strong> Anyone who picks up your unlocked phone can open the app. <em>What to do:</em> keep a screen lock (PIN or fingerprint) on the phone.</span></li>
+    <li><span><strong>Fake calls or messages.</strong> Nobody from this app will ever call, text or email you. <em>What to do:</em> if someone says they are from "the coin app" and asks for money, passwords or to control your computer, hang up. It is a scam.</span></li>
+    <li><span><strong>Copycat websites.</strong> <em>What to do:</em> only use the address on the front of this guide, <strong>coinmax-coder.github.io/coin-catalog</strong>.</span></li>
+  </ul>
+  <div class="box good" style="margin-top:18pt"><p>The app is free and made by your family. It is not a shop and it does not sell anything.</p></div>
+</section>
+
+<!-- 7. Quick help -->
+<section class="page">
+  <h2>Quick help</h2>
+  <table class="help">
+    <tr><td>I can't find the app</td><td>Look for the gold coin called <strong>My Coins</strong> on the phone's home screen, or in the computer's Start menu.</td></tr>
+    <tr><td>I only see recent photos, not the SD card</td><td>Tap <strong>☰</strong> or <strong>Browse</strong> in the picture chooser and pick the SD card.</td></tr>
+    <tr><td>I added a coin by mistake</td><td>Open it and tap <strong>Delete this coin</strong>, then <strong>Delete</strong>.</td></tr>
+    <tr><td>My coins are not on the computer</td><td>The phone and computer keep separate lists. Save a backup on one and load it on the other (page 8).</td></tr>
+    <tr><td>The writing is too small</td><td>On a computer, hold <strong>Ctrl</strong> and press <strong>+</strong>. On a phone, make the text bigger in the phone's Settings under Display.</td></tr>
+    <tr><td>Is my collection protected?</td><td>Open <strong>Help &amp; backup</strong>. A line with a <strong>✓</strong> means the device will keep your coins permanently.</td></tr>
+  </table>
+  <h3 style="margin-top:26pt">Who to call for help</h3>
+  <p>Name: <span class="fill"></span></p>
+  <p>Phone: <span class="fill"></span></p>
+  </section>
+
+</body>
+</html>

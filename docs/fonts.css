@@ -1,0 +1,4 @@
+/* Fonts are served from this site so the app contacts no one else. Both fonts are under the SIL Open Font License. */
+@font-face { font-family: "Atkinson Hyperlegible"; font-weight: 400; font-display: swap; src: url(fonts/atkinson-400.woff2) format("woff2"); }
+@font-face { font-family: "Atkinson Hyperlegible"; font-weight: 700; font-display: swap; src: url(fonts/atkinson-700.woff2) format("woff2"); }
+@font-face { font-family: "Cormorant SC"; font-weight: 600; font-display: swap; src: url(fonts/cormorant-sc-600.woff2) format("woff2"); }
