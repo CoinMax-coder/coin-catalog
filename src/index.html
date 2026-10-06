@@ -55,6 +55,7 @@ main { max-width: 960px; margin: 0 auto; padding-inline: 16px; padding-block: 20
 .btn.danger { color: var(--danger); border-color: var(--danger) }
 .btn.danger-solid { background: var(--danger); border-color: var(--danger); color: var(--surface) }
 .btn.wide { width: 100% }
+a.btn { text-decoration: none; color: inherit }
 .btn svg { width: 30px; height: 30px; flex: none }
 .row { display: flex; flex-wrap: wrap; gap: 12px }
 .row > .btn { flex: 1 1 220px }
@@ -124,6 +125,10 @@ h2.sec { font-size: var(--step-1); margin: 8px 0 0 }
 .help p { margin: 0 0 10px }
 .help ol { margin: 0; padding-left: 1.4em; display: grid; gap: 6px }
 .busy { color: var(--muted); font-weight: 700 }
+.btn.choice { font-size: var(--step-0); justify-content: flex-start; text-align: left; gap: 16px; padding: 16px 20px }
+.btn.choice svg { width: 40px; height: 40px }
+.btn.choice small { font-size: 1.05rem; font-weight: 400 }
+.sync-code { font-size: 3.4rem; font-weight: 700; letter-spacing: .12em; text-align: center; background: var(--surface); border: 3px solid var(--brass); border-radius: var(--radius); padding: 18px 10px; font-variant-numeric: tabular-nums }
 /* albums */
 .albs { display: grid; gap: 12px }
 .alb { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 14px 16px; text-align: left; cursor: pointer; display: grid; gap: 6px; min-height: 64px }
@@ -146,6 +151,9 @@ h2.sec { font-size: var(--step-1); margin: 8px 0 0 }
 .pair .frame { aspect-ratio: 1; background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); overflow: hidden; display: grid; place-items: center; cursor: zoom-in }
 .pair .frame img { width: 100%; height: 100%; object-fit: contain; background: #000 }
 .pair figcaption { font-weight: 700; font-size: 1.05rem; line-height: 1.3 }
+.pair .pcgs-box { cursor: pointer; text-decoration: none; color: var(--ink); background: var(--brass-soft); border-color: var(--brass); display: grid; align-content: center; gap: 8px; padding: 10px; text-align: center }
+.pair .pcgs-box strong { font-size: 1.15rem; line-height: 1.25 }
+.pair .pcgs-box span { font-size: .95rem; color: var(--muted); line-height: 1.3 }
 .busy.pad { padding: 10px; text-align: center; font-size: 1rem; font-weight: 400 }
 .gradecard { background: var(--surface); border: 2px solid var(--brass); border-radius: var(--radius); padding: 16px; display: grid; gap: 10px }
 .gradecard h2 { margin: 0; font-size: var(--step-2); font-family: var(--font-mark) }
@@ -238,7 +246,11 @@ async function tx(store, mode, fn) {
     t.onerror = () => reject(t.error);
   });
 }
-const put = (store, val) => tx(store, "readwrite", (s, m) => m ? m.set(val.id, val) : s.put(val));
+// Every coin change gets a time stamp so sync can tell which copy is newer (sync itself keeps the other device's stamp).
+const put = (store, val, keepTime) => {
+  if (store === "coins" && !keepTime) val = { ...val, updated: Date.now() };
+  return tx(store, "readwrite", (s, m) => m ? m.set(val.id, val) : s.put(val));
+};
 const get = (store, id) => tx(store, "readonly", (s, m) => m ? m.get(id) : s.get(id));
 const del = (store, id) => tx(store, "readwrite", (s, m) => m ? m.delete(id) : s.delete(id));
 const all = (store) => tx(store, "readonly", (s, m) => m ? [...m.values()] : s.getAll());
@@ -481,7 +493,7 @@ const app = document.getElementById("app"), bar = document.getElementById("bar")
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 async function refresh() {
-  coins = (await all("coins")) || [];
+  coins = ((await all("coins")) || []).filter((c) => !c.deleted);
   coins.sort((a, b) => b.created - a.created);
 }
 function go(next, push = true) {
@@ -502,6 +514,9 @@ const ICON = {
   card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5V3h10v2M8 12h8M8 15h5"/></svg>',
   plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
   album: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="2"/><circle cx="16" cy="9" r="2"/><circle cx="8" cy="15" r="2"/><circle cx="16" cy="15" r="2" stroke-dasharray="2 2"/></svg>',
+  wifi: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r="1" fill="currentColor"/></svg>',
+  cable: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="7" rx="1"/><path d="M10 5h1M13 5h1M12 9v5a4 4 0 0 1-4 4H6M6 15v6"/></svg>',
+  sync: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5"/></svg>',
   print: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2"/><rect x="6" y="14" width="12" height="7"/></svg>',
 };
 
@@ -553,6 +568,7 @@ async function renderHome() {
     <div class="row">
       <button class="btn" id="albums" type="button">${ICON.album} Albums</button>
       <button class="btn" id="report" type="button">${ICON.print} Insurance report</button>
+      <button class="btn" id="sync" type="button">${ICON.sync} Sync phone and computer</button>
     </div>
     ${worthCard()}
     ${examples ? `<div class="note"><p><strong>${examples} example coins</strong> are shown so you can see how it works. They are not yours.</p><button class="btn" id="rm-ex" type="button">Remove the examples</button></div>` : ""}
@@ -564,6 +580,7 @@ async function renderHome() {
   document.getElementById("add-many").onclick = () => pickFiles("many");
   document.getElementById("albums").onclick = () => go({ name: "albums" });
   document.getElementById("report").onclick = () => go({ name: "report" });
+  document.getElementById("sync").onclick = () => go({ name: "sync" });
   const wc = document.getElementById("worth"); if (wc) wc.onclick = () => go({ name: "values" });
   const rm = document.getElementById("rm-ex");
   if (rm) rm.onclick = async () => { for (const c of coins.filter((x) => x.example)) await removeCoin(c); await refresh(); toast("Examples removed"); render(); };
@@ -585,7 +602,7 @@ async function renderHome() {
 function worthCard() {
   const t = totals();
   if (!coins.length) return "";
-  const sub = !t.mine.length ? "Example coins are not counted" : t.valued.length === t.mine.length ? `All ${t.mine.length} ${t.mine.length === 1 ? "coin has" : "coins have"} a value` : `${t.valued.length} of ${t.mine.length} ${t.mine.length === 1 ? "coin has" : "coins have"} a value`;
+  const sub = !t.mine.length ? "Example coins are not counted" : t.valued.length === t.mine.length ? (t.mine.length === 1 ? "Your coin has a value" : `All ${t.mine.length} coins have a value`) : `${t.valued.length} of ${t.mine.length} ${t.mine.length === 1 ? "coin has" : "coins have"} a value`;
   return `<button class="worth" id="worth" type="button"><span class="k">My collection is worth about</span>
     <span class="v">${t.valued.length ? dollars(t.value) : "No values yet"}</span><span class="s">${sub} · See values ›</span></button>`;
 }
@@ -897,7 +914,8 @@ async function renderGrade() {
     <div class="pair">
       <figure><div class="frame" id="g-mine" role="button" tabindex="0" aria-label="Zoom in on your coin">${photos.length ? '<img alt="Your coin">' : '<span class="busy">No photo</span>'}</div>
         <figcaption>This coin: ${esc(title(c))}</figcaption></figure>
-      <figure><div class="frame" id="g-ref" role="button" tabindex="0" aria-label="Zoom in on the comparison coin">${ref ? '<img alt="Comparison coin">' : `<span class="busy pad">None of your coins is marked ${esc(g.split(" ")[0])} yet. Coins you grade show up here to compare.</span>`}</div>
+      <figure>${ref ? '<div class="frame" id="g-ref" role="button" tabindex="0" aria-label="Zoom in on the comparison coin"><img alt="Comparison coin"></div>'
+        : `<a class="frame pcgs-box" id="g-ref-pcgs" href="https://www.pcgs.com/photograde" target="_blank" rel="noopener noreferrer"><strong>See real ${esc(g.split(" ")[0])} coins on PCGS</strong><span>Needs the internet. Your own coins marked ${esc(g.split(" ")[0])} will show here too.</span></a>`}
         <figcaption>${ref ? `Your ${esc(title(ref))}${ref.example ? " (example)" : ""}, marked ${esc(g.split(" ")[0])}` : "Compare with"}</figcaption></figure>
     </div>
     ${twoSided ? `<div class="seg">${["Front", "Back"].map((t, i) => `<button type="button" data-side="${i}" aria-pressed="${i === side}">${t}</button>`).join("")}</div>` : ""}
@@ -914,6 +932,10 @@ async function renderGrade() {
       <button class="btn" id="g-better" type="button" ${gi === LADDER.length - 1 ? "disabled" : ""}>Less worn ›</button>
     </div>
     <button class="btn primary wide" id="g-set" type="button">${c.grade === g ? "✓ This coin is marked " + esc(g) : "It looks like this. Mark it " + esc(g)}</button>
+    <div class="note">
+      <p><strong>Photos from PCGS.</strong> PCGS, the coin grading company, shows real coins at every grade on its website.${s ? ` Choose “${esc(s.name.replace(/ \(.*\)$/, ""))}” there.` : ""} This needs the internet.</p>
+      <a class="btn" id="g-pcgs" href="https://www.pcgs.com/photograde" target="_blank" rel="noopener noreferrer">See the PCGS photos of each grade</a>
+    </div>
     <p class="count">These descriptions follow the usual grading scale, written in plain words. Proof coins are judged by their marks and shine, not wear.</p>`;
   const pick = (x) => (x.photos[side] || x.photos[0]);
   if (photos.length) photoURL(pick(c), "full").then((u) => { const i = app.querySelector("#g-mine img"); if (i) i.src = u; });
@@ -1011,6 +1033,11 @@ function renderHelp() {
       <p>Tap “Insurance report” to print a list of all your coins with photos and prices, or save it as a PDF.</p>
     </section>
     <section class="help">
+      <h2 class="sec">Phone and computer</h2>
+      <p>The phone and the computer each keep their own coins. Sync brings them together over your home Wi-Fi, straight from one device to the other. Nothing is stored on the internet.</p>
+      <button class="btn primary wide" id="go-sync" type="button">${ICON.sync} Sync phone and computer</button>
+    </section>
+    <section class="help">
       <h2 class="sec">Keep a backup</h2>
       <p>Your coins are kept on this device only. Save a backup now and then, and keep the file somewhere safe, such as a USB stick or Google Drive.</p>
       <p>To move your coins to another phone or computer, save a backup here and load it there.</p>
@@ -1028,10 +1055,12 @@ function renderHelp() {
       : "";
   });
   document.getElementById("save-b").onclick = saveBackup;
+  document.getElementById("go-sync").onclick = () => go({ name: "sync" });
   document.getElementById("load-b").onclick = () => document.getElementById("pick-backup").click();
 }
 
 async function render() {
+  if (view.name !== "sync" || (view.step !== "host" && view.step !== "join")) stopSync();
   if (view.name === "coin") return renderCoin();
   if (view.name === "edit") return renderEdit();
   if (view.name === "help") return renderHelp();
@@ -1040,6 +1069,7 @@ async function render() {
   if (view.name === "album") return renderAlbum();
   if (view.name === "grade") return renderGrade();
   if (view.name === "report") return renderReport();
+  if (view.name === "sync") return renderSync();
   return renderHome();
 }
 
@@ -1081,20 +1111,216 @@ function startAdd() { draft = { photos: [] }; go({ name: "edit" }); }
 
 async function removeCoin(c) {
   for (const p of c.photos || []) await del("photos", p);
-  await del("coins", c.id);
+  // Keep a small "deleted" note so sync removes it from the other device too.
+  await put("coins", { id: c.id, deleted: true });
+}
+
+
+/* ---------- sync between the phone and the computer ---------- */
+// The two devices talk directly over the home Wi-Fi (WebRTC). A free public PeerJS service only
+// introduces them using the 6-digit code; coins and photos never pass through it.
+// No STUN/TURN servers: only devices on the same network can reach each other.
+let syncPeer = null, syncTimer = 0;
+function stopSync() { clearTimeout(syncTimer); if (syncPeer) { try { syncPeer.destroy(); } catch (e) {} syncPeer = null; } }
+function loadPeerJS() {
+  if (window.Peer) return Promise.resolve();
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "peerjs.min.js"; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc); });
+}
+const peerOptions = () => ({ debug: 0, config: { iceServers: [] }, ...(window.COIN_SYNC_SERVER || {}) });
+const PEER_PREFIX = "coin-catalog-sync-";
+const stamp = (c) => c.updated || c.created || 0;
+// Takes the other device's copy of a coin if it is newer than this one. Returns true when it was used.
+async function mergeCoin(r) {
+  if (!r || !r.id || r.example) return false;
+  const mine = await get("coins", r.id);
+  if (mine && stamp(mine) >= stamp(r)) return false;
+  const keep = r.deleted ? [] : r.photos || [];
+  for (const p of (mine && mine.photos) || []) if (!keep.includes(p)) await del("photos", p);
+  await put("coins", r, true);
+  return true;
+}
+
+function renderSync() {
+  setBar("Sync", true);
+  const st = view.step || "start";
+  if (st === "start") {
+    app.innerHTML = `
+      <h2 class="sec">How do you want to sync?</h2>
+      <button class="btn primary wide choice" id="s-wifi" type="button"><span>${ICON.wifi}</span><span><strong>Over Wi-Fi</strong><br><small>Both devices on the same home Wi-Fi. Quickest.</small></span></button>
+      <button class="btn wide choice" id="s-cable" type="button"><span>${ICON.cable}</span><span><strong>With a cable</strong><br><small>Copy a sync file with the USB cable. No Wi-Fi or internet needed.</small></span></button>
+      <p class="count">Either way, coins and photos go straight from one device to the other and are never stored on the internet. Changes on either side are copied, and coins deleted on one are deleted on the other.</p>`;
+    document.getElementById("s-wifi").onclick = () => go({ name: "sync", step: "wifi" });
+    document.getElementById("s-cable").onclick = () => go({ name: "sync", step: "cable" });
+    return;
+  }
+  if (st === "wifi") {
+    setBar("Sync over Wi-Fi", true);
+    app.innerHTML = `
+      <section class="help">
+        <ol>
+          <li>Open the app on <strong>both</strong> the phone and the computer.</li>
+          <li>Both must be on the <strong>same home Wi-Fi</strong>.</li>
+          <li>On one of them tap <strong>Show a code</strong>. On the other tap <strong>Type a code</strong> and type it in.</li>
+        </ol>
+      </section>
+      <div class="row">
+        <button class="btn primary" id="s-host" type="button">Show a code</button>
+        <button class="btn" id="s-join" type="button">Type a code</button>
+      </div>`;
+    document.getElementById("s-host").onclick = () => go({ name: "sync", step: "host" });
+    document.getElementById("s-join").onclick = () => go({ name: "sync", step: "join" });
+    return;
+  }
+  if (st === "cable") {
+    setBar("Sync with a cable", true);
+    app.innerHTML = `
+      <section class="help">
+        <ol>
+          <li>On this device tap <strong>Save a sync file</strong>.</li>
+          <li>Copy the file to the other device with the USB cable.</li>
+          <li>On the other device, open Sync, choose <strong>With a cable</strong> and tap <strong>Load a sync file</strong>.</li>
+        </ol>
+        <p>That brings this device's changes over. To bring the other device's changes back, do the same the other way round.</p>
+      </section>
+      <div class="row">
+        <button class="btn primary" id="s-save" type="button">Save a sync file</button>
+        <button class="btn" id="s-load" type="button">Load a sync file</button>
+      </div>
+      <p class="count" id="b-status" aria-live="polite"></p>`;
+    document.getElementById("s-save").onclick = () => saveBackup("sync");
+    document.getElementById("s-load").onclick = () => { loadMode = "sync"; document.getElementById("pick-backup").click(); };
+    return;
+  }
+  if (st === "join") {
+    app.innerHTML = `
+      <div class="field"><label for="s-code">Type the code shown on the other device</label>
+        <input id="s-code" inputmode="numeric" autocomplete="off" maxlength="9" placeholder="e.g. 482 913" style="font-size:2rem;letter-spacing:.15em;text-align:center"></div>
+      <button class="btn primary wide" id="s-go" type="button">Connect</button>
+      <p class="busy" id="s-status" aria-live="polite"></p>`;
+    const inp = document.getElementById("s-code"); inp.focus();
+    const goJoin = () => {
+      const code = inp.value.replace(/\D/g, "");
+      if (code.length !== 6) { setSyncStatus("The code has 6 numbers."); return; }
+      document.getElementById("s-go").disabled = true; inp.disabled = true;
+      startSync("join", code);
+    };
+    document.getElementById("s-go").onclick = goJoin;
+    inp.onkeydown = (e) => { if (e.key === "Enter") goJoin(); };
+    return;
+  }
+  if (st === "host") {
+    app.innerHTML = `
+      <p>On the other device, tap <strong>Sync phone and computer</strong>, choose <strong>Over Wi-Fi</strong>, then <strong>Type a code</strong> and type:</p>
+      <div class="sync-code" id="s-code" aria-live="polite">…</div>
+      <p class="busy" id="s-status" aria-live="polite">Getting a code…</p>
+      <button class="btn wide" id="s-cancel" type="button">Cancel</button>`;
+    document.getElementById("s-cancel").onclick = back;
+    startSync("host");
+  }
+}
+function setSyncStatus(t) { const el = document.getElementById("s-status"); if (el) el.textContent = t; }
+
+async function startSync(mode, code) {
+  stopSync();
+  try { await loadPeerJS(); } catch (e) { setSyncStatus("Sync needs the internet the first time it is used. Connect to Wi-Fi and try again."); return; }
+  const fail = (msg) => { stopSync(); setSyncStatus(msg); const b = document.getElementById("s-go"), i = document.getElementById("s-code"); if (b) b.disabled = false; if (i && i.tagName === "INPUT") i.disabled = false; };
+  if (mode === "host") {
+    code = String(Math.floor(100000 + Math.random() * 900000));
+    const peer = syncPeer = new Peer(PEER_PREFIX + code, peerOptions());
+    peer.on("open", () => { const el = document.getElementById("s-code"); if (el) el.textContent = code.slice(0, 3) + " " + code.slice(3); setSyncStatus("Waiting for the other device…"); });
+    peer.on("connection", (conn) => { setSyncStatus("Connecting…"); runSync(conn); });
+    peer.on("error", (e) => {
+      if (e.type === "unavailable-id") return startSync("host");
+      fail(e.type === "network" || e.type === "server-error" || e.type === "socket-error" ? "Could not get a code. Check that this device is on Wi-Fi with internet, then try again." : "Sync stopped: " + e.type);
+    });
+  } else {
+    const peer = syncPeer = new Peer(peerOptions());
+    peer.on("open", () => {
+      setSyncStatus("Looking for the other device…");
+      const conn = peer.connect(PEER_PREFIX + code, { reliable: true });
+      syncTimer = setTimeout(() => fail("Could not reach the other device. Make sure both are on the same Wi-Fi and the code is still showing, then try again."), 25000);
+      runSync(conn);
+    });
+    peer.on("error", (e) => fail(e.type === "peer-unavailable" ? "No device is showing that code. Check the numbers and try again." : e.type === "network" || e.type === "server-error" || e.type === "socket-error" ? "Could not connect. Check that this device is on Wi-Fi with internet, then try again." : "Sync stopped: " + e.type));
+  }
+}
+
+function runSync(conn) {
+  let theirs = null, myDone = false, theirDone = false, sentAck = false, gotAck = false;
+  let got = 0, gone = 0, sent = 0, photosIn = 0, photosExpected = 0;
+  const finish = async () => {
+    clearTimeout(syncTimer);
+    await refresh(); keepStorage();
+    const el = document.getElementById("s-code"); if (el && el.tagName !== "INPUT") el.textContent = "✓";
+    setSyncStatus(`All done. ${got} new or changed ${got === 1 ? "coin" : "coins"} came in${gone ? `, ${gone} deleted` : ""}, and ${sent} went to the other device.`);
+    const b = document.getElementById("s-cancel"); if (b) b.textContent = "Done";
+    setTimeout(stopSync, 1500);
+    toast("Sync finished");
+  };
+  const maybeAck = () => { if (myDone && theirDone && !sentAck) { sentAck = true; conn.send({ t: "ack" }); if (gotAck) finish(); } };
+  const summary = async () => ((await all("coins")) || []).filter((c) => !c.example).map((c) => ({ id: c.id, updated: stamp(c) }));
+  conn.on("open", async () => {
+    clearTimeout(syncTimer);
+    setSyncStatus("Connected. Comparing coins…");
+    const photos = ((await all("photos")) || []).map((p) => p.id);
+    conn.send({ t: "hello", app: "coin-catalog", v: 1, coins: await summary(), photos });
+  });
+  // Handle messages one at a time, in the order they arrive.
+  let queue = Promise.resolve();
+  conn.on("data", (m) => { queue = queue.then(() => handle(m)).catch(() => setSyncStatus("Something went wrong while syncing. Try again.")); });
+  const handle = async (m) => {
+    if (!m || typeof m !== "object") return;
+    if (m.t === "hello") {
+      if (m.app !== "coin-catalog") return;
+      theirs = m;
+      // Send every coin that is newer here, and the photos the other side is missing.
+      const theirTime = new Map(m.coins.map((c) => [c.id, c.updated]));
+      const theirPhotos = new Set(m.photos);
+      const mine = ((await all("coins")) || []).filter((c) => !c.example && stamp(c) > (theirTime.get(c.id) ?? -1));
+      const needPhotos = [...new Set(mine.flatMap((c) => c.deleted ? [] : c.photos || []))].filter((id) => !theirPhotos.has(id));
+      conn.send({ t: "plan", coins: mine.length, photos: needPhotos.length });
+      for (const id of needPhotos) {
+        const p = await get("photos", id); if (!p) continue;
+        conn.send({ t: "photo", id: p.id, name: p.name || "", type: p.blob.type || "image/jpeg", data: await p.blob.arrayBuffer() });
+      }
+      // Coins go after their photos, so a coin never arrives without its pictures.
+      conn.send({ t: "coins", list: mine });
+      sent = mine.filter((c) => !c.deleted).length;
+      conn.send({ t: "done" }); myDone = true; maybeAck();
+    } else if (m.t === "plan") {
+      photosExpected = m.photos;
+      setSyncStatus(m.coins || m.photos ? `Receiving ${m.coins} ${m.coins === 1 ? "coin" : "coins"}…` : "Sending…");
+    } else if (m.t === "photo") {
+      const blob = new Blob([m.data], { type: m.type });
+      await put("photos", { id: m.id, blob, thumb: await makeThumb(blob).catch(() => blob), name: m.name, added: Date.now() });
+      photosIn++; setSyncStatus(`Receiving photo ${photosIn} of ${photosExpected}…`);
+    } else if (m.t === "coins") {
+      for (const r of m.list) if (await mergeCoin(r)) { if (r.deleted) gone++; else got++; }
+    } else if (m.t === "done") {
+      theirDone = true; maybeAck();
+    } else if (m.t === "ack") {
+      gotAck = true; if (sentAck) finish();
+    }
+  };
+  conn.on("error", () => setSyncStatus("The connection was lost. Try again."));
+  conn.on("close", () => { if (!(sentAck && gotAck)) setSyncStatus("The connection was lost before sync finished. Try again."); });
 }
 
 /* ---------- backup ---------- */
 const blobToDataURL = (b) => new Promise((res) => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(b); });
-async function saveBackup() {
+// kind "sync" also carries the notes about deleted coins and keeps each coin's time stamp.
+async function saveBackup(kind) {
+  const sync = kind === "sync", word = sync ? "Sync file" : "Backup";
   const st = document.getElementById("b-status");
-  st.textContent = "Preparing backup…";
+  st.textContent = `Preparing ${word.toLowerCase()}…`;
   const photos = (await all("photos")) || [];
-  const out = { app: "coin-catalog", version: 1, saved: new Date().toISOString(), coins: coins.filter((c) => !c.example), photos: [] };
-  const needed = new Set(out.coins.flatMap((c) => c.photos || []));
+  const list = sync ? ((await all("coins")) || []).filter((c) => !c.example) : coins.filter((c) => !c.example);
+  const out = { app: "coin-catalog", version: 1, kind: sync ? "sync" : "backup", saved: new Date().toISOString(), coins: list, photos: [] };
+  const needed = new Set(list.flatMap((c) => c.deleted ? [] : c.photos || []));
   for (const p of photos) if (needed.has(p.id)) out.photos.push({ id: p.id, name: p.name, data: await blobToDataURL(p.blob) });
   const blob = new Blob([JSON.stringify(out)], { type: "application/json" });
-  const name = `coin-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  const name = `coin-${sync ? "sync" : "backup"}-${new Date().toISOString().slice(0, 10)}.json`;
+  const n = list.filter((c) => !c.deleted).length;
   try {
     if (window.showSaveFilePicker) {
       const h = await showSaveFilePicker({ suggestedName: name, types: [{ description: "Coin backup", accept: { "application/json": [".json"] } }] });
@@ -1102,14 +1328,17 @@ async function saveBackup() {
     } else {
       const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
     }
-    st.textContent = `Backup saved as ${name} (${out.coins.length} ${out.coins.length === 1 ? "coin" : "coins"}).`;
+    st.textContent = `${word} saved as ${name} (${n} ${n === 1 ? "coin" : "coins"}).` + (sync ? " Copy it to the other device and tap Load a sync file there." : "");
   } catch (e) {
-    st.textContent = e && e.name === "AbortError" ? "Backup cancelled." : "The backup could not be saved here. In the finished app this saves a file you can keep.";
+    st.textContent = e && e.name === "AbortError" ? `${word} cancelled.` : `The ${word.toLowerCase()} could not be saved here. In the finished app this saves a file you can keep.`;
   }
 }
+let loadMode = "backup";
 document.getElementById("pick-backup").onchange = async (e) => {
   const f = e.target.files && e.target.files[0]; if (!f) return;
   const st = document.getElementById("b-status");
+  const mode = loadMode; loadMode = "backup";
+  if (mode === "sync") { await loadSyncFile(f, st); e.target.value = ""; return; }
   try {
     const data = JSON.parse(await f.text());
     if (data.app !== "coin-catalog") throw new Error("not ours");
@@ -1128,6 +1357,27 @@ document.getElementById("pick-backup").onchange = async (e) => {
   } catch (err) { st.textContent = "That file is not a coin backup. Choose a file whose name starts with “coin-backup”."; }
   e.target.value = "";
 };
+// A sync file (or a backup) merged in: only coins newer than the ones here are taken, deletions included.
+async function loadSyncFile(f, st) {
+  try {
+    const data = JSON.parse(await f.text());
+    if (data.app !== "coin-catalog") throw new Error("not ours");
+    st.textContent = "Syncing…";
+    const used = [];
+    for (const c of data.coins || []) if (await mergeCoin(c)) used.push(c);
+    const want = new Set(used.flatMap((c) => c.deleted ? [] : c.photos || []));
+    for (const p of data.photos || []) {
+      if (!want.has(p.id) || await get("photos", p.id)) continue;
+      const blob = await (await fetch(p.data)).blob();
+      await put("photos", { id: p.id, blob, thumb: await makeThumb(blob), name: p.name || "", added: Date.now() });
+    }
+    await refresh(); keepStorage();
+    const n = used.filter((c) => !c.deleted).length, d = used.length - n;
+    st.textContent = (n || d ? `Synced. ${n} new or changed ${n === 1 ? "coin" : "coins"} came in${d ? `, ${d} deleted` : ""}.` : "Synced. Nothing new: this device already had everything in that file.") +
+      " To send this device's changes back, tap Save a sync file and load it on the other device.";
+    toast("Sync file loaded");
+  } catch (err) { st.textContent = "That file is not a coin sync file. Choose a file whose name starts with “coin-sync”."; }
+}
 
 /* ---------- zoom viewer ---------- */
 let viewerEl = null;
