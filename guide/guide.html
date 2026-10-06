@@ -247,7 +247,7 @@ table.help td:first-child { font-weight: 700; width: 40%; }
       <p>Not sure if a coin is <em>Fine</em> or <em>Very Fine</em>? The app walks you through it.</p>
       <ol class="steps">
         <li><span>Open a coin and tap <span class="btnlike">Help me judge the condition</span>.</span></li>
-        <li><span>Your coin is on the left. On the right is one of <strong>your own coins</strong> already marked with that grade. Tap a picture to zoom in. Below is what to look for on that kind of coin.</span></li>
+        <li><span>Your coin is on the left. On the right is one of <strong>your own coins</strong> already marked with that grade. If you have none yet, the box offers <strong>real coins on PCGS</strong> instead. Tap a picture to zoom in. Below is what to look for on that kind of coin.</span></li>
         <li><span>Tap <span class="btnlike">‹ More worn</span> or <span class="btnlike">Less worn ›</span> until the words match your coin.</span></li>
         <li><span>Tap the gold <span class="btnlike gold">Mark it …</span> button to save that grade.</span></li>
       </ol>
@@ -292,17 +292,47 @@ table.help td:first-child { font-weight: 700; width: 40%; }
   </div>
 </section>
 <section class="page">
-  <h2>Coins on the computer and the phone</h2>
-  <p>The phone and the computer each keep <strong>their own</strong> list of coins. They do not update each other by themselves. A backup file carries your coins from one to the other.</p>
-  <h3>To see coins from the computer on the phone</h3>
+  <h2>Syncing the phone and the computer</h2>
+  <div class="withshot">
+    <div>
+      <p>The phone and the computer each keep <strong>their own</strong> coins. <strong>Sync</strong> brings them together, so a coin added, changed or deleted on one is the same on the other.</p>
+      <ol class="steps">
+        <li><span>On the first screen, tap <span class="btnlike">Sync phone and computer</span>.</span></li>
+        <li><span>The app asks how: <strong>Over Wi-Fi</strong> (quickest) or <strong>With a cable</strong> (no internet needed).</span></li>
+      </ol>
+      <div class="box good"><p>Either way, your coins and pictures go <strong>straight from one device to the other</strong>. They are never stored on the internet.</p></div>
+    </div>
+    <img class="shot" src="sync.png" alt="The Sync screen asking Over Wi-Fi or With a cable">
+  </div>
+</section>
+<section class="page">
+  <h2>Syncing over Wi-Fi</h2>
+  <div class="withshot">
+    <div>
+      <p>Both devices must be on the <strong>same home Wi-Fi</strong>, with the app open.</p>
+      <ol class="steps">
+        <li><span>On the <strong>computer</strong>, tap <strong>Sync phone and computer</strong>, then <strong>Over Wi-Fi</strong>, then <span class="btnlike">Show a code</span>. A 6-number code appears.</span></li>
+        <li><span>On the <strong>phone</strong>, tap <strong>Sync phone and computer</strong>, then <strong>Over Wi-Fi</strong>, then <span class="btnlike">Type a code</span>.</span></li>
+        <li><span>Type the code and tap <strong>Connect</strong>.</span></li>
+        <li><span>Wait for <strong>All done</strong> on both screens. It also says how many coins came in and went out.</span></li>
+      </ol>
+    </div>
+    <img class="shot" src="sync-code.png" alt="The computer showing a 6-number sync code">
+  </div>
+  <div class="box tip"><p>It doesn't matter which device shows the code. If it says it can't reach the other device, check that both are on the same Wi-Fi and try again.</p></div>
+</section>
+<section class="page">
+  <h2>Syncing with a cable</h2>
+  <p>No Wi-Fi? A <strong>sync file</strong> does the same job using the phone's charging cable.</p>
+  <h3>From the computer to the phone</h3>
   <ol class="steps">
-    <li><span>On the <strong>computer</strong>, open the app, click <strong>Help &amp; backup</strong>, then <strong>Save a backup file</strong>.</span></li>
-    <li><span>Get the file onto the phone. Plug the phone into the computer with its charging cable and copy the file over, or put it in <strong>Google Drive</strong>, or email it to yourself.</span></li>
-    <li><span>On the <strong>phone</strong>, open the app, tap <strong>Help &amp; backup</strong>, then <strong>Load a backup file</strong> and pick the file.</span></li>
+    <li><span>On the <strong>computer</strong>: <strong>Sync phone and computer</strong>, then <strong>With a cable</strong>, then <span class="btnlike">Save a sync file</span>. It is named like <strong>coin-sync-2026-10-06.json</strong>.</span></li>
+    <li><span>Plug the phone into the computer with its cable and copy the file onto the phone.</span></li>
+    <li><span>On the <strong>phone</strong>: <strong>Sync phone and computer</strong>, then <strong>With a cable</strong>, then <span class="btnlike">Load a sync file</span>, and pick the file.</span></li>
   </ol>
-  <div class="box good"><p>Loading a backup only <strong>adds and updates</strong> coins. It never removes coins already on the phone, so you can do this every time you add new coins.</p></div>
-  <p>It works the same way the other way round, from the phone to the computer, and to bring everything back on a new phone.</p>
-  <div class="box tip"><p>The backup file holds all your pictures, so it can be large. Copying with the cable is the quickest.</p></div>
+  <h3>From the phone back to the computer</h3>
+  <p>Do the same the other way round: save a sync file on the phone and load it on the computer.</p>
+  <div class="box good"><p>Loading a sync file only takes changes that are <strong>newer</strong>. Loading the same file twice does no harm.</p></div>
 </section>
 
 <!-- 6. Safety -->
@@ -329,10 +359,10 @@ table.help td:first-child { font-weight: 700; width: 40%; }
   </div>
   <h3>Why it is safe</h3>
   <ul class="checks">
-    <li><span><strong>Your pictures stay with you.</strong> When you add a picture, the app copies it into its own storage on that phone or computer. It has no way to upload it, and nobody else can see it.</span></li>
+    <li><span><strong>Your pictures stay with you.</strong> When you add a picture, the app copies it into its own storage on that phone or computer. It never uploads it to the internet, and nobody else can see it. Sync only sends it straight to your own other device.</span></li>
     <li><span><strong>The internet only delivers the app.</strong> The website sends the app to your device, the same way a shop hands you an empty photo album. What you put in the album stays at home.</span></li>
     <li><span><strong>No account, no password, no sign-up.</strong> It never asks for your name, email, address, bank details or money.</span></li>
-    <li><span><strong>No ads and no tracking.</strong> The app contacts no one except its own website, to check for updates. The one exception is the <strong>PCGS photos</strong> button on the condition screen. It opens the PCGS website only when you tap it, and nothing about your coins is sent to them.</span></li>
+    <li><span><strong>No ads and no tracking.</strong> The app contacts no one except its own website, to check for updates. Two exceptions: the <strong>PCGS photos</strong> button opens the PCGS website only when you tap it, and <strong>Sync over Wi-Fi</strong> uses a free service called PeerJS to introduce your two devices. Neither one ever sees your coins or pictures.</span></li>
     <li><span><strong>Your SD card is not changed.</strong> The app makes a copy, so your original pictures stay safe on the card.</span></li>
   </ul>
 </section>
@@ -343,11 +373,11 @@ table.help td:first-child { font-weight: 700; width: 40%; }
     <li><span><strong>Losing the phone, or clearing it.</strong> If the phone is lost or broken, or Chrome's saved data is wiped, the coins on it are gone. <em>What to do:</em> save a backup once a month and keep the SD card pictures.</span></li>
     <li><span><strong>The backup file holds everything.</strong> Anyone who has the file can see your coins, pictures and what you paid. <em>What to do:</em> keep it on your own USB stick, and do not email it to anyone you do not know.</span></li>
     <li><span><strong>The printed insurance list.</strong> It shows what you own and what it is worth. <em>What to do:</em> keep printed copies somewhere private, and only give them to your agent or family.</span></li>
+    <li><span><strong>The sync code.</strong> <em>What to do:</em> only type it on your own phone or computer, and never read it out to anyone.</span></li>
     <li><span><strong>Someone using your phone.</strong> Anyone who picks up your unlocked phone can open the app. <em>What to do:</em> keep a screen lock (PIN or fingerprint) on the phone.</span></li>
     <li><span><strong>Fake calls or messages.</strong> Nobody from this app will ever call, text or email you. <em>What to do:</em> if someone says they are from "the coin app" and asks for money, passwords or to control your computer, hang up. It is a scam.</span></li>
     <li><span><strong>Copycat websites.</strong> <em>What to do:</em> only use the address on the front of this guide, <strong>coinmax-coder.github.io/coin-catalog</strong>.</span></li>
   </ul>
-  <div class="box good" style="margin-top:18pt"><p>The app is free and made by your family. It is not a shop and it does not sell anything.</p></div>
 </section>
 
 <!-- 7. Quick help -->
@@ -356,7 +386,7 @@ table.help td:first-child { font-weight: 700; width: 40%; }
   <table class="help">
     <tr><td>I can't find the app</td><td>Look for the gold coin called <strong>My Coins</strong> on the phone's home screen, or in the computer's Start menu.</td></tr>
     <tr><td>I only see recent photos, not the SD card</td><td>Tap <strong>☰</strong> or <strong>Browse</strong> in the picture chooser and pick the SD card.</td></tr>
-    <tr><td>My coins are not on the computer</td><td>The phone and computer keep separate lists. Save a backup on one and load it on the other (page 13).</td></tr>
+    <tr><td>My coins are not on the computer</td><td>Tap <strong>Sync phone and computer</strong> on both and follow the steps (page 13).</td></tr>
     <tr><td>A coin is not in its album</td><td>Open the coin, tap <strong>Change details</strong> and pick its <strong>Type of coin</strong> and date.</td></tr>
     <tr><td>The writing is too small</td><td>On a computer, hold <strong>Ctrl</strong> and press <strong>+</strong>. On a phone, make the text bigger in the phone's Settings under Display.</td></tr>
     <tr><td>Is my collection protected?</td><td>Open <strong>Help &amp; backup</strong>. A line with a <strong>✓</strong> means the device will keep your coins permanently.</td></tr>
