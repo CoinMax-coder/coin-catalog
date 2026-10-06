@@ -42,6 +42,7 @@ button, input, select, textarea { font: inherit; color: inherit }
 .bar { background: var(--album); color: var(--album-ink); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5 }
 .bar-in { max-width: 960px; margin: 0 auto; padding: 14px 16px; display: flex; align-items: center; gap: 12px; min-height: 76px }
 .bar h1 { font-family: var(--font-mark); font-weight: 600; font-size: 2rem; letter-spacing: .02em; margin: 0; flex: 1; min-width: 0; line-height: 1.1 }
+@media (max-width: 380px) { .bar h1 { font-size: 1.6rem } }
 .bar .back { background: transparent; color: var(--album-ink); border: 2px solid currentColor; border-radius: var(--radius); padding: 8px 16px; min-height: 56px; cursor: pointer; font-weight: 700 }
 .bar .icon-btn { background: transparent; color: var(--album-ink); border: 2px solid transparent; border-radius: var(--radius); min-height: 56px; padding: 8px 12px; cursor: pointer; font-weight: 700 }
 
@@ -538,7 +539,7 @@ function setBar(text, withBack, right = "") {
 }
 
 async function renderHome() {
-  setBar("My Coins", false, '<button class="icon-btn" id="b-help" type="button">Help &amp; backup</button>');
+  setBar("Fred's Coins", false, '<button class="icon-btn" id="b-help" type="button">Help &amp; backup</button>');
   const q = query.trim().toLowerCase();
   const list = q ? coins.filter((c) => [c.country, c.year, c.denomination, c.mint, c.grade, c.notes].join(" ").toLowerCase().includes(q)) : coins;
   const examples = coins.filter((c) => c.example).length;

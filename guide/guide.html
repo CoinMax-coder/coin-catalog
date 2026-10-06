@@ -50,6 +50,11 @@ table.help { width: 100%; border-collapse: collapse; font-size: 16pt; }
 table.help td { border-top: 1.5pt solid var(--line); padding: 9pt 6pt; vertical-align: top; }
 table.help td:first-child { font-weight: 700; width: 40%; }
 .small { font-size: 13pt; color: var(--muted); }
+ol.steps.big > li { grid-template-columns: 34pt 1fr 2.5in; gap: 14pt; align-items: center; break-inside: avoid; }
+ol.steps.big > li > svg { width: 2.5in; height: auto; display: block; }
+.phoneshot { width: 1.5in; justify-self: center; border: 3pt solid #141a2b; border-radius: 14pt; overflow: hidden; height: 2.1in; }
+.phoneshot img { width: 100%; display: block; }
+img.pcshot { width: 2.5in; border: 2pt solid #9aa1b1; border-radius: 6pt; display: block; }
 </style>
 </head>
 <body>
@@ -73,56 +78,146 @@ table.help td:first-child { font-weight: 700; width: 40%; }
     <div><svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><path d="M24 4 L40 10 V24 C40 34 33 41 24 44 C15 41 8 34 8 24 V10 Z" fill="none" stroke="#1f6b3a" stroke-width="3"/><path d="M16 24 l6 6 l11 -12" fill="none" stroke="#1f6b3a" stroke-width="3.5" stroke-linecap="round"/></svg>
       <p style="margin:0">There is <strong>no account and no password</strong>. The app never asks for money or personal details.</p></div>
     <div><svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><rect x="10" y="6" width="28" height="36" rx="3" fill="none" stroke="#9a6b12" stroke-width="3"/><path d="M24 14 v14 M17 22 l7 7 l7 -7" fill="none" stroke="#9a6b12" stroke-width="3" stroke-linecap="round"/><path d="M16 35 h16" stroke="#9a6b12" stroke-width="3" stroke-linecap="round"/></svg>
-      <p style="margin:0">Save a <strong>backup</strong> once a month so you never lose your collection (see page 12).</p></div>
+      <p style="margin:0">Save a <strong>backup</strong> once a month so you never lose your collection (see page 14).</p></div>
   </div>
 </section>
 
-<!-- 2. Installing -->
+<!-- 2. Setting up: Android -->
 <section class="page">
-  <h2>Putting the app on your phone</h2>
-  <p>You only do this once. Afterwards a gold coin button called <strong>My Coins</strong> opens the app, even without internet.</p>
-  <h3>On an Android phone</h3>
-  <ol class="steps">
-    <li><span>Open <strong>Chrome</strong> and type the address <strong>coinmax-coder.github.io/coin-catalog</strong> in the bar at the top.</span></li>
-    <li><span>Tap the <span class="btnlike">⋮</span> button (three dots) in the top right corner.</span></li>
-    <li><span>Tap <strong>Add to Home screen</strong> or <strong>Install app</strong>, then tap <strong>Install</strong>.</span></li>
+  <h2>Setting up an Android phone</h2>
+  <p>You only do this once on each phone. Afterwards a gold coin called <strong>My Coins</strong> on the home screen opens the app, even without internet.</p>
+  <div class="box tip"><p><strong>Before you start:</strong> the phone should be on Wi-Fi. You will use the <strong>Chrome</strong> app, the round red, yellow and green circle with a blue middle.</p></div>
+  <ol class="steps big">
+    <li><span>Find <strong>Chrome</strong> on the phone's home screen and tap it.</span>
+      <svg viewBox="0 0 300 190" aria-label="Phone home screen with Chrome circled">
+        <rect x="95" y="4" width="110" height="182" rx="16" fill="#fff" stroke="#141a2b" stroke-width="3"/>
+        <g fill="#c9cedb"><rect x="110" y="24" width="22" height="22" rx="6"/><rect x="139" y="24" width="22" height="22" rx="6"/><rect x="168" y="24" width="22" height="22" rx="6"/><rect x="110" y="60" width="22" height="22" rx="6"/><rect x="168" y="60" width="22" height="22" rx="6"/><rect x="110" y="96" width="22" height="22" rx="6"/><rect x="139" y="96" width="22" height="22" rx="6"/><rect x="168" y="96" width="22" height="22" rx="6"/></g>
+        <g transform="translate(150 71)"><circle r="11" fill="#db4437"/><path d="M0 0 L11 0 A11 11 0 0 1 -5.5 9.5 Z" fill="#0f9d58"/><path d="M0 0 L-5.5 9.5 A11 11 0 0 1 -5.5 -9.5 Z" fill="#f4b400"/><circle r="5" fill="#fff"/><circle r="3.6" fill="#4285f4"/></g>
+        <circle cx="150" cy="71" r="20" fill="none" stroke="#c0392b" stroke-width="4"/>
+        <text x="236" y="76" font-family="Arial" font-size="16" font-weight="bold" fill="#1d2c55">Chrome</text>
+      </svg></li>
+    <li><span>Tap the long bar at the top. Type <strong>coinmax-coder.github.io/coin-catalog</strong> and tap the <span class="btnlike">→</span> or <strong>Go</strong> key.</span>
+      <svg viewBox="0 0 300 190" aria-label="Address typed in the bar, then the Go key">
+        <rect x="6" y="10" width="288" height="40" rx="20" fill="#eef0f4" stroke="#c0392b" stroke-width="4"/>
+        <text x="22" y="36" font-family="Arial" font-size="14" fill="#141a2b">coinmax-coder.github.io/coin-catalog</text>
+        <rect x="6" y="70" width="288" height="114" rx="8" fill="#e4e7ee"/>
+        <g fill="#fff" stroke="#9aa1b1"><rect x="14" y="80" width="24" height="28" rx="4"/><rect x="42" y="80" width="24" height="28" rx="4"/><rect x="70" y="80" width="24" height="28" rx="4"/><rect x="98" y="80" width="24" height="28" rx="4"/><rect x="126" y="80" width="24" height="28" rx="4"/><rect x="154" y="80" width="24" height="28" rx="4"/><rect x="182" y="80" width="24" height="28" rx="4"/><rect x="210" y="80" width="24" height="28" rx="4"/><rect x="238" y="80" width="24" height="28" rx="4"/><rect x="266" y="80" width="22" height="28" rx="4"/><rect x="28" y="114" width="24" height="28" rx="4"/><rect x="56" y="114" width="24" height="28" rx="4"/><rect x="84" y="114" width="24" height="28" rx="4"/><rect x="112" y="114" width="24" height="28" rx="4"/><rect x="140" y="114" width="24" height="28" rx="4"/><rect x="168" y="114" width="24" height="28" rx="4"/><rect x="196" y="114" width="24" height="28" rx="4"/><rect x="224" y="114" width="24" height="28" rx="4"/><rect x="60" y="148" width="150" height="28" rx="4"/></g>
+        <rect x="222" y="148" width="66" height="28" rx="6" fill="#1d2c55"/><text x="255" y="168" text-anchor="middle" font-family="Arial" font-size="18" font-weight="bold" fill="#fff">→</text>
+        <circle cx="255" cy="162" r="26" fill="none" stroke="#c0392b" stroke-width="4"/>
+      </svg></li>
+    <li><span>The app opens with <strong>Fred's Coins</strong> across the top. You are halfway there.</span>
+      <div class="phoneshot"><img src="home.png" alt="Fred's Coins home screen"></div></li>
   </ol>
-  <div class="fig">
-    <svg viewBox="0 0 640 230" aria-label="Chrome menu with Add to Home screen">
-      <rect x="10" y="10" width="300" height="210" rx="18" fill="#fff" stroke="#141a2b" stroke-width="3"/>
-      <rect x="24" y="26" width="220" height="34" rx="17" fill="#eef0f4" stroke="#9aa1b1"/>
-      <text x="38" y="49" font-size="15" font-family="Arial" fill="#3f475a">coinmax-coder.github.io/…</text>
-      <circle cx="276" cy="36" r="3.5" fill="#141a2b"/><circle cx="276" cy="44" r="3.5" fill="#141a2b"/><circle cx="276" cy="52" r="3.5" fill="#141a2b"/>
-      <circle cx="276" cy="44" r="20" fill="none" stroke="#c0392b" stroke-width="4"/>
-      <text x="160" y="140" text-anchor="middle" font-size="22" font-family="Arial" font-weight="bold" fill="#1d2c55">Step 2</text>
-      <path d="M330 115 h40" stroke="#141a2b" stroke-width="4" marker-end="url(#ar)"/>
-      <defs><marker id="ar" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#141a2b"/></marker></defs>
-      <rect x="390" y="10" width="240" height="210" rx="12" fill="#fff" stroke="#141a2b" stroke-width="3"/>
-      <text x="410" y="50" font-size="18" font-family="Arial" fill="#3f475a">New tab</text>
-      <text x="410" y="88" font-size="18" font-family="Arial" fill="#3f475a">Bookmarks</text>
-      <rect x="398" y="104" width="224" height="40" rx="6" fill="#f6ecd2" stroke="#c0392b" stroke-width="4"/>
-      <text x="410" y="131" font-size="18" font-family="Arial" font-weight="bold" fill="#141a2b">Add to Home screen</text>
-      <text x="410" y="174" font-size="18" font-family="Arial" fill="#3f475a">Settings</text>
-      <text x="510" y="208" text-anchor="middle" font-size="16" font-family="Arial" font-weight="bold" fill="#1d2c55">Step 3</text>
-    </svg>
-  </div>
 </section>
 <section class="page">
-  <h2>Putting the app on your computer</h2>
-  <h3>On a Windows computer</h3>
-  <ol class="steps">
-    <li><span>Open <strong>Chrome</strong> or <strong>Edge</strong> and type the same address at the top.</span></li>
-    <li><span>Click the small <strong>install</strong> picture at the right end of the address bar (a screen with an arrow), or click <span class="btnlike">⋮</span> and choose <strong>Install</strong>.</span></li>
-    <li><span>The app now opens from the <strong>Start menu</strong> like any other program.</span></li>
+  <h2>Android phone, continued</h2>
+  <ol class="steps big" start="4" style="counter-reset: s 3">
+    <li><span>Tap the <span class="btnlike">⋮</span> button (three dots) in the top right corner of Chrome.</span>
+      <svg viewBox="0 0 300 120" aria-label="Three dots in the top right corner">
+        <rect x="6" y="6" width="288" height="108" rx="14" fill="#fff" stroke="#141a2b" stroke-width="3"/>
+        <rect x="20" y="22" width="210" height="34" rx="17" fill="#eef0f4" stroke="#9aa1b1"/>
+        <text x="34" y="45" font-family="Arial" font-size="14" fill="#3f475a">coinmax-coder.github.io/…</text>
+        <circle cx="262" cy="31" r="3.5" fill="#141a2b"/><circle cx="262" cy="39" r="3.5" fill="#141a2b"/><circle cx="262" cy="47" r="3.5" fill="#141a2b"/>
+        <circle cx="262" cy="39" r="21" fill="none" stroke="#c0392b" stroke-width="4"/>
+        <rect x="20" y="70" width="260" height="34" fill="#1d2c55"/><text x="32" y="93" font-family="Georgia" font-size="16" fill="#fff">FRED'S COINS</text>
+      </svg></li>
+    <li><span>Tap <strong>Add to Home screen</strong>. On some phones it says <strong>Install app</strong> instead.</span>
+      <svg viewBox="0 0 300 190" aria-label="Chrome menu with Add to Home screen">
+        <rect x="40" y="6" width="220" height="178" rx="12" fill="#fff" stroke="#141a2b" stroke-width="3"/>
+        <g font-family="Arial" font-size="17" fill="#3f475a"><text x="60" y="40">New tab</text><text x="60" y="74">History</text><text x="60" y="166">Settings</text></g>
+        <rect x="48" y="90" width="204" height="42" rx="6" fill="#f6ecd2" stroke="#c0392b" stroke-width="4"/>
+        <text x="60" y="117" font-family="Arial" font-size="17" font-weight="bold" fill="#141a2b">Add to Home screen</text>
+      </svg></li>
+    <li><span>If it asks, choose <strong>Install</strong> (not "Create shortcut"). Then tap <span class="btnlike">Install</span> once more.</span>
+      <svg viewBox="0 0 300 170" aria-label="Install box with the Install button circled">
+        <rect x="20" y="6" width="260" height="158" rx="16" fill="#fff" stroke="#141a2b" stroke-width="3"/>
+        <text x="40" y="40" font-family="Arial" font-size="19" font-weight="bold" fill="#141a2b">Install app</text>
+        <image href="../src/icon-192.png" x="40" y="56" width="40" height="40"/>
+        <text x="92" y="82" font-family="Arial" font-size="16" fill="#3f475a">My Coins</text>
+        <text x="130" y="142" font-family="Arial" font-size="17" fill="#3f475a">Cancel</text>
+        <rect x="196" y="118" width="70" height="36" rx="18" fill="#1d2c55"/><text x="231" y="142" text-anchor="middle" font-family="Arial" font-size="17" font-weight="bold" fill="#fff">Install</text>
+        <rect x="190" y="112" width="82" height="48" rx="24" fill="none" stroke="#c0392b" stroke-width="4"/>
+      </svg></li>
+    <li><span>Go back to the home screen. The gold coin called <strong>My Coins</strong> is there now. From now on, tap it to open your coins.</span>
+      <svg viewBox="0 0 300 190" aria-label="The My Coins app on the home screen">
+        <rect x="95" y="4" width="110" height="182" rx="16" fill="#fff" stroke="#141a2b" stroke-width="3"/>
+        <g fill="#c9cedb"><rect x="110" y="24" width="22" height="22" rx="6"/><rect x="139" y="24" width="22" height="22" rx="6"/><rect x="168" y="24" width="22" height="22" rx="6"/><rect x="110" y="60" width="22" height="22" rx="6"/><rect x="139" y="60" width="22" height="22" rx="6"/><rect x="168" y="60" width="22" height="22" rx="6"/></g>
+        <image href="../src/icon-192.png" x="134" y="98" width="32" height="32"/>
+        <text x="150" y="168" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#141a2b">My Coins</text>
+        <circle cx="150" cy="120" r="30" fill="none" stroke="#c0392b" stroke-width="4"/>
+      </svg></li>
   </ol>
-  <div class="fig">
-    <svg viewBox="0 0 640 70" aria-label="Install button at the end of the address bar">
-      <rect x="4" y="8" width="632" height="54" rx="27" fill="#eef0f4" stroke="#9aa1b1" stroke-width="2"/>
-      <text x="34" y="42" font-size="20" font-family="Arial" fill="#3f475a">coinmax-coder.github.io/coin-catalog</text>
-      <rect x="560" y="20" width="30" height="22" rx="3" fill="none" stroke="#141a2b" stroke-width="2.5"/><path d="M575 24 v12 M569 31 l6 6 l6 -6" fill="none" stroke="#141a2b" stroke-width="2.5"/>
-      <circle cx="575" cy="34" r="24" fill="none" stroke="#c0392b" stroke-width="4"/>
-    </svg>
-  </div>
+  <div class="box tip"><p><strong>No "Add to Home screen"?</strong> Make sure you opened <strong>Chrome</strong>, not the phone's own "Internet" app, and start again at step 1.</p></div>
+</section>
+
+<!-- 3. Setting up: Windows -->
+<section class="page">
+  <h2>Setting up a Windows computer</h2>
+  <p>This is just as easy, and you only do it once. Afterwards the app opens from the <strong>Start</strong> menu like any other program.</p>
+  <div class="box tip"><p><strong>Before you start:</strong> use <strong>Chrome</strong> or <strong>Microsoft Edge</strong> (the blue and green wave). Both work the same way.</p></div>
+  <ol class="steps big">
+    <li><span>Click <strong>Chrome</strong> or <strong>Edge</strong> in the bar along the bottom of the screen, or double-click it on the desktop.</span>
+      <svg viewBox="0 0 300 150" aria-label="Taskbar with Chrome and Edge">
+        <rect x="6" y="6" width="288" height="138" rx="6" fill="#dfe8f5" stroke="#141a2b" stroke-width="3"/>
+        <rect x="6" y="104" width="288" height="40" fill="#eef0f4" stroke="#141a2b" stroke-width="3"/>
+        <g transform="translate(96 124)"><rect x="-8" y="-8" width="7" height="7" fill="#1d6fd6"/><rect x="1" y="-8" width="7" height="7" fill="#1d6fd6"/><rect x="-8" y="1" width="7" height="7" fill="#1d6fd6"/><rect x="1" y="1" width="7" height="7" fill="#1d6fd6"/></g>
+        <g transform="translate(140 124)"><circle r="11" fill="#db4437"/><path d="M0 0 L11 0 A11 11 0 0 1 -5.5 9.5 Z" fill="#0f9d58"/><path d="M0 0 L-5.5 9.5 A11 11 0 0 1 -5.5 -9.5 Z" fill="#f4b400"/><circle r="5" fill="#fff"/><circle r="3.6" fill="#4285f4"/></g>
+        <g transform="translate(184 124)"><circle r="11" fill="#1b8ad8"/><path d="M-9 4 C-6 -10 10 -8 10 2 C4 -2 -2 2 -1 9 C-5 8 -8 7 -9 4 Z" fill="#3fd17a"/></g>
+        <rect x="120" y="102" width="86" height="44" rx="10" fill="none" stroke="#c0392b" stroke-width="4"/>
+        <g font-family="Arial" font-size="16" font-weight="bold" fill="#1d2c55" text-anchor="middle"><text x="140" y="88">Chrome</text><text x="200" y="88">Edge</text></g>
+      </svg></li>
+    <li><span>Click the long bar at the top, type <strong>coinmax-coder.github.io/coin-catalog</strong> and press the <span class="btnlike">Enter</span> key.</span>
+      <svg viewBox="0 0 300 120" aria-label="Address typed in the bar, then the Enter key">
+        <rect x="6" y="10" width="288" height="40" rx="20" fill="#eef0f4" stroke="#c0392b" stroke-width="4"/>
+        <text x="22" y="36" font-family="Arial" font-size="14" fill="#141a2b">coinmax-coder.github.io/coin-catalog</text>
+        <path d="M170 66 h104 v48 h-60 v-22 h-44 z" fill="#fff" stroke="#141a2b" stroke-width="3"/>
+        <text x="222" y="86" text-anchor="middle" font-family="Arial" font-size="17" font-weight="bold" fill="#141a2b">Enter</text>
+      </svg></li>
+    <li><span>The app opens with <strong>Fred's Coins</strong> across the top.</span>
+      <img class="pcshot" src="pc-home.png" alt="Fred's Coins on a computer"></li>
+  </ol>
+</section>
+<section class="page">
+  <h2>Windows computer, continued</h2>
+  <ol class="steps big" start="4" style="counter-reset: s 3">
+    <li><span>Click the small <strong>install</strong> picture at the right end of the address bar. In Chrome it looks like a screen with an arrow. In Edge it is a few squares with a plus.</span>
+      <svg viewBox="0 0 300 90" aria-label="Install picture at the end of the address bar">
+        <rect x="6" y="20" width="288" height="48" rx="24" fill="#eef0f4" stroke="#9aa1b1" stroke-width="2"/>
+        <text x="24" y="50" font-family="Arial" font-size="14" fill="#3f475a">coinmax-coder.github.io/coin…</text>
+        <rect x="240" y="33" width="28" height="20" rx="3" fill="none" stroke="#141a2b" stroke-width="2.5"/><path d="M254 36 v11 M248.5 42 l5.5 5.5 l5.5 -5.5" fill="none" stroke="#141a2b" stroke-width="2.5"/>
+        <circle cx="254" cy="44" r="24" fill="none" stroke="#c0392b" stroke-width="4"/>
+      </svg></li>
+    <li><span>A box asks <strong>Install app?</strong> Click <span class="btnlike">Install</span>.</span>
+      <svg viewBox="0 0 300 150" aria-label="Install box with the Install button circled">
+        <rect x="20" y="6" width="260" height="138" rx="10" fill="#fff" stroke="#141a2b" stroke-width="3"/>
+        <text x="38" y="38" font-family="Arial" font-size="18" font-weight="bold" fill="#141a2b">Install app?</text>
+        <image href="../src/icon-192.png" x="38" y="52" width="34" height="34"/>
+        <text x="82" y="68" font-family="Arial" font-size="14" fill="#141a2b">Dad's Coin Catalog</text>
+        <text x="82" y="84" font-family="Arial" font-size="12" fill="#3f475a">coinmax-coder.github.io</text>
+        <rect x="112" y="102" width="74" height="30" rx="15" fill="#fff" stroke="#9aa1b1"/><text x="149" y="122" text-anchor="middle" font-family="Arial" font-size="14" fill="#3f475a">Cancel</text>
+        <rect x="196" y="102" width="70" height="30" rx="15" fill="#1d2c55"/><text x="231" y="122" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#fff">Install</text>
+        <rect x="190" y="96" width="82" height="42" rx="21" fill="none" stroke="#c0392b" stroke-width="4"/>
+      </svg></li>
+    <li><span>The app opens in its own window. To open it another day, click <strong>Start</strong> and type <strong>coins</strong>, then click <strong>My Coins</strong>.</span>
+      <svg viewBox="0 0 300 160" aria-label="Start menu search showing My Coins">
+        <rect x="40" y="6" width="220" height="148" rx="10" fill="#fff" stroke="#141a2b" stroke-width="3"/>
+        <rect x="56" y="20" width="188" height="32" rx="16" fill="#eef0f4" stroke="#9aa1b1"/><text x="72" y="42" font-family="Arial" font-size="15" fill="#141a2b">coins</text>
+        <rect x="56" y="66" width="188" height="56" rx="8" fill="#f6ecd2" stroke="#c0392b" stroke-width="4"/>
+        <image href="../src/icon-192.png" x="66" y="76" width="36" height="36"/>
+        <text x="112" y="99" font-family="Arial" font-size="16" font-weight="bold" fill="#141a2b">My Coins</text>
+        <text x="112" y="140" font-family="Arial" font-size="12" fill="#3f475a">App</text>
+      </svg></li>
+    <li><span><strong>Handy extra:</strong> while the app is open, right-click the gold coin in the bar at the bottom and choose <strong>Pin to taskbar</strong>. It will always be one click away.</span>
+      <svg viewBox="0 0 300 150" aria-label="Right-click the coin and choose Pin to taskbar">
+        <rect x="70" y="10" width="170" height="86" rx="8" fill="#fff" stroke="#141a2b" stroke-width="3"/>
+        <text x="86" y="40" font-family="Arial" font-size="14" fill="#3f475a">My Coins</text>
+        <rect x="78" y="52" width="154" height="34" rx="6" fill="#f6ecd2" stroke="#c0392b" stroke-width="4"/>
+        <text x="90" y="75" font-family="Arial" font-size="15" font-weight="bold" fill="#141a2b">Pin to taskbar</text>
+        <rect x="6" y="108" width="288" height="38" fill="#eef0f4" stroke="#141a2b" stroke-width="3"/>
+        <image href="../src/icon-192.png" x="136" y="112" width="30" height="30"/>
+      </svg></li>
+  </ol>
+  <div class="box tip"><p><strong>No install picture?</strong> Click <span class="btnlike">⋮</span> (or <span class="btnlike">···</span> in Edge) at the top right and look for <strong>Install</strong>. It may be under <strong>Cast, save and share</strong> or <strong>Apps</strong>.</p></div>
 </section>
 
 <!-- 3. Adding coins -->
@@ -386,7 +481,7 @@ table.help td:first-child { font-weight: 700; width: 40%; }
   <table class="help">
     <tr><td>I can't find the app</td><td>Look for the gold coin called <strong>My Coins</strong> on the phone's home screen, or in the computer's Start menu.</td></tr>
     <tr><td>I only see recent photos, not the SD card</td><td>Tap <strong>☰</strong> or <strong>Browse</strong> in the picture chooser and pick the SD card.</td></tr>
-    <tr><td>My coins are not on the computer</td><td>Tap <strong>Sync phone and computer</strong> on both and follow the steps (page 13).</td></tr>
+    <tr><td>My coins are not on the computer</td><td>Tap <strong>Sync phone and computer</strong> on both and follow the steps (page 15).</td></tr>
     <tr><td>A coin is not in its album</td><td>Open the coin, tap <strong>Change details</strong> and pick its <strong>Type of coin</strong> and date.</td></tr>
     <tr><td>The writing is too small</td><td>On a computer, hold <strong>Ctrl</strong> and press <strong>+</strong>. On a phone, make the text bigger in the phone's Settings under Display.</td></tr>
     <tr><td>Is my collection protected?</td><td>Open <strong>Help &amp; backup</strong>. A line with a <strong>✓</strong> means the device will keep your coins permanently.</td></tr>
