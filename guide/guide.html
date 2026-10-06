@@ -55,9 +55,50 @@ ol.steps.big > li > svg { width: 2.5in; height: auto; display: block; }
 .phoneshot { width: 1.5in; justify-self: center; border: 3pt solid #141a2b; border-radius: 14pt; overflow: hidden; height: 2.1in; }
 .phoneshot img { width: 100%; display: block; }
 img.pcshot { width: 2.5in; border: 2pt solid #9aa1b1; border-radius: 6pt; display: block; }
+.ad { display: grid; gap: 9pt; }
+.ad-top { display: grid; grid-template-columns: 1fr 1.3in; gap: 18pt; align-items: center; background: var(--album); color: #fff; border-radius: 14pt; padding: 12pt 16pt; }
+.ad-kicker { font-size: 13pt; letter-spacing: .14em; text-transform: uppercase; color: #f0d48a; font-weight: 700; }
+.ad-name { font-family: "Cormorant SC", Georgia, serif; font-weight: 600; font-size: 44pt; line-height: 1; margin: 0 0 6pt; }
+.ad-lede { font-size: 15pt; line-height: 1.3; margin: 0 0 8pt; }
+.ad-pills { display: flex; flex-wrap: wrap; gap: 6pt; }
+.ad-pills span { background: var(--brass); color: #fff; font-weight: 700; font-size: 12pt; border-radius: 20pt; padding: 3pt 10pt; }
+.ad-phone { border: 3pt solid #fff; border-radius: 14pt; overflow: hidden; height: 2in; background: #fff; }
+.ad-phone img { width: 100%; display: block; }
+.ad-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6pt 10pt; }
+.ad-grid div { border-left: 4pt solid var(--brass); background: #f3f4f7; border-radius: 0 8pt 8pt 0; padding: 4pt 9pt; font-size: 12pt; line-height: 1.25; color: var(--muted); break-inside: avoid; }
+.ad-grid b { display: block; font-size: 13.5pt; color: var(--ink); margin-bottom: 1pt; }
+.ad-foot { text-align: center; font-weight: 700; font-size: 13pt; color: var(--good); border: 2pt solid var(--good); background: var(--good-soft); border-radius: 10pt; padding: 6pt 10pt; }
 </style>
 </head>
 <body>
+
+<!-- 0. Advertisement -->
+<section class="page ad">
+  <div class="ad-top">
+    <div>
+      <div class="ad-kicker">Introducing</div>
+      <div class="ad-name">Fred's Coins</div>
+      <p class="ad-lede">Your whole coin collection, with your microscope pictures, on your phone and your computer.</p>
+      <div class="ad-pills"><span>Free</span><span>No account</span><span>Works offline</span><span>Pictures stay private</span></div>
+    </div>
+    <div class="ad-phone"><img src="home.png" alt="The Fred's Coins home screen"></div>
+  </div>
+  <div class="ad-grid">
+    <div><b>Straight from the microscope</b>Bring in a whole SD card of pictures at once. The originals are never changed.</div>
+    <div><b>Front and back together</b>Pictures are paired up for you and shown 6 at a time to check.</div>
+    <div><b>Every detail in one place</b>Year, mint mark, condition, what you paid, where you got it and your own notes.</div>
+    <div><b>Zoom right in</b>Big + and − buttons or two fingers show every scratch, die crack and mint mark up close.</div>
+    <div><b>Find any coin fast</b>Search by year, country, coin or note in a second.</div>
+    <div><b>Coin albums</b>17 U.S. series, from Indian Head cents to Morgan dollars. See which dates you have and which you still need.</div>
+    <div><b>Built-in coin catalog</b>Dates, mint marks, key dates, varieties and specifications are already filled in.</div>
+    <div><b>Help judging condition</b>Compare your coin with your own graded coins and plain-English grade descriptions, plus PCGS reference photos.</div>
+    <div><b>Insurance list</b>Print a neat list with pictures and prices, ready for your insurance agent.</div>
+    <div><b>Phone and computer in step</b>Sync over home Wi-Fi with a 6-digit code, or with a cable. Never through the cloud.</div>
+    <div><b>Safe backups</b>Save one backup file to keep the whole collection safe.</div>
+    <div><b>Made for easy reading</b>Large print, big buttons, plain words and a dark mode for the evening.</div>
+  </div>
+  <div class="ad-foot">Your pictures never leave your own phone or computer. No ads, no sign-up, no monthly fee.</div>
+</section>
 
 <!-- 1. Cover -->
 <section class="page cover">
@@ -78,7 +119,7 @@ img.pcshot { width: 2.5in; border: 2pt solid #9aa1b1; border-radius: 6pt; displa
     <div><svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><path d="M24 4 L40 10 V24 C40 34 33 41 24 44 C15 41 8 34 8 24 V10 Z" fill="none" stroke="#1f6b3a" stroke-width="3"/><path d="M16 24 l6 6 l11 -12" fill="none" stroke="#1f6b3a" stroke-width="3.5" stroke-linecap="round"/></svg>
       <p style="margin:0">There is <strong>no account and no password</strong>. The app never asks for money or personal details.</p></div>
     <div><svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><rect x="10" y="6" width="28" height="36" rx="3" fill="none" stroke="#9a6b12" stroke-width="3"/><path d="M24 14 v14 M17 22 l7 7 l7 -7" fill="none" stroke="#9a6b12" stroke-width="3" stroke-linecap="round"/><path d="M16 35 h16" stroke="#9a6b12" stroke-width="3" stroke-linecap="round"/></svg>
-      <p style="margin:0">Save a <strong>backup</strong> once a month so you never lose your collection (see page 14).</p></div>
+      <p style="margin:0">Save a <strong>backup</strong> once a month so you never lose your collection (see page 15).</p></div>
   </div>
 </section>
 
@@ -481,7 +522,7 @@ img.pcshot { width: 2.5in; border: 2pt solid #9aa1b1; border-radius: 6pt; displa
   <table class="help">
     <tr><td>I can't find the app</td><td>Look for the gold coin called <strong>My Coins</strong> on the phone's home screen, or in the computer's Start menu.</td></tr>
     <tr><td>I only see recent photos, not the SD card</td><td>Tap <strong>☰</strong> or <strong>Browse</strong> in the picture chooser and pick the SD card.</td></tr>
-    <tr><td>My coins are not on the computer</td><td>Tap <strong>Sync phone and computer</strong> on both and follow the steps (page 15).</td></tr>
+    <tr><td>My coins are not on the computer</td><td>Tap <strong>Sync phone and computer</strong> on both and follow the steps (page 16).</td></tr>
     <tr><td>A coin is not in its album</td><td>Open the coin, tap <strong>Change details</strong> and pick its <strong>Type of coin</strong> and date.</td></tr>
     <tr><td>The writing is too small</td><td>On a computer, hold <strong>Ctrl</strong> and press <strong>+</strong>. On a phone, make the text bigger in the phone's Settings under Display.</td></tr>
     <tr><td>Is my collection protected?</td><td>Open <strong>Help &amp; backup</strong>. A line with a <strong>✓</strong> means the device will keep your coins permanently.</td></tr>
