@@ -1,0 +1,21 @@
+Example coin photos
+
+These six pictures are bundled with the app so the example coins show real coins.
+All are public domain, downloaded from Wikimedia Commons, then cropped, resized to
+720 x 720 and stamped with a red EXAMPLE band. The app never contacts Wikimedia.
+
+1943-cent-front.jpg, 1943-cent-back.jpg
+  https://commons.wikimedia.org/wiki/File:NNC-US-1943-1C-Lincoln_Cent_(wheat,_zinc-coated_steel).jpg
+  US Mint (coin); National Numismatic Collection, Smithsonian (photo by Jaclyn Nash). Public domain.
+
+1921-morgan-front.jpg
+  https://commons.wikimedia.org/wiki/File:USA-1921-one-dollar-d.jpg
+1921-morgan-back.jpg
+  https://commons.wikimedia.org/wiki/File:USA-1921-one-dollar-r.jpg
+  Photos by Albertomos. Public domain.
+
+1944s-quarter-front.jpg
+  https://commons.wikimedia.org/wiki/File:Washington_Quarter_Silver_1944S_Obverse.png
+1944s-quarter-back.jpg
+  https://commons.wikimedia.org/wiki/File:Washington_Quarter_Silver_1944S_Reverse.png
+  Photos by Brandon Grossardt. Public domain.

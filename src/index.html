@@ -295,7 +295,16 @@ async function photoURL(id, kind = "thumb") {
   return u;
 }
 
-/* ---------- example coins (drawn, clearly marked) ---------- */
+/* ---------- example coins (real photos, clearly marked) ---------- */
+// Public-domain photos from Wikimedia Commons with an EXAMPLE band stamped across them
+// (see examples/CREDITS.txt). They ship with the app's own files; nothing is fetched from elsewhere.
+// If a photo can't be loaded (for example in the single-file preview), a drawn coin stands in.
+const EXAMPLES_VERSION = "2";
+const EXAMPLES = [
+  { country: "United States", year: "1943", denomination: "Lincoln cent", mint: "", grade: "VF-20 Very Fine", paid: "1.50", notes: "Steel wartime cent. Light spotting on the back.", files: ["1943-cent-front", "1943-cent-back"], draw: ["1¢", "1943", ["#eef1f4", "#8d96a3"]] },
+  { country: "United States", year: "1921", denomination: "Morgan dollar", mint: "", grade: "EF-40 Extremely Fine", paid: "38.00", notes: "Bought at the county coin show.", files: ["1921-morgan-front", "1921-morgan-back"], draw: ["$1", "1921", ["#f4f4f4", "#9aa0a8"]] },
+  { country: "United States", year: "1944", denomination: "Washington quarter", mint: "S", grade: "MS-63 Uncirculated", paid: "9.00", notes: "90% silver. The S mint mark is on the back, just under the wreath.", files: ["1944s-quarter-front", "1944s-quarter-back"], draw: ["25¢", "1944", ["#f6f6f2", "#a7a9a3"]] },
+];
 function drawExample(label, sub, metal) {
   const c = document.createElement("canvas"); c.width = c.height = 600;
   const g = c.getContext("2d");
@@ -310,18 +319,37 @@ function drawExample(label, sub, metal) {
   g.font = "bold 30px Arial"; g.fillText("EXAMPLE", 300, 190);
   return new Promise((res) => c.toBlob(res, "image/jpeg", 0.9));
 }
-async function seedExamples() {
-  const ex = [
-    { country: "United States", year: "1943", denomination: "Lincoln cent", mint: "D", grade: "VF-20 Very Fine", paid: "1.50", notes: "Steel wartime cent. Light spotting on the back.", draw: ["1¢", "1943", ["#eef1f4", "#8d96a3"]] },
-    { country: "United States", year: "1921", denomination: "Morgan dollar", mint: "S", grade: "EF-40 Extremely Fine", paid: "38.00", notes: "Bought at the county coin show.", draw: ["$1", "1921", ["#f4f4f4", "#9aa0a8"]] },
-    { country: "Canada", year: "1967", denomination: "25 cents", mint: "", grade: "MS-63 Uncirculated", paid: "6.00", notes: "Centennial bobcat design.", draw: ["25¢", "1967", ["#f6f6f2", "#a7a9a3"]] },
-  ];
-  for (const e of ex) {
-    const blob = await drawExample(...e.draw);
-    const pid = await savePhoto(blob);
-    const { draw, ...fields } = e;
-    await put("coins", { id: uid(), created: Date.now(), photos: [pid], example: true, ...fields });
+// The real example photos, or null when any of them can't be loaded.
+async function loadExamplePhotos() {
+  try {
+    return await Promise.all(EXAMPLES.map((e) => Promise.all(e.files.map(async (f) => {
+      const r = await fetch("examples/" + f + ".jpg");
+      if (!r.ok) throw new Error("missing " + f);
+      const b = await r.blob();
+      return new File([b], f + ".jpg", { type: "image/jpeg" });
+    }))));
+  } catch (e) { return null; }
+}
+// Adds the example coins. Returns true when they got the real photos.
+async function seedExamples(photos) {
+  if (photos === undefined) photos = await loadExamplePhotos();
+  for (const [i, e] of EXAMPLES.entries()) {
+    const blobs = photos ? photos[i] : [await drawExample(...e.draw)];
+    const ids = [];
+    for (const b of blobs) ids.push(await savePhoto(b));
+    const { draw, files, ...fields } = e;
+    await put("coins", { id: uid(), created: Date.now(), photos: ids, example: true, ...fields });
   }
+  return !!photos;
+}
+// Devices that got the older drawn examples swap them for the photo ones, if Dad hasn't removed them.
+async function upgradeExamples() {
+  const old = coins.filter((c) => c.example);
+  if (!old.length) return true;
+  const photos = await loadExamplePhotos();
+  if (!photos) return false;
+  for (const c of old) await removeCoin(c);
+  return seedExamples(photos);
 }
 
 /* ---------- built-in catalog: United States series ---------- */
@@ -1481,10 +1509,16 @@ async function keepStorage() {
     const used = new Set(coins.flatMap((c) => c.photos || []));
     for (const p of (await all("photos")) || []) if (!used.has(p.id)) await del("photos", p.id);
   } catch (e) {}
+  let exVer = "";
+  try { exVer = localStorage.getItem("coin-catalog-examples") || ""; } catch (e) {}
+  let exDone = false;
   if (!coins.length && !seeded) {
-    await seedExamples(); await refresh();
+    exDone = await seedExamples(); await refresh();
     try { localStorage.setItem("coin-catalog-seeded", "1"); } catch (e) {}
-  }
+  } else if (exVer !== EXAMPLES_VERSION) {
+    try { exDone = await upgradeExamples(); await refresh(); } catch (e) {}
+  } else exDone = true;
+  if (exDone) try { localStorage.setItem("coin-catalog-examples", EXAMPLES_VERSION); } catch (e) {}
   try { history.replaceState({ v: view }, ""); } catch (e) {}
   render();
   keepStorage();
