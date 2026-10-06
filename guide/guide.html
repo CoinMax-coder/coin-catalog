@@ -62,12 +62,17 @@ img.pcshot { width: 2.5in; border: 2pt solid #9aa1b1; border-radius: 6pt; displa
 .ad-lede { font-size: 15pt; line-height: 1.3; margin: 0 0 8pt; }
 .ad-pills { display: flex; flex-wrap: wrap; gap: 6pt; }
 .ad-pills span { background: var(--brass); color: #fff; font-weight: 700; font-size: 12pt; border-radius: 20pt; padding: 3pt 10pt; }
-.ad-phone { border: 3pt solid #fff; border-radius: 14pt; overflow: hidden; height: 2in; background: #fff; }
+.ad-phone { border: 3pt solid #fff; border-radius: 14pt; overflow: hidden; height: 1.75in; background: #fff; }
 .ad-phone img { width: 100%; display: block; }
-.ad-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6pt 10pt; }
-.ad-grid div { border-left: 4pt solid var(--brass); background: #f3f4f7; border-radius: 0 8pt 8pt 0; padding: 4pt 9pt; font-size: 12pt; line-height: 1.25; color: var(--muted); break-inside: avoid; }
-.ad-grid b { display: block; font-size: 13.5pt; color: var(--ink); margin-bottom: 1pt; }
+.ad-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6pt 8pt; }
+.ad-grid div { border-left: 4pt solid var(--brass); background: #f3f4f7; border-radius: 0 8pt 8pt 0; padding: 4pt 8pt; font-size: 11.5pt; line-height: 1.22; color: var(--muted); break-inside: avoid; }
+.ad-grid b { display: block; font-size: 12.5pt; color: var(--ink); margin-bottom: 1pt; }
 .ad-foot { text-align: center; font-weight: 700; font-size: 13pt; color: var(--good); border: 2pt solid var(--good); background: var(--good-soft); border-radius: 10pt; padding: 6pt 10pt; }
+.ad-stars-h { font-family: "Cormorant SC", Georgia, serif; font-weight: 600; font-size: 22pt; color: var(--album); line-height: 1; margin-bottom: -3pt; }
+.ad-stars { display: grid; grid-template-columns: 1fr 1fr; gap: 7pt 10pt; }
+.ad-stars div { background: var(--brass-soft); border: 2pt solid var(--brass); border-radius: 10pt; padding: 6pt 10pt; font-size: 12pt; line-height: 1.28; color: var(--ink); break-inside: avoid; }
+.ad-stars b { display: block; font-size: 15pt; color: var(--album); margin-bottom: 2pt; }
+.ad-stars b::before { content: "★ "; color: var(--brass); }
 </style>
 </head>
 <body>
@@ -79,25 +84,28 @@ img.pcshot { width: 2.5in; border: 2pt solid #9aa1b1; border-radius: 6pt; displa
       <div class="ad-kicker">Introducing</div>
       <div class="ad-name">Fred's Coins</div>
       <p class="ad-lede">Your whole coin collection, with your microscope pictures, on your phone and your computer.</p>
-      <div class="ad-pills"><span>Free</span><span>No account</span><span>Works offline</span><span>Pictures stay private</span></div>
+      <div class="ad-pills"><span>Free</span><span>No account</span><span>Works offline</span><span>Pictures stay private</span><span>No ads</span></div>
     </div>
     <div class="ad-phone"><img src="home.png" alt="The Fred's Coins home screen"></div>
+  </div>
+  <div class="ad-stars-h">Collector's tools built in</div>
+  <div class="ad-stars">
+    <div><b>Coin albums</b>17 U.S. series, from Indian Head cents to Morgan dollars. Every date and mint mark has a spot, so you see at a glance what you have and what you still need.</div>
+    <div><b>Fills in the details for you</b>A built-in U.S. coin catalog knows the dates, mint marks, key dates, varieties and specifications. Pick the coin and the facts are filled in.</div>
+    <div><b>Help judging the condition</b>Compare your coin side by side with your own graded coins and plain-English grade descriptions. One tap opens the PCGS reference photos.</div>
+    <div><b>Insurance report</b>Print a neat list of every coin with its picture, grade and price, plus the total. Ready to hand to your insurance agent.</div>
   </div>
   <div class="ad-grid">
     <div><b>Straight from the microscope</b>Bring in a whole SD card of pictures at once. The originals are never changed.</div>
     <div><b>Front and back together</b>Pictures are paired up for you and shown 6 at a time to check.</div>
-    <div><b>Every detail in one place</b>Year, mint mark, condition, what you paid, where you got it and your own notes.</div>
-    <div><b>Zoom right in</b>Big + and − buttons or two fingers show every scratch, die crack and mint mark up close.</div>
+    <div><b>Every detail in one place</b>Year, mint mark, grade, what you paid, where you got it and your own notes.</div>
+    <div><b>Zoom right in</b>Big + and − buttons or two fingers show every scratch and mint mark up close.</div>
     <div><b>Find any coin fast</b>Search by year, country, coin or note in a second.</div>
-    <div><b>Coin albums</b>17 U.S. series, from Indian Head cents to Morgan dollars. See which dates you have and which you still need.</div>
-    <div><b>Built-in coin catalog</b>Dates, mint marks, key dates, varieties and specifications are already filled in.</div>
-    <div><b>Help judging condition</b>Compare your coin with your own graded coins and plain-English grade descriptions, plus PCGS reference photos.</div>
-    <div><b>Insurance list</b>Print a neat list with pictures and prices, ready for your insurance agent.</div>
     <div><b>Phone and computer in step</b>Sync over home Wi-Fi with a 6-digit code, or with a cable. Never through the cloud.</div>
     <div><b>Safe backups</b>Save one backup file to keep the whole collection safe.</div>
-    <div><b>Made for easy reading</b>Large print, big buttons, plain words and a dark mode for the evening.</div>
+    <div><b>Made for easy reading</b>Large print, big buttons, plain words and a dark mode.</div>
+    <div><b>Private by design</b>Your pictures never leave your own phone or computer.</div>
   </div>
-  <div class="ad-foot">Your pictures never leave your own phone or computer. No ads, no sign-up, no monthly fee.</div>
 </section>
 
 <!-- 1. Cover -->
