@@ -67,6 +67,7 @@ main { max-width: 960px; margin: 0 auto; padding-inline: 16px; padding-block: 20
 .btn.danger { color: var(--danger); border-color: var(--danger) }
 .btn.danger-solid { background: var(--danger); border-color: var(--danger); color: var(--surface) }
 .btn.wide { width: 100% }
+a.btn { text-decoration: none; color: inherit }
 .btn svg { width: 30px; height: 30px; flex: none }
 .row { display: flex; flex-wrap: wrap; gap: 12px }
 .row > .btn { flex: 1 1 220px }
@@ -803,6 +804,10 @@ async function renderGrade() {
       <button class="btn" id="g-better" type="button" ${gi === LADDER.length - 1 ? "disabled" : ""}>Less worn ›</button>
     </div>
     <button class="btn primary wide" id="g-set" type="button">${c.grade === g ? "✓ This coin is marked " + esc(g) : "It looks like this. Mark it " + esc(g)}</button>
+    <div class="note">
+      <p><strong>Photos from PCGS.</strong> PCGS, the coin grading company, shows real coins at every grade on its website.${s ? ` Choose “${esc(s.name.replace(/ \(.*\)$/, ""))}” there.` : ""} This needs the internet.</p>
+      <a class="btn" id="g-pcgs" href="https://www.pcgs.com/photograde" target="_blank" rel="noopener noreferrer">See the PCGS photos of each grade</a>
+    </div>
     <p class="count">These descriptions follow the usual grading scale, written in plain words. Proof coins are judged by their marks and shine, not wear.</p>`;
   const pick = (x) => (x.photos[side] || x.photos[0]);
   if (photos.length) photoURL(pick(c), "full").then((u) => { const i = app.querySelector("#g-mine img"); if (i) i.src = u; });
