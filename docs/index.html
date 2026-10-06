@@ -68,6 +68,7 @@ main { max-width: 960px; margin: 0 auto; padding-inline: 16px; padding-block: 20
 .btn.danger { color: var(--danger); border-color: var(--danger) }
 .btn.danger-solid { background: var(--danger); border-color: var(--danger); color: var(--surface) }
 .btn.wide { width: 100% }
+.btn:disabled { opacity: .35; cursor: default }
 a.btn { text-decoration: none; color: inherit }
 .btn svg { width: 30px; height: 30px; flex: none }
 .row { display: flex; flex-wrap: wrap; gap: 12px }
@@ -120,6 +121,25 @@ form { display: grid; gap: 18px }
 .slot .ph { aspect-ratio: 1; max-width: 100%; border-radius: 50%; overflow: hidden; background: var(--bg); display: grid; place-items: center; color: var(--muted) }
 .slot .ph img { width: 100%; height: 100%; object-fit: cover }
 .slot .btn { min-height: 56px; padding: 8px 10px; font-size: 1.1rem }
+
+/* import review */
+.ask { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 12px }
+.ask p { margin: 0; font-weight: 700 }
+.rgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px }
+@media (min-width: 760px) { .rgrid { grid-template-columns: repeat(3, minmax(0, 1fr)) } }
+.rtile { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 8px; display: grid; gap: 8px; align-content: start }
+.rtile.front { border-color: var(--album) }
+.rtile.back { border-color: var(--brass); border-style: dashed }
+.rtile .ph { aspect-ratio: 1; max-width: 100%; border-radius: 10px; overflow: hidden; background: var(--bg); padding: 0; border: 0; cursor: zoom-in; display: block; width: 100% }
+.rtile .ph img { width: 100%; height: 100%; object-fit: cover; display: block }
+.rtile .lab { font-weight: 700; text-align: center; line-height: 1.2 }
+.rtile .lab small { display: block; font-weight: 400; color: var(--muted); font-size: 1rem }
+.arrows { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
+.arrows button { min-height: 56px; border-radius: var(--radius); border: 2px solid var(--ink); background: var(--surface); font-weight: 700; font-size: 1.6rem; cursor: pointer; line-height: 1 }
+.arrows button:disabled { opacity: .3; cursor: default }
+.pager { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.pager .btn { flex: 1 1 140px }
+.pager .where { flex: 1 1 100%; text-align: center; color: var(--muted); font-weight: 700; order: -1 }
 
 /* zoom viewer */
 .viewer { position: fixed; inset: 0; background: #000; z-index: 20; display: grid; grid-template-rows: 1fr auto }
@@ -585,6 +605,7 @@ async function renderCoin() {
       <div class="frame" id="frame" role="button" tabindex="0" aria-label="Open photo to zoom">${photos.length ? '<img alt="Coin photo">' : '<span class="busy">No photo</span>'}</div>
       ${photos.length > 1 ? `<div class="seg">${photos.map((_, i) => `<button type="button" data-i="${i}" aria-pressed="${i === side}">${labels[i] || "Photo " + (i + 1)}</button>`).join("")}</div>` : ""}
       ${photos.length ? '<button class="btn wide" id="zoom" type="button">Zoom in on this photo</button>' : ""}
+      ${photos.length > 1 ? '<button class="btn wide" id="swap" type="button">Swap front and back</button>' : ""}
     </div>
     ${c.example ? '<div class="note"><p>This is an example coin, not part of your collection.</p></div>' : ""}
     </div><div style="display:grid;gap:20px">
@@ -612,6 +633,12 @@ async function renderCoin() {
     document.getElementById("zoom").onclick = open;
   }
   app.querySelectorAll(".seg button").forEach((b) => b.onclick = () => { view.side = +b.dataset.i; render(); });
+  const sw = document.getElementById("swap");
+  if (sw) sw.onclick = async () => {
+    const ph = [...photos]; [ph[0], ph[1]] = [ph[1], ph[0]];
+    await put("coins", { ...c, photos: ph });
+    await refresh(); toast("Front and back swapped"); render();
+  };
   document.getElementById("edit").onclick = () => { draft = { ...c, photos: [...photos], series: s ? s.id : "", slot: sl ? sl.key : "" }; go({ name: "edit", id: c.id }); };
   document.getElementById("del").onclick = () => confirmSheet("Delete this coin?", `“${title(c)}” and its photos will be removed from this device.`, "Delete", async () => {
     await removeCoin(c); await refresh(); toast("Coin deleted"); go({ name: "home" }, false); try { history.replaceState({ v: { name: "home" } }, ""); } catch (e) {}
@@ -946,6 +973,7 @@ function renderHelp() {
 
 async function render() {
   if (view.name !== "sync" || (view.step !== "host" && view.step !== "join")) stopSync();
+  if (view.name === "review") return renderReview();
   if (view.name === "coin") return renderCoin();
   if (view.name === "edit") return renderEdit();
   if (view.name === "help") return renderHelp();
@@ -974,20 +1002,144 @@ async function onPicked(e) {
     renderEdit();
     return;
   }
+  // Microscope files are numbered in the order they were taken, so sort by name.
   files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
-  let n = 0;
+  const items = [], already = await knownPictures();
+  let skipped = 0, bad = 0;
   for (const f of files) {
-    toast(`Adding photo ${n + 1} of ${files.length}…`, 60000);
+    toast(`Reading picture ${items.length + skipped + bad + 1} of ${files.length}…`, 60000);
     try {
-      const pid = await savePhoto(f);
-      await put("coins", { id: uid(), created: Date.now() - n, photos: [pid], notes: "Photo: " + (f.name || "") });
-      n++;
-    } catch (err) { /* skip unreadable file */ }
+      // Skip pictures that are already in the collection (or picked twice), so coins aren't doubled.
+      if (await already.has(f)) { skipped++; continue; }
+      items.push({ pid: await savePhoto(f), name: f.name || "" });
+      await already.add(f);
+    } catch (err) { bad++; }
   }
+  if (!items.length) {
+    toast(skipped ? (skipped === 1 ? "That picture is already in your collection" : `All ${skipped} pictures are already in your collection`) : "Those files could not be opened as pictures", 6000);
+    return;
+  }
+  toast(bad ? `${bad} ${bad === 1 ? "file" : "files"} could not be opened and ${bad === 1 ? "was" : "were"} skipped` : "Check the order, then tap Make coins", 4000);
+  review = { items, pairs: null, page: 0, skipped };
+  query = ""; go({ name: "review" });
+}
+
+/* ---------- spotting pictures already brought in ---------- */
+// Pictures match when their contents are identical. Only same-sized files are compared, so this stays quick.
+const printCache = new WeakMap();
+async function fingerprint(blob) {
+  if (printCache.has(blob)) return printCache.get(blob);
+  const fp = await makePrint(blob);
+  printCache.set(blob, fp);
+  return fp;
+}
+async function makePrint(blob) {
+  try {
+    if (crypto && crypto.subtle) {
+      const h = new Uint8Array(await crypto.subtle.digest("SHA-256", await blob.arrayBuffer()));
+      return blob.size + ":" + [...h].map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+  } catch (e) {}
+  return blob.size + ":" + (blob.name || "");
+}
+async function knownPictures() {
+  const used = new Set(coins.flatMap((c) => c.photos || []));
+  const bySize = new Map(), prints = new Set();
+  for (const p of (await all("photos")) || []) {
+    if (!used.has(p.id) || !p.blob) continue;
+    if (!bySize.has(p.blob.size)) bySize.set(p.blob.size, []);
+    bySize.get(p.blob.size).push(p.blob);
+  }
+  const hashSize = async (size) => {
+    for (const b of bySize.get(size) || []) prints.add(await fingerprint(b));
+    bySize.delete(size);
+  };
+  return {
+    async has(file) { await hashSize(file.size); return prints.has(await fingerprint(file)); },
+    async add(file) { prints.add(await fingerprint(file)); },
+  };
+}
+
+/* ---------- import review: pair fronts and backs, reorder 6 at a time ---------- */
+let review = null;
+const PER_PAGE = 6;
+function renderReview() {
+  if (!review) return go({ name: "home" }, false);
+  setBar("Check your pictures", true);
+  const { items, pairs } = review;
+  const pages = Math.max(1, Math.ceil(items.length / PER_PAGE));
+  review.page = Math.min(review.page, pages - 1);
+  const start = review.page * PER_PAGE, shown = items.slice(start, start + PER_PAGE);
+  const coinCount = pairs ? Math.ceil(items.length / 2) : items.length;
+  const label = (i) => pairs ? `Coin ${Math.floor(i / 2) + 1} · ${i % 2 ? "Back" : "Front"}` : `Coin ${i + 1}`;
+  app.innerHTML = `
+    ${review.skipped ? `<div class="note"><p>${review.skipped} ${review.skipped === 1 ? "picture was" : "pictures were"} left out because ${review.skipped === 1 ? "it was" : "they were"} already brought in before.</p></div>` : ""}
+    <div class="ask">
+      <p>Did you take a picture of the front and the back of each coin?</p>
+      <div class="seg">
+        <button type="button" id="r-pairs" aria-pressed="${pairs === true}">Yes, front and back</button>
+        <button type="button" id="r-single" aria-pressed="${pairs === false}">No, one picture each</button>
+      </div>
+    </div>
+    ${pairs === null ? "" : `
+    <p class="count">${pairs ? "Pictures go in pairs: front first, then back." : "Each picture becomes its own coin."} Use the arrows to move a picture earlier or later. Tap a picture to see it bigger.</p>
+    <div class="rgrid">${shown.map((it, k) => {
+      const i = start + k;
+      const side = pairs ? (i % 2 ? "back" : "front") : "";
+      return `<div class="rtile ${side}">
+        <button class="ph" type="button" data-view="${i}" aria-label="See picture ${i + 1} bigger"><img alt=""></button>
+        <div class="lab">${label(i)}<small>Picture ${i + 1}</small></div>
+        <div class="arrows">
+          <button type="button" data-mv="${i}" data-d="-1" aria-label="Move picture ${i + 1} earlier" ${i === 0 ? "disabled" : ""}>◀</button>
+          <button type="button" data-mv="${i}" data-d="1" aria-label="Move picture ${i + 1} later" ${i === items.length - 1 ? "disabled" : ""}>▶</button>
+        </div>
+      </div>`; }).join("")}</div>
+    ${pages > 1 ? `<div class="pager">
+      <span class="where">Pictures ${start + 1}–${start + shown.length} of ${items.length}</span>
+      <button class="btn" type="button" id="r-prev" ${review.page === 0 ? "disabled" : ""}>◀ Previous 6</button>
+      <button class="btn" type="button" id="r-next" ${review.page === pages - 1 ? "disabled" : ""}>Next 6 ▶</button>
+    </div>` : ""}
+    ${pairs && items.length % 2 ? `<div class="note"><p>There is an odd number of pictures, so the last coin will have a front only.</p></div>` : ""}
+    <button class="btn primary wide" type="button" id="r-make">Make ${coinCount} ${coinCount === 1 ? "coin" : "coins"}</button>`}
+    <button class="btn wide" type="button" id="r-cancel">Cancel and don't add these</button>`;
+  document.getElementById("r-pairs").onclick = () => { review.pairs = true; renderReview(); };
+  document.getElementById("r-single").onclick = () => { review.pairs = false; renderReview(); };
+  document.getElementById("r-cancel").onclick = () => confirmSheet("Don't add these pictures?", "The pictures stay on your SD card. Nothing is added to your collection.", "Don't add", async () => {
+    for (const it of review.items) await del("photos", it.pid);
+    review = null; back();
+  });
+  if (pairs === null) return;
+  shown.forEach((it, k) => photoURL(it.pid).then((u) => { const im = app.querySelector(`[data-view="${start + k}"] img`); if (im) im.src = u; }));
+  app.querySelectorAll("[data-view]").forEach((b) => b.onclick = () => openViewer(items[+b.dataset.view].pid));
+  app.querySelectorAll("[data-mv]").forEach((b) => b.onclick = () => {
+    const i = +b.dataset.mv, j = i + +b.dataset.d;
+    if (j < 0 || j >= items.length) return;
+    [items[i], items[j]] = [items[j], items[i]];
+    review.page = Math.floor(j / PER_PAGE); // follow the picture if it moves onto the next or previous page
+    renderReview();
+    const again = app.querySelector(`[data-mv="${j}"][data-d="${b.dataset.d}"]`) || app.querySelector(`[data-mv="${j}"]:not([disabled])`);
+    if (again) again.focus();
+  });
+  const prev = document.getElementById("r-prev"), next = document.getElementById("r-next");
+  if (prev) prev.onclick = () => { review.page--; renderReview(); window.scrollTo(0, 0); };
+  if (next) next.onclick = () => { review.page++; renderReview(); window.scrollTo(0, 0); };
+  document.getElementById("r-make").onclick = makeCoins;
+}
+async function makeCoins() {
+  const { items, pairs } = review;
+  const groups = [];
+  for (let i = 0; i < items.length; i += pairs ? 2 : 1) groups.push(items.slice(i, i + (pairs ? 2 : 1)));
+  const now = Date.now();
+  for (let g = 0; g < groups.length; g++) {
+    const grp = groups[g];
+    await put("coins", { id: uid(), created: now - g, photos: grp.map((x) => x.pid), notes: "Photo: " + grp.map((x) => x.name).filter(Boolean).join(", ") });
+  }
+  review = null;
   await refresh();
   keepStorage();
-  toast(n === files.length ? `Added ${n} ${n === 1 ? "coin" : "coins"}. Tap one to fill in its details.` : `Added ${n} of ${files.length}. Some files could not be opened.`, 5000);
-  query = ""; go({ name: "home" }, false);
+  toast(`Added ${groups.length} ${groups.length === 1 ? "coin" : "coins"}. Tap one to fill in its details.`, 5000);
+  go({ name: "home" }, false);
+  try { history.replaceState({ v: view }, ""); } catch (e) {}
 }
 document.getElementById("pick-camera").onchange = onPicked;
 document.getElementById("pick-files").onchange = onPicked;
@@ -1337,6 +1489,10 @@ async function keepStorage() {
   let seeded = false;
   try { seeded = localStorage.getItem("coin-catalog-seeded") === "1"; } catch (e) {}
   await refresh();
+  try {
+    const used = new Set(coins.flatMap((c) => c.photos || []));
+    for (const p of (await all("photos")) || []) if (!used.has(p.id)) await del("photos", p.id);
+  } catch (e) {}
   if (!coins.length && !seeded) {
     await seedExamples(); await refresh();
     try { localStorage.setItem("coin-catalog-seeded", "1"); } catch (e) {}
