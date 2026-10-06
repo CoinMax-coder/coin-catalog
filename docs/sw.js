@@ -1,5 +1,5 @@
 // Offline support: keeps the app files on the device so it opens without internet.
-const CACHE = "coin-catalog-a449449580";
+const CACHE = "coin-catalog-c9aa51dc79";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./fonts.css", "./fonts/atkinson-400.woff2", "./fonts/atkinson-700.woff2", "./fonts/cormorant-sc-600.woff2"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
