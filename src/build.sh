@@ -2,7 +2,7 @@
 # Builds the installable site in $OUT/ from index.html (the same file used for the preview).
 set -e
 cd "$(dirname "$0")"; OUT=../docs; mkdir -p $OUT
-VER=$(cat index.html build.sh fonts/fonts.css | sha1sum | cut -c1-10)
+VER=$(cat index.html build.sh fonts/fonts.css examples/*.jpg | sha1sum | cut -c1-10)
 {
 cat <<'HEAD'
 <!doctype html>
@@ -29,6 +29,8 @@ mkdir -p $OUT/fonts
 cp fonts/*.woff2 $OUT/fonts/
 cp fonts/fonts.css $OUT/fonts.css
 cp vendor/peerjs.min.js $OUT/
+mkdir -p $OUT/examples
+cp examples/*.jpg $OUT/examples/
 cp manifest.webmanifest icon-192.png icon-512.png icon-maskable-512.png $OUT/
 touch $OUT/.nojekyll
 echo "built version $VER"
