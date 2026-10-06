@@ -28,6 +28,7 @@ sed "s/__VERSION__/$VER/" sw.template.js > $OUT/sw.js
 mkdir -p $OUT/fonts
 cp fonts/*.woff2 $OUT/fonts/
 cp fonts/fonts.css $OUT/fonts.css
+cp vendor/peerjs.min.js $OUT/
 cp manifest.webmanifest icon-192.png icon-512.png icon-maskable-512.png $OUT/
 touch $OUT/.nojekyll
 echo "built version $VER"
