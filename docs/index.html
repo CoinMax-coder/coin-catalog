@@ -307,11 +307,69 @@ async function makeThumb(blob) {
   URL.revokeObjectURL(url);
   return new Promise((res) => c.toBlob((b) => res(b || blob), "image/jpeg", 0.85));
 }
+// Some microscopes write odd EXIF resolutions (for example 72 across and 96 down). Chrome then
+// shrinks the picture one way, so a round coin looks oval. Windows Photos ignores those numbers,
+// so the same file looks fine there. squarePixels() returns a copy Chrome shows at its true shape.
+async function shapeOf(blob) {
+  const { img, url } = await loadImage(blob); URL.revokeObjectURL(url);
+  let bm; try { bm = await createImageBitmap(blob); } catch (e) { return { ok: true }; }
+  const shown = img.naturalWidth / img.naturalHeight, real = bm.width / bm.height;
+  // Rotated by its EXIF orientation only: not a shape problem.
+  const ok = Math.abs(shown - real) < 0.01 * real || Math.abs(shown * real - 1) < 0.01;
+  return { ok, bm };
+}
+function withoutResolutionUnit(buf) {
+  // Lossless: set the EXIF resolution unit to "none" so Chrome stops resizing by resolution.
+  const d = new Uint8Array(buf.slice(0)), v = new DataView(d.buffer);
+  if (v.getUint16(0) !== 0xffd8) return null;
+  for (let o = 2; o + 4 < d.length && d[o] === 0xff;) {
+    const mark = d[o + 1], len = v.getUint16(o + 2);
+    if (mark === 0xda) break;
+    if (mark === 0xe1 && v.getUint32(o + 4) === 0x45786966) {
+      const t = o + 10, le = v.getUint16(t) === 0x4949, ifd = t + v.getUint32(t + 4, le), n = v.getUint16(ifd, le);
+      for (let i = 0; i < n; i++) {
+        const e = ifd + 2 + i * 12;
+        if (v.getUint16(e, le) === 0x0128) { v.setUint16(e + 8, 1, le); return d; }
+      }
+      return null;
+    }
+    o += 2 + len;
+  }
+  return null;
+}
+async function squarePixels(blob) {
+  try {
+    const first = await shapeOf(blob);
+    if (first.ok) { if (first.bm) first.bm.close(); return blob; }
+    const patched = withoutResolutionUnit(await blob.arrayBuffer());
+    if (patched) {
+      const b2 = new Blob([patched], { type: blob.type || "image/jpeg" }), again = await shapeOf(b2);
+      if (again.bm) again.bm.close();
+      if (again.ok) { first.bm.close(); return b2; }
+    }
+    // Fallback: redraw at full size with square pixels.
+    const c = document.createElement("canvas"); c.width = first.bm.width; c.height = first.bm.height;
+    c.getContext("2d").drawImage(first.bm, 0, 0); first.bm.close();
+    return await new Promise((res) => c.toBlob((b) => res(b || blob), "image/jpeg", 0.95));
+  } catch (e) { return blob; }
+}
 async function savePhoto(file) {
-  const id = uid();
-  const thumb = await makeThumb(file);
-  await put("photos", { id, blob: file, thumb, name: file.name || "", added: Date.now() });
+  const id = uid(), blob = await squarePixels(file);
+  const thumb = await makeThumb(blob);
+  // print: the original file's fingerprint, so the same SD card picture is still spotted as a repeat.
+  await put("photos", { id, blob, thumb, name: file.name || "", added: Date.now(), shapeOk: 1, ...(blob !== file ? { print: await makePrint(file) } : {}) });
   return id;
+}
+// Pictures brought in before this fix, or from a backup or sync: check each once and repair oval ones.
+async function repairShapes() {
+  let fixed = 0;
+  for (const p of (await all("photos")) || []) {
+    if (p.shapeOk || !p.blob) continue;
+    const blob = await squarePixels(p.blob);
+    if (blob !== p.blob) { await put("photos", { ...p, blob, thumb: await makeThumb(blob), print: p.print || await makePrint(p.blob), shapeOk: 1 }); fixed++; }
+    else await put("photos", { ...p, shapeOk: 1 });
+  }
+  if (fixed) { urlCache.forEach((u) => URL.revokeObjectURL(u)); urlCache.clear(); render(); }
 }
 const urlCache = new Map();
 async function photoURL(id, kind = "thumb") {
@@ -1239,6 +1297,7 @@ async function knownPictures() {
   const bySize = new Map(), prints = new Set();
   for (const p of (await all("photos")) || []) {
     if (!used.has(p.id) || !p.blob) continue;
+    if (p.print) prints.add(p.print);
     if (!bySize.has(p.blob.size)) bySize.set(p.blob.size, []);
     bySize.get(p.blob.size).push(p.blob);
   }
@@ -1698,6 +1757,7 @@ async function keepStorage() {
   try { history.replaceState({ v: view }, ""); } catch (e) {}
   render();
   keepStorage();
+  repairShapes().catch(() => {});
   if ("serviceWorker" in navigator && window.isSecureContext && window.top === window.self) {
     navigator.serviceWorker.register("sw.js").catch(() => {});
   }
