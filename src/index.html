@@ -777,14 +777,37 @@ async function renderCoin() {
   });
 }
 
-const GRADES = ["", "P-1 Poor", "FR-2 Fair", "AG-3 About Good", "G-4 Good", "VG-8 Very Good", "F-12 Fine", "VF-20 Very Fine", "EF-40 Extremely Fine", "AU-50 About Uncirculated", "MS-60 Uncirculated", "MS-63 Uncirculated", "MS-65 Gem Uncirculated", "MS-67 Superb Gem", "PR Proof", "Not sure"];
+// The full grading scale (Sheldon 1 to 70), the same steps PCGS Photograde uses. [grade, description, family]
+// The labels of the original 13 grades are unchanged so coins saved earlier still match.
+const SCALE = [
+  ["P-1 Poor", 0], ["FR-2 Fair", 1], ["AG-3 About Good", 2],
+  ["G-4 Good", 3], ["G-6 Good", 3],
+  ["VG-8 Very Good", 4], ["VG-10 Very Good", 4],
+  ["F-12 Fine", 5], ["F-15 Fine", 5],
+  ["VF-20 Very Fine", 6], ["VF-25 Very Fine", 6], ["VF-30 Very Fine", 6], ["VF-35 Very Fine", 6],
+  ["EF-40 Extremely Fine", 7], ["EF-45 Extremely Fine", 7],
+  ["AU-50 About Uncirculated", 8], ["AU-53 About Uncirculated", 8], ["AU-55 About Uncirculated", 8], ["AU-58 About Uncirculated", 8],
+  ["MS-60 Uncirculated", 9], ["MS-61 Uncirculated", 9], ["MS-62 Uncirculated", 9], ["MS-63 Uncirculated", 10], ["MS-64 Uncirculated", 10],
+  ["MS-65 Gem Uncirculated", 11], ["MS-66 Gem Uncirculated", 11], ["MS-67 Superb Gem", 12], ["MS-68 Superb Gem", 12], ["MS-69 Superb Gem", 12],
+  ["MS-70 Perfect", 13],
+];
+const GRADE_GROUPS = [["Poor, Fair and About Good", /^(P|FR|AG)-/], ["Good (G)", /^G-/], ["Very Good (VG)", /^VG-/], ["Fine (F)", /^F-/], ["Very Fine (VF)", /^VF-/],
+  ["Extremely Fine (EF)", /^EF-/], ["About Uncirculated (AU)", /^AU-/], ["Uncirculated (MS)", /^MS-/]];
+const GRADES = ["", ...SCALE.map((x) => x[0]), "PR Proof", "Not sure"];
+function gradeSelect(cur) {
+  cur = cur || "";
+  const opt = (g) => `<option ${g === cur ? "selected" : ""} value="${esc(g)}">${esc(g) || "Choose…"}</option>`;
+  const wear = SCALE.map((x) => x[0]);
+  const other = ["PR Proof", "Not sure", ...(cur && !GRADES.includes(cur) ? [cur] : [])];
+  return opt("") + GRADE_GROUPS.map(([label, re]) => `<optgroup label="${label}">${wear.filter((g) => re.test(g)).map(opt).join("")}</optgroup>`).join("")
+    + `<optgroup label="Other">${other.map(opt).join("")}</optgroup>`;
+}
 
 function renderEdit() {
   const isNew = !view.id;
   if (!draft) draft = { photos: [] };
   setBar(isNew ? "Add a coin" : "Change details", true);
   const d = draft;
-  const gradeOpts = GRADES.includes(d.grade || "") ? GRADES : [...GRADES, d.grade];
   const ser = seriesById(d.series);
   app.innerHTML = `
     <form id="f" novalidate>
@@ -812,7 +835,7 @@ function renderEdit() {
         <div class="field"><label for="f-mint">Mint mark</label><select id="f-mint">${["", "None (Philadelphia)", "P", "D", "S", "O", "CC", "W", "Other"].map((m) => `<option ${m === (d.mint || "") ? "selected" : ""} value="${esc(m)}">${m || "Choose…"}</option>`).join("")}${d.mint && !["", "None (Philadelphia)", "P", "D", "S", "O", "CC", "W", "Other"].includes(d.mint) ? `<option selected value="${esc(d.mint)}">${esc(d.mint)}</option>` : ""}</select></div>
       </div>
       <div class="two">
-        <div class="field"><label for="f-grade">Condition</label><select id="f-grade">${gradeOpts.map((g) => `<option ${g === (d.grade || "") ? "selected" : ""} value="${esc(g)}">${g || "Choose…"}</option>`).join("")}</select></div>
+        <div class="field"><label for="f-grade">Condition</label><select id="f-grade">${gradeSelect(d.grade)}</select></div>
         <div class="field"><label for="f-paid">Price paid ($)</label><input id="f-paid" inputmode="decimal" autocomplete="off" value="${esc(d.paid)}" placeholder="e.g. 12.50"></div>
       </div>
       <div class="two">
@@ -935,8 +958,8 @@ function renderAlbum() {
 }
 
 /* ---------- judging the condition ---------- */
-const LADDER = GRADES.slice(1, 14); // P-1 Poor … MS-67 Superb Gem, most worn first
-const TIER = ["", "", "", "g", "vg", "f", "vf", "ef", "au", "ms", "ms", "ms", "ms"];
+const LADDER = SCALE.map((x) => x[0]); // P-1 Poor … MS-70 Perfect, most worn first
+const TIER = ["", "", "", "g", "vg", "f", "vf", "ef", "au", "ms", "ms", "ms", "ms", "ms"];
 const GRADE_TEXT = [
   "So worn the type of coin is barely recognizable. The date may be gone.",
   "Worn nearly smooth. You can tell what kind of coin it is and read part of the date.",
@@ -951,7 +974,17 @@ const GRADE_TEXT = [
   "No wear. A few small nicks and good shine.",
   "No wear. Only small, scattered nicks and strong shine.",
   "No wear and almost no marks. Beautiful shine.",
+  "Flawless. No marks at all, even under a magnifier. Very rare.",
 ];
+// For the in-between grades (F-15, VF-30 …): the main grade below and above it.
+function betweenNote(gi) {
+  const d = SCALE[gi][1];
+  if (gi === 0 || SCALE[gi - 1][1] !== d) return "";
+  let lo = gi; while (lo > 0 && SCALE[lo - 1][1] === d) lo--;
+  let hi = gi; while (hi < SCALE.length - 1 && SCALE[hi][1] === d) hi++;
+  const code = (i) => SCALE[i][0].split(" ")[0];
+  return `In between: a little better than ${code(lo)}, not quite ${code(hi)}. The coin has a bit more detail${d >= 9 ? ", fewer marks or better shine" : " left"}.`;
+}
 
 async function renderGrade() {
   const c = coins.find((x) => x.id === view.id);
@@ -964,7 +997,8 @@ async function renderGrade() {
     .sort((a, b) => (seriesOf(b) === s) - (seriesOf(a) === s));
   const ri = refs.length ? (view.ri || 0) % refs.length : 0, ref = refs[ri];
   const twoSided = photos.length > 1 || (ref && ref.photos.length > 1);
-  const tier = TIER[gi], specific = s && s.grading && s.grading[tier];
+  const desc = SCALE[gi][1], between = betweenNote(gi);
+  const tier = TIER[desc], specific = s && s.grading && s.grading[tier];
   setBar("Judge the condition", true);
   app.innerHTML = `
     <div class="pair">
@@ -979,7 +1013,8 @@ async function renderGrade() {
     <section class="gradecard" aria-live="polite">
       <p class="g-step">Step ${gi + 1} of ${LADDER.length}, from most worn to best</p>
       <h2>${esc(g)}</h2>
-      <p>${esc(GRADE_TEXT[gi])}</p>
+      <p>${esc(GRADE_TEXT[desc])}</p>
+      ${between ? `<p class="hint">${esc(between)}</p>` : ""}
       ${specific ? `<p><strong>On a ${esc(s.name)}:</strong> ${esc(specific)}</p>` : ""}
       ${s && s.hp ? `<p class="hint">Wear shows first on ${esc(s.hp)}.</p>` : ""}
     </section>
