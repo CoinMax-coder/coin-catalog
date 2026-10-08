@@ -73,6 +73,9 @@ img.pcshot { width: 2.5in; border: 2pt solid #9aa1b1; border-radius: 6pt; displa
 .ad-stars div { background: var(--brass-soft); border: 2pt solid var(--brass); border-radius: 10pt; padding: 6pt 10pt; font-size: 12pt; line-height: 1.28; color: var(--ink); break-inside: avoid; }
 .ad-stars b { display: block; font-size: 15pt; color: var(--album); margin-bottom: 2pt; }
 .ad-stars b::before { content: "★ "; color: var(--brass); }
+.twoshots { display: flex; justify-content: center; gap: 30pt; margin-top: 12pt; }
+.twoshots figure { margin: 0; text-align: center; }
+.twoshots .shot { width: 1.8in; }
 </style>
 </head>
 <body>
@@ -93,7 +96,7 @@ img.pcshot { width: 2.5in; border: 2pt solid #9aa1b1; border-radius: 6pt; displa
     <div><b>Coin albums</b>17 U.S. series, from Indian Head cents to Morgan dollars. Every date and mint mark has a spot, so you see at a glance what you have and what you still need.</div>
     <div><b>Fills in the details for you</b>A built-in U.S. coin catalog knows the dates, mint marks, key dates, varieties and specifications. Pick the coin and the facts are filled in.</div>
     <div><b>Help judging the condition</b>Compare your coin side by side with your own graded coins and plain-English grade descriptions. One tap opens the PCGS reference photos.</div>
-    <div><b>Insurance report</b>Print a neat list of every coin with its picture, grade and price, plus the total. Ready to hand to your insurance agent.</div>
+    <div><b>Insurance report</b>Print a neat list of every coin with its picture, grade, price paid and value, plus the totals. Ready to hand to your insurance agent.</div>
   </div>
   <div class="ad-grid">
     <div><b>Straight from the microscope</b>Bring in a whole SD card of pictures at once. The originals are never changed.</div>
@@ -102,9 +105,9 @@ img.pcshot { width: 2.5in; border: 2pt solid #9aa1b1; border-radius: 6pt; displa
     <div><b>Zoom right in</b>Big + and − buttons or two fingers show every scratch and mint mark up close.</div>
     <div><b>Find any coin fast</b>Search by year, country, coin or note in a second.</div>
     <div><b>Phone and computer in step</b>Sync over home Wi-Fi with a 6-digit code, or with a cable. Never through the cloud.</div>
-    <div><b>Safe backups</b>Save one backup file to keep the whole collection safe.</div>
+    <div><b>What it’s worth</b>Your own value for each coin, a running total, and a quick look at recent eBay sold prices.</div>
     <div><b>Made for easy reading</b>Large print, big buttons, plain words and a dark mode.</div>
-    <div><b>Private by design</b>Your pictures never leave your own phone or computer.</div>
+    <div><b>Private and backed up</b>Pictures never leave your own devices. One backup file keeps it all safe.</div>
   </div>
 </section>
 
@@ -127,7 +130,7 @@ img.pcshot { width: 2.5in; border: 2pt solid #9aa1b1; border-radius: 6pt; displa
     <div><svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><path d="M24 4 L40 10 V24 C40 34 33 41 24 44 C15 41 8 34 8 24 V10 Z" fill="none" stroke="#1f6b3a" stroke-width="3"/><path d="M16 24 l6 6 l11 -12" fill="none" stroke="#1f6b3a" stroke-width="3.5" stroke-linecap="round"/></svg>
       <p style="margin:0">There is <strong>no account and no password</strong>. The app never asks for money or personal details.</p></div>
     <div><svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><rect x="10" y="6" width="28" height="36" rx="3" fill="none" stroke="#9a6b12" stroke-width="3"/><path d="M24 14 v14 M17 22 l7 7 l7 -7" fill="none" stroke="#9a6b12" stroke-width="3" stroke-linecap="round"/><path d="M16 35 h16" stroke="#9a6b12" stroke-width="3" stroke-linecap="round"/></svg>
-      <p style="margin:0">Save a <strong>backup</strong> once a month so you never lose your collection (see page 15).</p></div>
+      <p style="margin:0">Save a <strong>backup</strong> once a month so you never lose your collection (see page 16).</p></div>
   </div>
 </section>
 
@@ -403,12 +406,28 @@ img.pcshot { width: 2.5in; border: 2pt solid #9aa1b1; border-radius: 6pt; displa
   <div class="box tip"><p><strong>Photos from PCGS.</strong> PCGS, the coin grading company, shows photos of real coins at every grade. At the bottom of the same screen, tap <strong>See the PCGS photos of each grade</strong>. Their website opens in Chrome. Choose the kind of coin the app names, then compare. This needs the internet. Close Chrome's tab to come back to the app.</p></div>
 </section>
 
+<!-- Value tracker -->
+<section class="page">
+  <h2>What your coins are worth</h2>
+  <p>The first screen shows <strong>"My collection is worth about"</strong> and a total. The values are <strong>your own estimates</strong>, from a price guide, a dealer, or what similar coins sold for. Example coins are not counted.</p>
+  <ol class="steps">
+    <li><span>Open a coin and tap <span class="btnlike">Add value</span> (or <span class="btnlike">Update value</span>).</span></li>
+    <li><span>Not sure? Tap <span class="btnlike">Recent sold prices</span> to see what coins like it sold for on eBay, or <span class="btnlike">Search the web</span>. Close that tab to come back.</span></li>
+    <li><span>Type what it is worth and tap the gold <span class="btnlike gold">Save value</span> button.</span></li>
+    <li><span>To see every value, tap the <strong>"worth about"</strong> box on the first screen. It shows what you paid and whether the collection has gone <strong>up or down</strong>.</span></li>
+  </ol>
+  <div class="twoshots">
+    <figure><img class="shot" src="value-sheet.png" alt="Typing in what a coin is worth"></figure>
+    <figure><img class="shot" src="values.png" alt="The Collection value screen"></figure>
+  </div>
+</section>
+
 <!-- Insurance report -->
 <section class="page">
   <h2>A list for insurance</h2>
   <div class="withshot">
     <div>
-      <p>The app can make a printed list of your whole collection, with pictures and prices. It is useful for your <strong>insurance agent</strong> and for the <strong>family</strong>.</p>
+      <p>The app can make a printed list of your whole collection, with pictures, prices paid and what each coin is worth, plus the totals. It is useful for your <strong>insurance agent</strong> and for the <strong>family</strong>.</p>
       <ol class="steps">
         <li><span>On the first screen, tap <span class="btnlike">Insurance report</span>.</span></li>
         <li><span>Type your <strong>name</strong> in the box. The app remembers it next time.</span></li>
@@ -505,10 +524,10 @@ img.pcshot { width: 2.5in; border: 2pt solid #9aa1b1; border-radius: 6pt; displa
   </div>
   <h3>Why it is safe</h3>
   <ul class="checks">
-    <li><span><strong>Your pictures stay with you.</strong> When you add a picture, the app copies it into its own storage on that phone or computer. It never uploads it to the internet, and nobody else can see it. Sync only sends it straight to your own other device.</span></li>
-    <li><span><strong>The internet only delivers the app.</strong> The website sends the app to your device, the same way a shop hands you an empty photo album. What you put in the album stays at home.</span></li>
+    <li><span><strong>Your pictures stay with you.</strong> The app keeps its own copy on that phone or computer. It never uploads it, and nobody else can see it. Sync only sends it to your own other device.</span></li>
+    <li><span><strong>The internet only delivers the app.</strong> Like a shop handing you an empty photo album: what you put in it stays at home.</span></li>
     <li><span><strong>No account, no password, no sign-up.</strong> It never asks for your name, email, address, bank details or money.</span></li>
-    <li><span><strong>No ads and no tracking.</strong> The app contacts no one except its own website, to check for updates. Two exceptions: the <strong>PCGS photos</strong> button opens the PCGS website only when you tap it, and <strong>Sync over Wi-Fi</strong> uses a free service called PeerJS to introduce your two devices. Neither one ever sees your coins or pictures.</span></li>
+    <li><span><strong>No ads and no tracking.</strong> The app only contacts its own website, for updates. The exceptions, only when you tap them: the <strong>PCGS photos</strong> button opens the PCGS website, and <strong>Recent sold prices</strong> and <strong>Search the web</strong> open eBay and Google with just the coin’s year, name and grade. <strong>Sync over Wi-Fi</strong> uses a free service called PeerJS to introduce your two devices. None of them ever sees your pictures.</span></li>
     <li><span><strong>Your SD card is not changed.</strong> The app makes a copy, so your original pictures stay safe on the card.</span></li>
   </ul>
 </section>
@@ -532,7 +551,7 @@ img.pcshot { width: 2.5in; border: 2pt solid #9aa1b1; border-radius: 6pt; displa
   <table class="help">
     <tr><td>I can't find the app</td><td>Look for the gold coin called <strong>My Coins</strong> on the phone's home screen, or in the computer's Start menu.</td></tr>
     <tr><td>I only see recent photos, not the SD card</td><td>Tap <strong>☰</strong> or <strong>Browse</strong> in the picture chooser and pick the SD card.</td></tr>
-    <tr><td>My coins are not on the computer</td><td>Tap <strong>Sync phone and computer</strong> on both and follow the steps (page 16).</td></tr>
+    <tr><td>My coins are not on the computer</td><td>Tap <strong>Sync phone and computer</strong> on both and follow the steps (page 17).</td></tr>
     <tr><td>A coin is not in its album</td><td>Open the coin, tap <strong>Change details</strong> and pick its <strong>Type of coin</strong> and date.</td></tr>
     <tr><td>The writing is too small</td><td>On a computer, hold <strong>Ctrl</strong> and press <strong>+</strong>. On a phone, make the text bigger in the phone's Settings under Display.</td></tr>
     <tr><td>Is my collection protected?</td><td>Open <strong>Help &amp; backup</strong>. A line with a <strong>✓</strong> means the device will keep your coins permanently.</td></tr>
