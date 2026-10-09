@@ -100,6 +100,7 @@ dl.facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; white-space: pre
 form { display: grid; gap: 18px }
 .field { display: grid; gap: 6px }
 .field label { font-weight: 700 }
+.field label .hint { font-weight: 400 }
 .field .hint { color: var(--muted); font-size: 1.05rem }
 .field input, .field select, .field textarea { width: 100%; min-height: 60px; padding: 10px 14px; border: 2px solid var(--line); border-radius: var(--radius); background: var(--surface) }
 .field textarea { min-height: 120px; resize: vertical }
@@ -108,6 +109,14 @@ form { display: grid; gap: 18px }
 .slot { background: var(--surface); border: 2px dashed var(--line); border-radius: var(--radius); padding: 10px; display: grid; gap: 8px; text-align: center }
 .slot .ph { aspect-ratio: 1; max-width: 100%; border-radius: 50%; overflow: hidden; background: var(--bg); display: grid; place-items: center; color: var(--muted) }
 .slot .ph img { width: 100%; height: 100%; object-fit: cover }
+/* Keep the photo circles small enough that both buttons fit on the first screen, even on a wide computer screen. */
+.slot .ph { width: min(100%, 24vh); margin: 0 auto }
+.more-types { margin-top: 10px; width: 100% }
+/* Floating "Add info below" / "Top" button on the Add a coin page. */
+.jump { position: fixed; right: 14px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 6; background: var(--album); color: var(--album-ink); border: 2px solid var(--album-ink);
+  border-radius: 999px; min-height: 56px; padding: 8px 20px; font: inherit; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.3) }
+.jump b { font-size: 1.5rem; line-height: 1 }
+#f { padding-bottom: 72px }
 .slot .btn { min-height: 56px; padding: 8px 10px; font-size: 1.1rem }
 
 /* import review */
@@ -289,8 +298,8 @@ function loadImage(blob) {
 // Finds the coin in a picture so the round thumbnail can be centered on it. Works on a small copy:
 // takes the color around the edges as the background, marks what differs from it most (the coin),
 // keeps the biggest patch (not a date stamp or a speck) and returns its box, or null if it doesn't look like one coin.
-function findCoin(img) {
-  const W = img.naturalWidth, H = img.naturalHeight, k = 200 / Math.max(W, H);
+function findCoin(img, anyShape) {
+  const W = img.naturalWidth || img.width, H = img.naturalHeight || img.height, k = 200 / Math.max(W, H);
   const w = Math.max(1, Math.round(W * k)), h = Math.max(1, Math.round(H * k)), N = w * h;
   const c = document.createElement("canvas"); c.width = w; c.height = h;
   const g = c.getContext("2d", { willReadFrequently: true }); g.drawImage(img, 0, 0, w, h);
@@ -332,7 +341,9 @@ function findCoin(img) {
   if (!top) return null;
   const bw = top.x1 - top.x0 + 1, bh = top.y1 - top.y0 + 1;
   // A coin: a fair share of the picture, about as wide as tall, and filling most of its box.
-  if (top.n < N * 0.02 || bw / bh > 1.3 || bh / bw > 1.3 || top.n < bw * bh * 0.3) return null;
+  if (top.n < N * 0.02 || top.n < bw * bh * 0.3) return null;
+  if (anyShape) return { ratio: bw / bh, inside: top.x0 > 0 && top.y0 > 0 && top.x1 < w - 1 && top.y1 < h - 1 };
+  if (bw / bh > 1.3 || bh / bw > 1.3) return null;
   return {
     cx: (top.x0 + top.x1 + 1) / 2 / k, cy: (top.y0 + top.y1 + 1) / 2 / k, size: Math.max(bw, bh) / k,
     bg: `rgb(${bg.join(",")})`,
@@ -413,11 +424,17 @@ function cameraOf(buf) {
 }
 async function unsqueeze(blob) {
   const cam = cameraOf(await blob.arrayBuffer());
-  const m = SQUEEZERS.find((x) => x.make === cam.make && x.model === cam.model);
-  if (!m) return blob;
+  let m = SQUEEZERS.find((x) => x.make === cam.make && x.model === cam.model);
   const bm = await createImageBitmap(blob);
   // Only the 4:3 pictures are squeezed; leave anything else (or a turned picture) alone.
   if (Math.abs(bm.width / bm.height - 4 / 3) > 0.02) { bm.close(); return blob; }
+  if (!m) {
+    // No camera name (some phones and apps drop it when sharing a picture): look at the coin itself.
+    // A whole coin about 3 wide for every 4 tall is the same squeeze.
+    let coin = null; try { coin = findCoin(bm, true); } catch (e) {}
+    if (coin && coin.inside && coin.ratio > 0.7 && coin.ratio < 0.8) m = { widen: 4 / 3 };
+  }
+  if (!m) { bm.close(); return blob; }
   const c = document.createElement("canvas"); c.width = Math.round(bm.width * m.widen); c.height = bm.height;
   const g = c.getContext("2d"); g.imageSmoothingQuality = "high"; g.drawImage(bm, 0, 0, c.width, c.height); bm.close();
   return await new Promise((res) => c.toBlob((b) => res(b || blob), "image/jpeg", 0.92));
@@ -644,8 +661,67 @@ const SERIES = [
     mintMark: "Front, above the date",
     dates: "1971-1974:P D; 1976:P D; 1977-1978:P D", keys: [],
     hp: "Eisenhower's cheek and the hair above his ear; the eagle's head and claws on the back" },
+  // Rarer and older types: hidden from the "Type of coin" list until "Show rarer coins" is pressed.
+  { id: "flying-eagle-cent", group: "Rarer and older coins", rare: true, name: "Flying Eagle cent", den: "Flying Eagle cent", from: 1856, to: 1858, aliases: ["flying eagle"],
+    metal: "88% copper, 12% nickel", weight: "4.67 g", size: "19 mm", designer: "James B. Longacre",
+    mintMark: "None. All were made in Philadelphia",
+    dates: "1856:P; 1857:P; 1858:P*Large_letters P*Small_letters", keys: ["1856"],
+    hp: "the eagle's breast and the tips of its wings, and the bow of the wreath on the back" },
+  { id: "two-cent", group: "Rarer and older coins", rare: true, name: "Two-cent piece", den: "Two-cent piece", from: 1864, to: 1873, aliases: ["two cent", "2 cent", "2-cent"],
+    metal: "Bronze", weight: "6.22 g", size: "23 mm", designer: "James B. Longacre",
+    mintMark: "None. All were made in Philadelphia",
+    dates: "1864:P*Small_motto P*Large_motto; 1865-1873:P", keys: ["1864 Small motto", "1872", "1873"],
+    hp: "the word WE in the motto, the leaves by the shield, and the wheat on the back" },
+  { id: "three-cent-silver", group: "Rarer and older coins", rare: true, name: "Three-cent silver", den: "Three-cent silver", from: 1851, to: 1873, aliases: ["three cent silver", "3 cent silver", "3-cent silver", "trime"],
+    metal: "75% silver (1851–1853), then 90% silver", weight: "0.80 g, then 0.75 g", size: "14 mm", designer: "James B. Longacre",
+    mintMark: "Back, to the right of the III (1851-O only)",
+    dates: "1851:P O; 1852-1873:P", keys: ["1851-O", "1855", "1863", "1864", "1865", "1866", "1867", "1868", "1869", "1870", "1871", "1872", "1873"],
+    hp: "the star's center and the shield on the front, and the III on the back" },
+  { id: "three-cent-nickel", group: "Rarer and older coins", rare: true, name: "Three-cent nickel", den: "Three-cent nickel", from: 1865, to: 1889,
+    aliases: ["three cent nickel", "3 cent nickel", "3-cent nickel", "three cent piece", "3 cent piece", "3-cent piece", "three-cent piece"],
+    metal: "75% copper, 25% nickel", weight: "1.94 g", size: "17.9 mm", designer: "James B. Longacre",
+    mintMark: "None. All were made in Philadelphia",
+    dates: "1865-1889:P", keys: ["1877", "1878", "1884", "1885", "1886", "1887"],
+    hp: "Liberty's hair above the eye and the curls by her ear, and the lines in the III on the back",
+    grading: { g: "Liberty is outlined. The hair is worn flat. The III is worn but can be read.", vg: "Some hair above the forehead shows. The rims are complete.", f: "Half the hair detail shows. The lines in the III are worn but show.", vf: "Most hair detail shows. The leaves in the wreath are clear.", ef: "Light wear on the hair above the eye and the curls by the ear.", au: "Just a trace of rub on the cheek and the hair above the eye." } },
+  { id: "shield-nickel", group: "Rarer and older coins", rare: true, name: "Shield nickel", den: "Shield nickel", from: 1866, to: 1883, aliases: ["shield nickel"],
+    metal: "75% copper, 25% nickel", weight: "5.0 g", size: "20.5 mm", designer: "James B. Longacre",
+    mintMark: "None. All were made in Philadelphia",
+    dates: "1866:P; 1867:P*With_rays P*No_rays; 1868-1883:P", keys: ["1877", "1878", "1880", "1881"],
+    hp: "the leaves and the ball at the top of the shield, and the 5 on the back" },
+  { id: "twenty-cent", group: "Rarer and older coins", rare: true, name: "Twenty-cent piece", den: "Twenty-cent piece", from: 1875, to: 1878, aliases: ["twenty cent", "20 cent", "20-cent"],
+    metal: "90% silver, 10% copper", weight: "5.0 g", size: "22 mm", designer: "William Barber", silver: "0.1447 troy oz of pure silver",
+    mintMark: "Back, below the eagle",
+    dates: "1875:P CC S; 1876:P CC; 1877-1878:P", keys: ["1876-CC", "1877", "1878"],
+    hp: "Liberty's head, knees and breast, and the eagle's breast on the back" },
+  { id: "barber-dime", group: "Rarer and older coins", rare: true, name: "Barber dime", den: "Barber dime", from: 1892, to: 1916, aliases: ["barber dime", "liberty head dime"],
+    metal: "90% silver, 10% copper", weight: "2.5 g", size: "17.9 mm", designer: "Charles E. Barber", silver: SILVER.dime,
+    mintMark: "Back, below the wreath",
+    dates: "1892-1903:P O S; 1904:P S; 1905:P O S; 1906-1909:P D O S; 1910-1912:P D S; 1913:P S; 1914:P D S; 1915-1916:P S",
+    keys: ["1894-S", "1895", "1895-O", "1896-S", "1901-S", "1903-S", "1913-S"],
+    hp: "the word LIBERTY on the headband, the hair over the forehead, and the bow of the wreath",
+    grading: { g: "The date and letters can be read. LIBERTY is worn away.", vg: "At least 3 letters of LIBERTY show.", f: "All of LIBERTY shows, even if some letters are weak.", vf: "LIBERTY is sharp. The edges of the headband show.", ef: "Light wear on the hair, the cheek and the leaves of the wreath.", au: "Just a trace of rub on the cheek and the hair over the forehead." } },
+  { id: "barber-quarter", group: "Rarer and older coins", rare: true, name: "Barber quarter", den: "Barber quarter", from: 1892, to: 1916, aliases: ["barber quarter", "liberty head quarter"],
+    metal: "90% silver, 10% copper", weight: "6.25 g", size: "24.3 mm", designer: "Charles E. Barber", silver: SILVER.quarter,
+    mintMark: "Back, below the eagle's tail",
+    dates: "1892-1903:P O S; 1904:P O; 1905:P O S; 1906:P D O; 1907-1909:P D O S; 1910:P D; 1911:P D S; 1912:P S; 1913-1915:P D S; 1916:P D",
+    keys: ["1896-S", "1901-S", "1913-S"],
+    hp: "the word LIBERTY on the headband and the hair over the forehead; the eagle's head and wing tips on the back",
+    grading: { g: "The date and letters can be read. LIBERTY is worn away.", vg: "At least 3 letters of LIBERTY show.", f: "All of LIBERTY shows, even if some letters are weak.", vf: "LIBERTY is sharp. The eagle's feathers show some detail.", ef: "Light wear on the hair, the cheek and the eagle's head and wing tips.", au: "Just a trace of rub on the cheek and the hair over the forehead." } },
+  { id: "barber-half", group: "Rarer and older coins", rare: true, name: "Barber half dollar", den: "Barber half", from: 1892, to: 1915, aliases: ["barber half", "liberty head half"],
+    metal: "90% silver, 10% copper", weight: "12.5 g", size: "30.6 mm", designer: "Charles E. Barber", silver: SILVER.half,
+    mintMark: "Back, below the eagle's tail",
+    dates: "1892-1905:P O S; 1906-1908:P D O S; 1909:P O S; 1910:P S; 1911-1913:P D S; 1914:P S; 1915:P D S",
+    keys: ["1892-O", "1892-S", "1893-S", "1897-O", "1897-S", "1913", "1914", "1915"],
+    hp: "the word LIBERTY on the headband and the hair over the forehead; the eagle's head and wing tips on the back",
+    grading: { g: "The date and letters can be read. LIBERTY is worn away.", vg: "At least 3 letters of LIBERTY show.", f: "All of LIBERTY shows, even if some letters are weak.", vf: "LIBERTY is sharp. The eagle's feathers show some detail.", ef: "Light wear on the hair, the cheek and the eagle's head and wing tips.", au: "Just a trace of rub on the cheek and the hair over the forehead." } },
+  { id: "trade-dollar", group: "Rarer and older coins", rare: true, name: "Trade dollar", den: "Trade dollar", from: 1873, to: 1885, aliases: ["trade dollar"],
+    metal: "90% silver, 10% copper", weight: "27.22 g", size: "38.1 mm", designer: "William Barber", silver: "0.7874 troy oz of pure silver",
+    mintMark: "Back, above the letters DOL in DOLLAR",
+    dates: "1873-1878:P CC S; 1879-1885:P", keys: ["1878", "1878-CC", "1879", "1880", "1881", "1882", "1883", "1884", "1885"],
+    hp: "Liberty's head and left breast, and the eagle's head and the tops of its wings" },
 ];
-const GROUPS = ["Cents", "Nickels", "Dimes", "Quarters", "Half dollars", "Dollars"];
+const GROUPS = ["Cents", "Nickels", "Dimes", "Quarters", "Half dollars", "Dollars", "Rarer and older coins"];
 const seriesById = (id) => SERIES.find((s) => s.id === id) || null;
 const normMint = (m) => (!m || /^none/i.test(m) || m === "P") ? "P" : m;
 
@@ -694,6 +770,7 @@ function fieldsForSlot(s, sl) {
 }
 
 /* ---------- state + navigation ---------- */
+window.addEventListener("scroll", () => { const j = document.getElementById("jump"); if (j && j.update) j.update(); }, { passive: true });
 let coins = [];
 let view = { name: "home" };
 let query = "";
@@ -963,6 +1040,16 @@ function gradeSelect(cur) {
     + `<optgroup label="Other">${other.map(opt).join("")}</optgroup>`;
 }
 
+// The "Type of coin" list. Rarer types stay hidden until asked for, or when the coin already is one.
+let showRare = false;
+function seriesOptions(cur) {
+  const rare = showRare || (seriesById(cur) || {}).rare;
+  return `<option value="">Not on the list, or not sure</option>` + GROUPS.map((g) => {
+    const list = SERIES.filter((s) => s.group === g && (rare || !s.rare));
+    return list.length ? `<optgroup label="${g}">${list.map((s) => `<option value="${s.id}" ${s.id === cur ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</optgroup>` : "";
+  }).join("");
+}
+
 function renderEdit() {
   const isNew = !view.id;
   if (!draft) draft = { photos: [] };
@@ -971,7 +1058,7 @@ function renderEdit() {
   const ser = seriesById(d.series);
   app.innerHTML = `
     <form id="f" novalidate>
-      <div class="field"><label>Photos</label><span class="hint">Add the front and the back. Photos are optional.</span>
+      <div class="field"><label>Photos <span class="hint">(optional) front and back</span></label>
         <div class="slots">${[0, 1].map((i) => `
           <div class="slot"><div class="ph" data-ph="${i}">${d.photos[i] ? '<img alt="">' : (i ? "Back" : "Front")}</div>
             <button class="btn" type="button" data-cam="${i}">Take photo</button>
@@ -981,7 +1068,8 @@ function renderEdit() {
       </div>
       <div class="field"><label for="f-series">Type of coin</label>
         <span class="hint">Pick it from the list of U.S. coins and the year, mint mark and name fill in by themselves.</span>
-        <select id="f-series"><option value="">Not on the list, or not sure</option>${GROUPS.map((g) => `<optgroup label="${g}">${SERIES.filter((s) => s.group === g).map((s) => `<option value="${s.id}" ${s.id === d.series ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</optgroup>`).join("")}</select>
+        <select id="f-series">${seriesOptions(d.series)}</select>
+        ${showRare || (ser && ser.rare) ? "" : `<button class="btn more-types" type="button" id="more-types">Show rarer coins, like the 3-cent piece</button>`}
       </div>
       ${ser ? `<div class="field"><label for="f-slot">${ser.states ? "Which state and mint mark?" : "Which date and mint mark?"}</label>
         <select id="f-slot"><option value="">Choose…</option>${slotsOf(ser).map((z) => `<option value="${esc(z.key)}" ${d.slot === z.key ? "selected" : ""}>${esc(z.label)}${z.isKey ? " (key date)" : ""}</option>`).join("")}</select>
@@ -1021,6 +1109,25 @@ function renderEdit() {
     d.series = s ? s.id : ""; d.slot = "";
     if (s) { d.country = "United States"; if (!s.states) d.denomination = s.den; }
     renderEdit(); const n = document.getElementById(s ? "f-slot" : "f-series"); if (n) n.focus();
+  };
+  // Floating button: "Add info below" jumps just past the photo buttons; once scrolled down it becomes "Top".
+  const jump = document.createElement("button");
+  jump.type = "button"; jump.className = "jump"; jump.id = "jump"; app.appendChild(jump);
+  const typeField = document.getElementById("f-series").closest(".field");
+  const target = () => typeField.getBoundingClientRect().top + window.scrollY - document.querySelector(".bar").offsetHeight - 10;
+  jump.update = () => {
+    const down = window.scrollY < target() - 30;
+    if (jump.dataset.down === String(down)) return;
+    jump.dataset.down = down;
+    jump.innerHTML = down ? "<b>↓</b> Add info below" : "<b>↑</b> Top";
+    jump.setAttribute("aria-label", down ? "Scroll down to the coin details" : "Back to the top of the page");
+  };
+  jump.onclick = () => window.scrollTo({ top: jump.dataset.down === "true" ? target() : 0, behavior: "smooth" });
+  jump.update();
+  const more = document.getElementById("more-types");
+  if (more) more.onclick = () => {
+    showRare = true; const sel = document.getElementById("f-series");
+    sel.innerHTML = seriesOptions(d.series); more.remove(); toast("Rarer coins are now at the bottom of the list"); sel.focus();
   };
   const slotSel = document.getElementById("f-slot");
   if (slotSel) slotSel.onchange = () => {
