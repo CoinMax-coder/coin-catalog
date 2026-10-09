@@ -262,8 +262,6 @@ button.chip:hover { border-color: var(--brass) }
 .prow > .top .ph img { width: 100%; height: 100%; object-fit: cover }
 .prow > .top .t { font-weight: 700; line-height: 1.25 }
 .prow > .top .s { color: var(--muted); font-size: 1.05rem }
-.defbox { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: var(--brass); cursor: pointer; padding: 4px 10px; border: 2px solid var(--brass); border-radius: var(--radius); background: var(--brass-soft); min-height: 44px }
-.defbox input { width: 26px; height: 26px; accent-color: var(--brass); margin: 0 }
 .field input[readonly], .field select:disabled { background: var(--bg); color: var(--muted); border-style: dashed }
 .linkbtn { background: none; border: 0; padding: 4px 0; color: var(--focus); text-decoration: underline; font-weight: 700; cursor: pointer; justify-self: start; min-height: 44px }
 .keybox { display: flex; gap: 10px; flex-wrap: wrap }
@@ -1192,21 +1190,8 @@ function gradeSelect(cur) {
     + `<optgroup label="Other">${other.map(opt).join("")}</optgroup>`;
 }
 
-/* ---------- defaults for new coins ---------- */
-// "Set default" saves what is typed in the ticked fields; every new coin starts with those. Kept on this device only.
-const DEF_FIELDS = [["series", "Type of coin"], ["year", "Year"], ["country", "Country"], ["denomination", "Coin"], ["mint", "Mint mark"], ["grade", "Condition"], ["paid", "Price paid"], ["value", "Worth now"], ["notes", "Notes"]];
-const DKEY = "coin-catalog-defaults", DHIST = "coin-catalog-defaults-history";
-const loadJSON = (k, fb) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? fb : v; } catch (e) { return fb; } };
-const saveJSON = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const getDefaults = () => loadJSON(DKEY, {});
-function setDefaults(next) { const h = loadJSON(DHIST, []); h.push(getDefaults()); saveJSON(DHIST, h.slice(-20)); saveJSON(DKEY, next); }
-function undoDefaults() { const h = loadJSON(DHIST, []); if (!h.length) return false; saveJSON(DKEY, h.pop()); saveJSON(DHIST, h); return true; }
-const canUndoDefaults = () => loadJSON(DHIST, []).length > 0;
-function defaultsText() {
-  const d = getDefaults();
-  return DEF_FIELDS.filter(([k]) => d[k]).map(([k, label]) => label + ": " + (k === "series" ? (seriesById(d[k]) || { name: d[k] }).name : d[k])).join(" · ");
-}
-let defPick = null; // the set of ticked fields while choosing defaults, else null
+// Clears defaults saved by the short-lived "Set default" button.
+try { localStorage.removeItem("coin-catalog-defaults"); localStorage.removeItem("coin-catalog-defaults-history"); } catch (e) {}
 const MINT_NAMES = { P: "Philadelphia", D: "Denver", S: "San Francisco", O: "New Orleans", CC: "Carson City", W: "West Point" };
 
 function renderEdit() {
@@ -1217,10 +1202,7 @@ function renderEdit() {
   const ser = seriesById(d.series);
   const slots = ser ? slotsOf(ser) : [];
   const fromSlot = !!(d.slot && slots.some((z) => z.key === d.slot));
-  if (!isNew) defPick = null;
-  // A field label, with a "Default" tick box beside it while choosing defaults.
-  const lab = (key, forId, text, extra = "") => `<div class="lab-row"><label for="${forId}">${text}</label>${defPick ? `<label class="defbox"><input type="checkbox" data-def="${key}" ${defPick.has(key) ? "checked" : ""}> Default</label>` : extra}</div>`;
-  const dtext = defaultsText();
+  const lab = (key, forId, text, extra = "") => extra ? `<div class="lab-row"><label for="${forId}">${text}</label>${extra}</div>` : `<label for="${forId}">${text}</label>`;
   // Date choices grouped by decade, each saying which mint it is, so the list can't be mistaken for the Year box.
   const decade = (y) => { const a = Math.floor(+y / 10) * 10; return a + "–" + (a + 9); };
   const slotOptions = () => {
@@ -1231,10 +1213,6 @@ function renderEdit() {
   };
   app.innerHTML = `
     <form id="f" novalidate>
-      ${isNew ? (defPick
-        ? `<div class="note"><p><strong>Tick “Default” next to each field you want new coins to start with</strong>, then press OK at the bottom. Whatever is in the field now becomes the default. An empty field clears its default.</p></div>`
-        : `<div class="row"><button class="btn" type="button" id="def-set">Set default</button><button class="btn" type="button" id="def-undo" ${canUndoDefaults() ? "" : "disabled"}>Undo default</button></div>
-           ${dtext ? `<p class="count">New coins start with: ${esc(dtext)}</p>` : ""}`) : ""}
       <div class="field"><label>Photos</label><span class="hint">Add the front and the back. Photos are optional.</span>
         <div class="slots">${[0, 1].map((i) => `
           <div class="slot"><div class="ph" data-ph="${i}">${d.photos[i] ? '<img alt="">' : (i ? "Back" : "Front")}</div>
@@ -1268,10 +1246,8 @@ function renderEdit() {
         <div class="field">${lab("value", "f-value", "Worth now ($)", `<button class="btn small" id="f-check" type="button">${ICON.price} Check prices</button>`)}<span class="hint">Your best guess. You can change it any time.</span><input id="f-value" inputmode="decimal" autocomplete="off" value="${esc(d.value)}" placeholder="e.g. 45"></div>
       </div>
       <div class="field">${lab("notes", "f-notes", "Notes")}<textarea id="f-notes" placeholder="Where you got it, anything special">${esc(d.notes)}</textarea></div>
-      ${defPick ? `<button class="btn primary wide" type="button" id="def-ok">OK – make these the defaults</button>
-      <button class="btn wide" type="button" id="def-cancel">Cancel</button>`
-      : `<button class="btn primary wide" type="submit">Save this coin</button>
-      <button class="btn wide" type="button" id="cancel">Cancel</button>`}
+      <button class="btn primary wide" type="submit">Save this coin</button>
+      <button class="btn wide" type="button" id="cancel">Cancel</button>
     </form>
     <datalist id="countries">${["United States", "Canada", "Mexico", "United Kingdom", "Germany", "France", "Italy", "Spain", "Australia", "China", "Japan", "India", "South Africa", "Ireland", "Netherlands", "Switzerland"].map((x) => `<option value="${x}">`).join("")}</datalist>
     <datalist id="dens">${["Lincoln cent", "Indian Head cent", "Wheat cent", "Jefferson nickel", "Buffalo nickel", "Roosevelt dime", "Mercury dime", "Washington quarter", "State quarter", "Kennedy half dollar", "Walking Liberty half", "Franklin half", "Morgan dollar", "Peace dollar", "Eisenhower dollar", "Sacagawea dollar", "Half cent", "Large cent", "Flying Eagle cent", "Two-cent piece", "Three-cent silver", "Three-cent nickel", "Shield nickel", "Half dime", "Seated Liberty dime", "Barber dime", "Twenty-cent piece", "Seated Liberty quarter", "Barber quarter", "Seated Liberty half", "Barber half", "Seated Liberty dollar", "Trade dollar", "Gold dollar", "Quarter eagle ($2.50 gold)", "Half eagle ($5 gold)", "Eagle ($10 gold)", "Double eagle ($20 gold)", "1 cent", "5 cents", "10 cents", "25 cents", "50 cents", "1 dollar"].map((x) => `<option value="${x}">`).join("")}</datalist>`;
@@ -1300,22 +1276,8 @@ function renderEdit() {
   const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
   on("cancel", () => { draft = null; back(); });
   on("f-unlock", () => { keep(); d.slot = ""; renderEdit(); const y = document.getElementById("f-year"); if (y) y.focus(); });
-  on("def-set", () => { keep(); defPick = new Set(); renderEdit(); window.scrollTo(0, 0); });
-  on("def-cancel", () => { keep(); defPick = null; renderEdit(); });
-  on("def-undo", () => { keep(); if (undoDefaults()) { const t = defaultsText(); toast(t ? "Defaults put back to: " + t : "Defaults put back: none set", 4000); } renderEdit(); });
-  on("def-ok", () => {
-    keep();
-    const ticked = [...app.querySelectorAll("[data-def]:checked")].map((x) => x.dataset.def);
-    if (!ticked.length) { toast("Tick “Default” next to at least one field first"); return; }
-    const next = { ...getDefaults() };
-    for (const k of ticked) { if (d[k]) next[k] = d[k]; else delete next[k]; }
-    setDefaults(next); defPick = null;
-    toast("Defaults saved for " + ticked.map((k) => DEF_FIELDS.find((f) => f[0] === k)[1]).join(", "), 4000);
-    renderEdit();
-  });
-  app.querySelectorAll("[data-def]").forEach((x) => x.onchange = () => { if (x.checked) defPick.add(x.dataset.def); else defPick.delete(x.dataset.def); });
   document.getElementById("f").onsubmit = async (e) => {
-    e.preventDefault(); if (defPick) return; keep();
+    e.preventDefault(); keep();
     const rec = { ...d, photos: d.photos.filter(Boolean), id: d.id || uid(), created: d.created || Date.now() };
     // Forget the album spot if the year or mint mark was changed by hand afterwards.
     const rs = seriesById(rec.series), rz = rs && slotsOf(rs).find((x) => x.key === rec.slot);
@@ -1398,7 +1360,7 @@ function renderAlbum() {
       const c = list[0];
       if (c.photos && c.photos[0]) photoURL(c.photos[0]).then((u) => { if (u) b.querySelector("img").src = u; });
       b.onclick = () => go({ name: "coin", id: c.id });
-    } else b.onclick = () => { defPick = null; draft = { ...getDefaults(), photos: [], ...fieldsForSlot(s, z) }; go({ name: "edit" }); };
+    } else b.onclick = () => { draft = { photos: [], ...fieldsForSlot(s, z) }; go({ name: "edit" }); };
   });
   if (view.focus) setTimeout(() => { const f = app.querySelector(".slotc.focus"); if (f) f.scrollIntoView({ block: "center" }); }, 60);
 }
@@ -1787,7 +1749,7 @@ async function makeCoins() {
 }
 document.getElementById("pick-camera").onchange = onPicked;
 document.getElementById("pick-files").onchange = onPicked;
-function startAdd() { defPick = null; draft = { ...getDefaults(), photos: [] }; go({ name: "edit" }); }
+function startAdd() { draft = { photos: [] }; go({ name: "edit" }); }
 
 async function removeCoin(c) {
   for (const p of c.photos || []) await del("photos", p);
