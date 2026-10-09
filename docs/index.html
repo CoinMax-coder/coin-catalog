@@ -123,7 +123,6 @@ form { display: grid; gap: 18px }
 .slot .ph img { width: 100%; height: 100%; object-fit: cover }
 /* Keep the photo circles small enough that both buttons fit on the first screen, even on a wide computer screen. */
 .slot .ph { width: min(100%, 24vh); margin: 0 auto }
-.more-types { margin-top: 10px; width: 100% }
 /* Floating "Add info below" / "Top" button on the Add a coin page. */
 .jump { position: fixed; right: 14px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 6; background: var(--album); color: var(--album-ink); border: 2px solid var(--album-ink);
   border-radius: 999px; min-height: 56px; padding: 8px 20px; font: inherit; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.3) }
@@ -177,6 +176,8 @@ h2.sec { font-size: var(--step-1); margin: 8px 0 0 }
 .albs { display: grid; gap: 12px }
 .alb { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 14px 16px; text-align: left; cursor: pointer; display: grid; gap: 6px; min-height: 64px }
 .alb:hover { border-color: var(--brass) }
+.alb { grid-template-columns: 56px 1fr; align-items: center; column-gap: 14px }
+.alb-b { display: grid; gap: 6px; min-width: 0 }
 .alb-t { font-weight: 700 }
 .alb-s { color: var(--muted); font-size: 1.1rem }
 .prog { height: 14px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); overflow: hidden }
@@ -248,6 +249,45 @@ h2.sec { font-size: var(--step-1); margin: 8px 0 0 }
 .sheet .field input { width: 100%; min-height: 64px; padding: 10px 14px; border: 2px solid var(--line); border-radius: var(--radius); background: var(--surface); font-size: var(--step-1) }
 .sheet .field { display: grid; gap: 6px }
 .sheet .field label { font-weight: 700 }
+/* in-app price lookup */
+.lk { border: 2px solid var(--line); border-radius: var(--radius); padding: 12px; display: grid; gap: 10px; background: var(--surface) }
+.lk-head { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; align-items: center }
+.tpick { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; justify-content: flex-start; font-weight: 600 }
+.tpick .nm { flex: 1 }
+.tthumb { width: 56px; height: 56px; flex: none; border-radius: 50%; object-fit: cover; background: var(--bg); border: 1px solid var(--line); display: inline-grid; place-items: center; color: var(--muted); font-size: .8rem; overflow: hidden }
+img.tthumb { object-fit: contain; border-radius: 8px; background: #fff } /* some pictures show both sides side by side */
+.tlist { display: grid; gap: 6px }
+.tlist h3 { margin: 12px 0 2px; font-size: 1.05rem; color: var(--muted) }
+.trow { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 8px 12px; border: 2px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; min-height: 72px }
+.trow:hover, .trow:focus-visible { border-color: var(--brass) }
+.trow.on { border-color: var(--brass); background: var(--brass-soft) }
+.trow .yrs { display: block; color: var(--muted); font-size: 1rem; font-weight: 400 }
+.lk-head img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; background: var(--bg); border: 1px solid var(--line) }
+.lk-head .t { font-weight: 700; line-height: 1.25 }
+.lk-head .s { color: var(--muted); font-size: 1.05rem }
+.chips { display: flex; flex-wrap: wrap; gap: 8px }
+button.chip { cursor: pointer; min-height: 44px; font-family: inherit; color: inherit; background: var(--surface) }
+button.chip:hover { border-color: var(--brass) }
+.chip { border: 1px solid var(--line); border-radius: 999px; padding: 2px 12px; font-size: 1.05rem; white-space: nowrap }
+.chip.mine { border: 2px solid var(--brass); background: var(--brass-soft); font-weight: 700 }
+.lk-use { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between }
+.lk-use strong { font-size: var(--step-1) }
+.lk .src { color: var(--muted); font-size: 1rem; margin: 0 }
+.lk .src a { color: inherit }
+.btn.small { min-height: 52px; padding: 8px 16px; font-size: 1.1rem }
+.lab-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap }
+.prow { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 12px; display: grid; gap: 10px }
+.prow > .top { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 12px; align-items: center }
+.prow > .top .ph { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; background: var(--bg); border: 2px solid var(--line) }
+.prow > .top .ph img { width: 100%; height: 100%; object-fit: cover }
+.prow > .top .t { font-weight: 700; line-height: 1.25 }
+.prow > .top .s { color: var(--muted); font-size: 1.05rem }
+.field input[readonly], .field select:disabled { background: var(--bg); color: var(--muted); border-style: dashed }
+.linkbtn { background: none; border: 0; padding: 4px 0; color: var(--focus); text-decoration: underline; font-weight: 700; cursor: pointer; justify-self: start; min-height: 44px }
+.keybox { display: flex; gap: 10px; flex-wrap: wrap }
+.keybox input.bad { border-color: var(--danger, #b3261e); box-shadow: 0 0 0 3px rgba(179, 38, 30, .25) }
+.bad-note { color: var(--danger, #b3261e); font-weight: 700 }
+.keybox input { flex: 1 1 260px; min-height: 60px; padding: 10px 14px; border: 2px solid var(--line); border-radius: var(--radius); background: var(--surface) }
 </style>
 
 <header class="bar"><div class="bar-in" id="bar"></div></header>
@@ -675,73 +715,133 @@ const SERIES = [
     mintMark: "Front, above the date",
     dates: "1971-1974:P D; 1976:P D; 1977-1978:P D", keys: [],
     hp: "Eisenhower's cheek and the hair above his ear; the eagle's head and claws on the back" },
-  // Rarer and older types: hidden from the "Type of coin" list until "Show rarer coins" is pressed.
-  { id: "flying-eagle-cent", group: "Rarer and older coins", rare: true, name: "Flying Eagle cent", den: "Flying Eagle cent", from: 1856, to: 1858, aliases: ["flying eagle"],
+  // Older and rarer types. Series without `dates` have no album (their date and mint lists are long and
+  // easy to get wrong), but still fill in the name, metal, weight and size.
+  { id: "lc-half-cent", group: "Half cents", name: "Liberty Cap half cent", den: "Liberty Cap half cent", from: 1793, to: 1797, aliases: ["liberty cap half", "half cent"],
+    metal: "Copper", weight: "6.74 g (1793 to early 1795), then 5.44 g", size: "22 mm (1793), 23.5 mm (1794–1797)", designer: "Henry Voigt, Robert Scot and John Smith Gardner",
+    mintMark: "None (all made in Philadelphia)", dates: "1793-1797:P", keys: ["1793", "1796"] },
+  { id: "db-half-cent", group: "Half cents", name: "Draped Bust half cent", den: "Draped Bust half cent", from: 1800, to: 1808, aliases: ["draped bust half", "half cent"],
+    metal: "Copper", weight: "5.44 g", size: "23.5 mm", designer: "Robert Scot",
+    mintMark: "None (all made in Philadelphia)", dates: "1800:P; 1802-1808:P", keys: ["1802"] },
+  { id: "ch-half-cent", group: "Half cents", name: "Classic Head half cent", den: "Classic Head half cent", from: 1809, to: 1836, aliases: ["classic head half", "half cent"],
+    metal: "Copper", weight: "5.44 g", size: "23.5 mm", designer: "John Reich",
+    mintMark: "None (all made in Philadelphia)", dates: "1809-1811:P; 1825-1826:P; 1828-1829:P; 1831-1836:P", keys: ["1811", "1831", "1836"] },
+  { id: "bh-half-cent", group: "Half cents", name: "Braided Hair half cent", den: "Braided Hair half cent", from: 1840, to: 1857, aliases: ["braided hair half", "half cent"],
+    metal: "Copper", weight: "5.44 g", size: "23 mm", designer: "Christian Gobrecht",
+    mintMark: "None (all made in Philadelphia)", note: "1840–1848 and 1852 were made only as proofs for collectors.",
+    dates: "1840-1857:P", keys: ["1840", "1841", "1842", "1843", "1844", "1845", "1846", "1847", "1848", "1852"] },
+  { id: "fh-large-cent", group: "Large cents", name: "Flowing Hair large cent", den: "Flowing Hair large cent", from: 1793, to: 1793, aliases: ["flowing hair", "chain cent", "wreath cent", "large cent"],
+    metal: "Copper", weight: "13.48 g", size: "26–27 mm", designer: "Henry Voigt (Chain), Adam Eckfeldt (Wreath)",
+    mintMark: "None (all made in Philadelphia)", dates: "1793:P*Chain P*Wreath", keys: ["1793 Chain", "1793 Wreath"] },
+  { id: "lc-large-cent", group: "Large cents", name: "Liberty Cap large cent", den: "Liberty Cap large cent", from: 1793, to: 1796, aliases: ["liberty cap cent", "liberty cap large", "large cent"],
+    metal: "Copper", weight: "13.48 g (1793 to 1795), then 10.89 g", size: "29 mm", designer: "Joseph Wright and Robert Scot",
+    mintMark: "None (all made in Philadelphia)", dates: "1793-1796:P", keys: ["1793"] },
+  { id: "db-large-cent", group: "Large cents", name: "Draped Bust large cent", den: "Draped Bust large cent", from: 1796, to: 1807, aliases: ["draped bust cent", "draped bust large", "large cent"],
+    metal: "Copper", weight: "10.89 g", size: "29 mm", designer: "Robert Scot",
+    mintMark: "None (all made in Philadelphia)", dates: "1796-1807:P", keys: ["1799", "1804"] },
+  { id: "ch-large-cent", group: "Large cents", name: "Classic Head large cent", den: "Classic Head large cent", from: 1808, to: 1814, aliases: ["classic head cent", "classic head large", "large cent"],
+    metal: "Copper", weight: "10.89 g", size: "29 mm", designer: "John Reich",
+    mintMark: "None (all made in Philadelphia)", dates: "1808-1814:P", keys: ["1809"] },
+  { id: "cor-large-cent", group: "Large cents", name: "Coronet (Matron Head) large cent", den: "Coronet large cent", from: 1816, to: 1839, aliases: ["coronet cent", "matron head", "coronet large", "large cent"],
+    metal: "Copper", weight: "10.89 g", size: "28–29 mm", designer: "Robert Scot",
+    mintMark: "None (all made in Philadelphia)", dates: "1816-1839:P", keys: ["1823"] },
+  { id: "bh-large-cent", group: "Large cents", name: "Braided Hair large cent", den: "Braided Hair large cent", from: 1839, to: 1857, aliases: ["braided hair cent", "braided hair large", "large cent"],
+    metal: "Copper", weight: "10.89 g", size: "27.5 mm", designer: "Christian Gobrecht",
+    mintMark: "None (all made in Philadelphia)", dates: "1839-1857:P", keys: [] },
+  { id: "flying-eagle", group: "Cents", name: "Flying Eagle cent", den: "Flying Eagle cent", from: 1856, to: 1858, aliases: ["flying eagle"],
     metal: "88% copper, 12% nickel", weight: "4.67 g", size: "19 mm", designer: "James B. Longacre",
-    mintMark: "None. All were made in Philadelphia",
-    dates: "1856:P; 1857:P; 1858:P*Large_letters P*Small_letters", keys: ["1856"],
-    hp: "the eagle's breast and the tips of its wings, and the bow of the wreath on the back" },
-  { id: "two-cent", group: "Rarer and older coins", rare: true, name: "Two-cent piece", den: "Two-cent piece", from: 1864, to: 1873, aliases: ["two cent", "2 cent", "2-cent"],
-    metal: "Bronze", weight: "6.22 g", size: "23 mm", designer: "James B. Longacre",
-    mintMark: "None. All were made in Philadelphia",
-    dates: "1864:P*Small_motto P*Large_motto; 1865-1873:P", keys: ["1864 Small motto", "1872", "1873"],
-    hp: "the word WE in the motto, the leaves by the shield, and the wheat on the back" },
-  { id: "three-cent-silver", group: "Rarer and older coins", rare: true, name: "Three-cent silver", den: "Three-cent silver", from: 1851, to: 1873, aliases: ["three cent silver", "3 cent silver", "3-cent silver", "trime"],
-    metal: "75% silver (1851–1853), then 90% silver", weight: "0.80 g, then 0.75 g", size: "14 mm", designer: "James B. Longacre",
-    mintMark: "Back, to the right of the III (1851-O only)",
-    dates: "1851:P O; 1852-1873:P", keys: ["1851-O", "1855", "1863", "1864", "1865", "1866", "1867", "1868", "1869", "1870", "1871", "1872", "1873"],
-    hp: "the star's center and the shield on the front, and the III on the back" },
-  { id: "three-cent-nickel", group: "Rarer and older coins", rare: true, name: "Three-cent nickel", den: "Three-cent nickel", from: 1865, to: 1889,
-    aliases: ["three cent nickel", "3 cent nickel", "3-cent nickel", "three cent piece", "3 cent piece", "3-cent piece", "three-cent piece"],
+    mintMark: "None (all made in Philadelphia)", dates: "1856-1857:P; 1858:P*Large_letters P*Small_letters", keys: ["1856"],
+    hp: "the eagle's breast and the tips of the wings, and the leaves of the wreath" },
+  { id: "two-cent", group: "Two and three cents", name: "Two-cent piece", den: "Two-cent piece", from: 1864, to: 1873, aliases: ["two cent", "2 cent", "2-cent"],
+    metal: "Bronze (95% copper, with tin and zinc)", weight: "6.22 g", size: "23 mm", designer: "James B. Longacre",
+    mintMark: "None (all made in Philadelphia)", note: "1873 was made only as a proof for collectors.",
+    dates: "1864:P P*Small_motto; 1865-1873:P", keys: ["1864 Small motto", "1872", "1873"],
+    hp: "the word WE in the motto, the leaves, and the lines in the shield" },
+  { id: "three-cent-silver", group: "Two and three cents", name: "Three-cent silver (trime)", den: "Three-cent silver", from: 1851, to: 1873, aliases: ["three cent silver", "3 cent silver", "trime"],
+    metal: "75% silver (1851–1853), then 90% silver", weight: "0.80 g (1851–1853), then 0.75 g", size: "14 mm", designer: "James B. Longacre",
+    mintMark: "Back, right of the III (1851-O only)", note: "1873 was made only as a proof for collectors.",
+    dates: "1851:P O; 1852-1873:P", keys: ["1855", "1873"] },
+  { id: "three-cent-nickel", group: "Two and three cents", name: "Three-cent nickel", den: "Three-cent nickel", from: 1865, to: 1889, aliases: ["three cent nickel", "3 cent nickel"],
     metal: "75% copper, 25% nickel", weight: "1.94 g", size: "17.9 mm", designer: "James B. Longacre",
-    mintMark: "None. All were made in Philadelphia",
-    dates: "1865-1889:P", keys: ["1877", "1878", "1884", "1885", "1886", "1887"],
-    hp: "Liberty's hair above the eye and the curls by her ear, and the lines in the III on the back",
-    grading: { g: "Liberty is outlined. The hair is worn flat. The III is worn but can be read.", vg: "Some hair above the forehead shows. The rims are complete.", f: "Half the hair detail shows. The lines in the III are worn but show.", vf: "Most hair detail shows. The leaves in the wreath are clear.", ef: "Light wear on the hair above the eye and the curls by the ear.", au: "Just a trace of rub on the cheek and the hair above the eye." } },
-  { id: "shield-nickel", group: "Rarer and older coins", rare: true, name: "Shield nickel", den: "Shield nickel", from: 1866, to: 1883, aliases: ["shield nickel"],
+    mintMark: "None (all made in Philadelphia)", note: "1877 and 1878 were made only as proofs for collectors.",
+    dates: "1865-1889:P", keys: ["1877", "1878", "1885", "1887"] },
+  { id: "shield-nickel", group: "Nickels", name: "Shield nickel", den: "Shield nickel", from: 1866, to: 1883, aliases: ["shield nickel"],
     metal: "75% copper, 25% nickel", weight: "5.0 g", size: "20.5 mm", designer: "James B. Longacre",
-    mintMark: "None. All were made in Philadelphia",
-    dates: "1866:P; 1867:P*With_rays P*No_rays; 1868-1883:P", keys: ["1877", "1878", "1880", "1881"],
-    hp: "the leaves and the ball at the top of the shield, and the 5 on the back" },
-  { id: "twenty-cent", group: "Rarer and older coins", rare: true, name: "Twenty-cent piece", den: "Twenty-cent piece", from: 1875, to: 1878, aliases: ["twenty cent", "20 cent", "20-cent"],
-    metal: "90% silver, 10% copper", weight: "5.0 g", size: "22 mm", designer: "William Barber", silver: "0.1447 troy oz of pure silver",
-    mintMark: "Back, below the eagle",
-    dates: "1875:P CC S; 1876:P CC; 1877-1878:P", keys: ["1876-CC", "1877", "1878"],
-    hp: "Liberty's head, knees and breast, and the eagle's breast on the back" },
-  { id: "barber-dime", group: "Rarer and older coins", rare: true, name: "Barber dime", den: "Barber dime", from: 1892, to: 1916, aliases: ["barber dime", "liberty head dime"],
+    mintMark: "None (all made in Philadelphia)", note: "1866 and early 1867 coins have rays between the stars on the back. 1877 and 1878 were made only as proofs.",
+    dates: "1866:P; 1867:P P*No_rays; 1868-1883:P", keys: ["1877", "1878", "1880"],
+    hp: "the leaves and the lines at the top of the shield" },
+  { id: "seated-half-dime", group: "Half dimes", name: "Seated Liberty half dime", den: "Seated Liberty half dime", from: 1837, to: 1873, aliases: ["half dime", "seated liberty half dime", "seated half dime"],
+    metal: "90% silver, 10% copper", weight: "1.34 g (to 1853), then 1.24 g", size: "15.5 mm", designer: "Christian Gobrecht",
+    mintMark: "Back, inside or just below the wreath", keys: ["1846", "1853-O No arrows", "1870-S"],
+    hp: "LIBERTY on the shield, Liberty's head and knees, and the bow of the wreath" },
+  { id: "seated-dime", group: "Dimes", name: "Seated Liberty dime", den: "Seated Liberty dime", from: 1837, to: 1891, aliases: ["seated liberty dime", "seated dime"],
+    metal: "90% silver, 10% copper", weight: "2.67 g (to 1853), 2.49 g (1853–1873), then 2.50 g", size: "17.9 mm", designer: "Christian Gobrecht",
+    mintMark: "Back, inside or just below the wreath", keys: ["1871-CC", "1872-CC", "1873-CC", "1874-CC"],
+    hp: "LIBERTY on the shield, Liberty's head and knees, and the bow of the wreath" },
+  { id: "barber-dime", group: "Dimes", name: "Barber dime", den: "Barber dime", from: 1892, to: 1916, aliases: ["barber dime", "liberty head dime"],
     metal: "90% silver, 10% copper", weight: "2.5 g", size: "17.9 mm", designer: "Charles E. Barber", silver: SILVER.dime,
-    mintMark: "Back, below the wreath",
-    dates: "1892-1903:P O S; 1904:P S; 1905:P O S; 1906-1909:P D O S; 1910-1912:P D S; 1913:P S; 1914:P D S; 1915-1916:P S",
-    keys: ["1894-S", "1895", "1895-O", "1896-S", "1901-S", "1903-S", "1913-S"],
-    hp: "the word LIBERTY on the headband, the hair over the forehead, and the bow of the wreath",
-    grading: { g: "The date and letters can be read. LIBERTY is worn away.", vg: "At least 3 letters of LIBERTY show.", f: "All of LIBERTY shows, even if some letters are weak.", vf: "LIBERTY is sharp. The edges of the headband show.", ef: "Light wear on the hair, the cheek and the leaves of the wreath.", au: "Just a trace of rub on the cheek and the hair over the forehead." } },
-  { id: "barber-quarter", group: "Rarer and older coins", rare: true, name: "Barber quarter", den: "Barber quarter", from: 1892, to: 1916, aliases: ["barber quarter", "liberty head quarter"],
+    mintMark: "Back, below the wreath", keys: ["1894-S", "1895-O", "1896-S", "1901-S", "1903-S"],
+    hp: "LIBERTY on the headband, the hair above the forehead, and the wreath on the back" },
+  { id: "twenty-cent", group: "Twenty cents", name: "Twenty-cent piece", den: "Twenty-cent piece", from: 1875, to: 1878, aliases: ["twenty cent", "20 cent", "20-cent"],
+    metal: "90% silver, 10% copper", weight: "5.0 g", size: "22 mm", designer: "William Barber", silver: "0.1447 troy oz of pure silver",
+    mintMark: "Back, below the eagle", note: "1877 and 1878 were made only as proofs for collectors.",
+    dates: "1875:P CC S; 1876:P CC; 1877-1878:P", keys: ["1876-CC", "1877", "1878"],
+    hp: "LIBERTY on the shield, Liberty's head and knees, and the eagle's breast" },
+  { id: "seated-quarter", group: "Quarters", name: "Seated Liberty quarter", den: "Seated Liberty quarter", from: 1838, to: 1891, aliases: ["seated liberty quarter", "seated quarter"],
+    metal: "90% silver, 10% copper", weight: "6.68 g (to 1853), 6.22 g (1853–1873), then 6.25 g", size: "24.3 mm", designer: "Christian Gobrecht",
+    mintMark: "Back, below the eagle", keys: ["1871-CC", "1872-CC", "1873-CC No arrows"],
+    hp: "LIBERTY on the shield, Liberty's head and knees, and the eagle's neck and claws" },
+  { id: "barber-quarter", group: "Quarters", name: "Barber quarter", den: "Barber quarter", from: 1892, to: 1916, aliases: ["barber quarter", "liberty head quarter"],
     metal: "90% silver, 10% copper", weight: "6.25 g", size: "24.3 mm", designer: "Charles E. Barber", silver: SILVER.quarter,
-    mintMark: "Back, below the eagle's tail",
-    dates: "1892-1903:P O S; 1904:P O; 1905:P O S; 1906:P D O; 1907-1909:P D O S; 1910:P D; 1911:P D S; 1912:P S; 1913-1915:P D S; 1916:P D",
-    keys: ["1896-S", "1901-S", "1913-S"],
-    hp: "the word LIBERTY on the headband and the hair over the forehead; the eagle's head and wing tips on the back",
-    grading: { g: "The date and letters can be read. LIBERTY is worn away.", vg: "At least 3 letters of LIBERTY show.", f: "All of LIBERTY shows, even if some letters are weak.", vf: "LIBERTY is sharp. The eagle's feathers show some detail.", ef: "Light wear on the hair, the cheek and the eagle's head and wing tips.", au: "Just a trace of rub on the cheek and the hair over the forehead." } },
-  { id: "barber-half", group: "Rarer and older coins", rare: true, name: "Barber half dollar", den: "Barber half", from: 1892, to: 1915, aliases: ["barber half", "liberty head half"],
+    mintMark: "Back, below the eagle", keys: ["1896-S", "1901-S", "1913-S"],
+    hp: "LIBERTY on the headband, the hair above the forehead, and the eagle's head and wings" },
+  { id: "seated-half", group: "Half dollars", name: "Seated Liberty half dollar", den: "Seated Liberty half dollar", from: 1839, to: 1891, aliases: ["seated liberty half", "seated half"],
+    metal: "90% silver, 10% copper", weight: "13.36 g (to 1853), 12.44 g (1853–1873), then 12.5 g", size: "30.6 mm", designer: "Christian Gobrecht",
+    mintMark: "Back, below the eagle", keys: ["1870-CC", "1878-S"],
+    hp: "LIBERTY on the shield, Liberty's head and knees, and the eagle's neck and claws" },
+  { id: "barber-half", group: "Half dollars", name: "Barber half dollar", den: "Barber half dollar", from: 1892, to: 1915, aliases: ["barber half", "liberty head half"],
     metal: "90% silver, 10% copper", weight: "12.5 g", size: "30.6 mm", designer: "Charles E. Barber", silver: SILVER.half,
-    mintMark: "Back, below the eagle's tail",
-    dates: "1892-1905:P O S; 1906-1908:P D O S; 1909:P O S; 1910:P S; 1911-1913:P D S; 1914:P S; 1915:P D S",
-    keys: ["1892-O", "1892-S", "1893-S", "1897-O", "1897-S", "1913", "1914", "1915"],
-    hp: "the word LIBERTY on the headband and the hair over the forehead; the eagle's head and wing tips on the back",
-    grading: { g: "The date and letters can be read. LIBERTY is worn away.", vg: "At least 3 letters of LIBERTY show.", f: "All of LIBERTY shows, even if some letters are weak.", vf: "LIBERTY is sharp. The eagle's feathers show some detail.", ef: "Light wear on the hair, the cheek and the eagle's head and wing tips.", au: "Just a trace of rub on the cheek and the hair over the forehead." } },
-  { id: "trade-dollar", group: "Rarer and older coins", rare: true, name: "Trade dollar", den: "Trade dollar", from: 1873, to: 1885, aliases: ["trade dollar"],
+    mintMark: "Back, below the eagle", keys: ["1892-O Micro O", "1897-O", "1897-S", "1914", "1915"],
+    hp: "LIBERTY on the headband, the hair above the forehead, and the eagle's head and wings" },
+  { id: "seated-dollar", group: "Dollars", name: "Seated Liberty dollar", den: "Seated Liberty dollar", from: 1840, to: 1873, aliases: ["seated liberty dollar", "seated dollar"],
+    metal: "90% silver, 10% copper", weight: "26.73 g", size: "38.1 mm", designer: "Christian Gobrecht", silver: SILVER.dollar,
+    mintMark: "Back, below the eagle", keys: ["1851", "1852", "1870-CC", "1871-CC", "1873-CC"],
+    hp: "LIBERTY on the shield, Liberty's head and knees, and the eagle's neck and claws" },
+  { id: "trade-dollar", group: "Dollars", name: "Trade dollar", den: "Trade dollar", from: 1873, to: 1885, aliases: ["trade dollar"],
     metal: "90% silver, 10% copper", weight: "27.22 g", size: "38.1 mm", designer: "William Barber", silver: "0.7874 troy oz of pure silver",
-    mintMark: "Back, above the letters DOL in DOLLAR",
-    dates: "1873-1878:P CC S; 1879-1885:P", keys: ["1878", "1878-CC", "1879", "1880", "1881", "1882", "1883", "1884", "1885"],
-    hp: "Liberty's head and left breast, and the eagle's head and the tops of its wings" },
+    mintMark: "Back, above the D in DOLLAR", note: "Made for trade in Asia. 1879–1885 were made only as proofs for collectors.",
+    dates: "1873-1878:P CC S; 1879-1885:P", keys: ["1878-CC", "1884", "1885"],
+    hp: "Liberty's head and breast, the bale of goods she sits on, and the eagle's head" },
+  { id: "gold-dollar", group: "Gold", name: "Gold dollar", den: "Gold dollar", from: 1849, to: 1889, aliases: ["gold dollar"],
+    metal: "90% gold, 10% copper", weight: "1.67 g", size: "13 mm (1849–1854), then 15 mm", designer: "James B. Longacre", gold: "0.0484 troy oz of pure gold",
+    mintMark: "Back, below the wreath", note: "Three designs: Liberty Head (1849–1854), small Indian Princess (1854–1856) and large Indian Princess (1856–1889).",
+    keys: ["1855-D", "1861-D", "1875"] },
+  { id: "indian-quarter-eagle", group: "Gold", name: "Indian Head $2.50 gold (quarter eagle)", den: "Indian Head quarter eagle", from: 1908, to: 1929, aliases: ["indian quarter eagle", "indian head quarter eagle", "quarter eagle", "$2.50 gold", "2.5 dollar gold"],
+    metal: "90% gold, 10% copper", weight: "4.18 g", size: "18 mm", designer: "Bela Lyon Pratt", gold: "0.1209 troy oz of pure gold",
+    mintMark: "Back, left of the arrowheads", dates: "1908-1910:P; 1911:P D; 1912-1913:P; 1914:P D; 1915:P; 1925:D; 1926-1929:P", keys: ["1911-D"],
+    hp: "the headdress feathers, the Indian's cheekbone, and the eagle's wing" },
+  { id: "indian-half-eagle", group: "Gold", name: "Indian Head $5 gold (half eagle)", den: "Indian Head half eagle", from: 1908, to: 1929, aliases: ["indian half eagle", "indian head half eagle", "half eagle", "$5 gold", "5 dollar gold"],
+    metal: "90% gold, 10% copper", weight: "8.36 g", size: "21.6 mm", designer: "Bela Lyon Pratt", gold: "0.2419 troy oz of pure gold",
+    mintMark: "Back, left of the arrowheads", keys: ["1909-O", "1929"] },
+  { id: "indian-eagle", group: "Gold", name: "Indian Head $10 gold (eagle)", den: "Indian Head eagle", from: 1907, to: 1933, aliases: ["indian eagle", "indian head eagle", "$10 gold", "10 dollar gold"],
+    metal: "90% gold, 10% copper", weight: "16.72 g", size: "27 mm", designer: "Augustus Saint-Gaudens", gold: "0.4837 troy oz of pure gold",
+    mintMark: "Back, left of the arrows", keys: ["1920-S", "1930-S", "1933"] },
+  { id: "liberty-double-eagle", group: "Gold", name: "Liberty Head $20 gold (double eagle)", den: "Liberty Head double eagle", from: 1850, to: 1907, aliases: ["liberty double eagle", "liberty head double eagle", "double eagle", "$20 gold", "20 dollar gold"],
+    metal: "90% gold, 10% copper", weight: "33.44 g", size: "34 mm", designer: "James B. Longacre", gold: "0.9675 troy oz of pure gold",
+    mintMark: "Back, below the eagle", keys: ["1854-O", "1856-O", "1870-CC"] },
+  { id: "saint-gaudens", group: "Gold", name: "Saint-Gaudens $20 gold (double eagle)", den: "Saint-Gaudens double eagle", from: 1907, to: 1933, aliases: ["saint-gaudens", "saint gaudens", "st gaudens", "st. gaudens", "double eagle", "$20 gold", "20 dollar gold"],
+    metal: "90% gold, 10% copper", weight: "33.44 g", size: "34 mm", designer: "Augustus Saint-Gaudens", gold: "0.9675 troy oz of pure gold",
+    mintMark: "Front, above the date", keys: ["1907 High relief", "1927-D", "1933"],
+    hp: "Liberty's breast and knee, and the eagle's breast and wing" },
 ];
-const GROUPS = ["Cents", "Nickels", "Dimes", "Quarters", "Half dollars", "Dollars", "Rarer and older coins"];
+const GROUPS = ["Half cents", "Large cents", "Cents", "Two and three cents", "Nickels", "Half dimes", "Dimes", "Twenty cents", "Quarters", "Half dollars", "Dollars", "Gold"];
 const seriesById = (id) => SERIES.find((s) => s.id === id) || null;
 const normMint = (m) => (!m || /^none/i.test(m) || m === "P") ? "P" : m;
 
 function slotsOf(s) {
   if (s.cache) return s.cache;
   const out = [];
+  if (!s.dates && !s.states) return (s.cache = out);
   if (s.states) {
     s.states.forEach((st, i) => {
       for (const m of ["P", "D"]) out.push({ key: st + " " + m, label: st + " " + m, year: String(s.from + Math.floor(i / 5)), mint: m, shown: true, variety: st });
@@ -810,6 +910,7 @@ window.addEventListener("popstate", (e) => {
 function back() { try { if (history.state && history.state.v && view.name !== "home") { history.back(); return; } } catch (e) {} go({ name: "home" }, false); }
 
 const ICON = {
+  price: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5 20 20M10 7v6M8.2 8.6c0-.9.8-1.4 1.8-1.4s1.8.5 1.8 1.3c0 1.7-3.6 1-3.6 2.8 0 .8.8 1.3 1.8 1.3s1.8-.5 1.8-1.4"/></svg>',
   camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h3l2-3h6l2 3h3v13H4z"/><circle cx="12" cy="13" r="4"/></svg>',
   card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5V3h10v2M8 12h8M8 15h5"/></svg>',
   plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
@@ -847,6 +948,179 @@ function lookupText(c) {
 const ebaySold = (c) => "https://www.ebay.com/sch/i.html?LH_Sold=1&LH_Complete=1&_nkw=" + encodeURIComponent(lookupText(c));
 const webSearch = (c) => "https://www.google.com/search?q=" + encodeURIComponent(lookupText(c) + " coin value");
 
+/* ---------- in-app price lookup (Numista) ---------- */
+// Numista's free catalogue API gives price estimates by grade, plus a picture of each coin type.
+// Its terms say the key stays private and results are not stored, so the key is typed in on each
+// device (never in this file) and results are only kept while the app is open.
+const NUMISTA = "https://api.numista.com/v3";
+const NKEY = "coin-catalog-numista-key";
+const numistaKey = () => { try { return (localStorage.getItem(NKEY) || "").trim(); } catch (e) { return ""; } };
+function setNumistaKey(k) { try { if (k) localStorage.setItem(NKEY, k.trim()); else localStorage.removeItem(NKEY); } catch (e) {} lookups.clear(); }
+async function nGet(path, params = {}) {
+  const u = new URL(NUMISTA + path);
+  for (const [k, v] of Object.entries(params)) if (v !== "" && v != null) u.searchParams.set(k, v);
+  let r;
+  try { r = await fetch(u, { headers: { "Numista-API-Key": numistaKey() } }); } catch (e) { throw new Error("offline"); }
+  if (r.status === 401 || r.status === 403) throw new Error("key");
+  if (r.status === 429) throw new Error("limit");
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error("server");
+  return r.json();
+}
+// Numista prices use these grade bands; the number is the lowest Sheldon grade in each band.
+const NGRADES = [["g", "Good", 1], ["vg", "Very Good", 8], ["f", "Fine", 12], ["vf", "Very Fine", 20], ["xf", "Extremely Fine", 40], ["au", "About Unc.", 50], ["unc", "Uncirculated", 60]];
+function nGradeOf(grade) {
+  const m = /(\d+)/.exec(grade || ""); if (!m) return null;
+  const n = +m[1]; let best = null;
+  for (const g of NGRADES) if (n >= g[2]) best = g[0];
+  return best;
+}
+const lookups = new Map();
+function lookupKey(c) { const s = seriesOf(c); return [s ? s.id : c.denomination, c.country, c.year, normMint(c.mint), c.grade].join("|").toLowerCase(); }
+// Finds the coin on Numista and its price estimates. Resolves to { found, ... } or throws Error("key" | "limit" | "offline" | "server").
+function lookupPrices(c) {
+  const k = lookupKey(c);
+  if (!lookups.has(k)) lookups.set(k, findPrices(c).catch((e) => { lookups.delete(k); throw e; }));
+  return lookups.get(k);
+}
+async function findPrices(c) {
+  const s = seriesOf(c), year = parseInt(c.year, 10);
+  const clean = (x) => String(x || "").replace(/[“”"]/g, "").replace(/\s*\(.*?\)/g, "").trim();
+  // Numista names coins its own way ("1 Cent 'Lincoln Wheat Ears Cent'"), so try a few wordings, then just the design name.
+  const tries = [...new Set([clean(s ? s.den : c.denomination), clean(s && s.name), clean(s ? s.den : c.denomination).split(" ")[0]].filter((x) => x && x.length > 2))];
+  if (!tries.length) return { found: false, why: "Add the kind of coin first, like “Morgan dollar”." };
+  let types = [];
+  for (const q of tries) {
+    const res = await nGet("/types", { q, category: "coin", year: isFinite(year) ? year : "", lang: "en", count: 10 });
+    types = pickTypes((res && res.types) || [], c, year);
+    if (types.length) break;
+  }
+  return finishPrices(types[0], c, year, tries[0]);
+}
+function pickTypes(types, c, year) {
+  const us = !c.country || /^(united states|usa?|u\.s\.?a?\.?|america)$/i.test(c.country.trim());
+  const fromIssuer = (t) => ((t.issuer && (t.issuer.name || t.issuer.code)) || "");
+  if (us) types = types.filter((t) => /united states|etats-unis|usa/i.test(fromIssuer(t)) || !fromIssuer(t));
+  else if (c.country) types = types.filter((t) => fromIssuer(t).toLowerCase().includes(c.country.trim().toLowerCase()) || !fromIssuer(t));
+  if (isFinite(year)) types = types.filter((t) => !(t.min_year > year || t.max_year < year));
+  return types;
+}
+async function finishPrices(t, c, year, q) {
+  if (!t) return { found: false, why: "Numista didn’t find this coin." };
+  let thumb = t.obverse_thumbnail || (t.obverse && t.obverse.thumbnail) || "";
+  if (!thumb) { try { const d = await nGet("/types/" + t.id, { lang: "en" }); thumb = (d && d.obverse && (d.obverse.thumbnail || d.obverse.picture)) || ""; } catch (e) {} }
+  const base = { found: true, id: t.id, title: t.title || q, thumb, url: "https://en.numista.com/catalogue/pieces" + t.id + ".html" };
+  const issues = (await nGet("/types/" + t.id + "/issues", { lang: "en" })) || [];
+  const list = Array.isArray(issues) ? issues : (issues.issues || []);
+  const mint = normMint(c.mint), byYear = list.filter((i) => !isFinite(year) || i.year === year || i.gregorian_year === year);
+  const sameMint = (i) => normMint(i.mint_letter || "") === mint;
+  const issue = byYear.find(sameMint) || (mint === "P" ? byYear.find((i) => !i.mint_letter) : null) || (byYear.length === 1 ? byYear[0] : null);
+  if (!issue) return { ...base, prices: [], issue: "" };
+  const pr = await nGet("/types/" + t.id + "/issues/" + issue.id + "/prices", { currency: "USD" });
+  const prices = ((pr && pr.prices) || []).filter((x) => x && x.price != null && NGRADES.some((g) => g[0] === x.grade))
+    .sort((a, b) => NGRADES.findIndex((g) => g[0] === a.grade) - NGRADES.findIndex((g) => g[0] === b.grade));
+  return { ...base, prices, issue: [issue.year || issue.gregorian_year, issue.mint_letter].filter(Boolean).join(" ") };
+}
+const lookupError = (e) => ({
+  key: "Numista didn’t accept the price key. It needs to be updated.",
+  limit: "The free Numista limit for this month is used up. It starts again on the 1st.",
+  offline: "Couldn’t reach Numista. Check the internet connection and try again.",
+}[e && e.message] || "Numista had a problem. Try again later.");
+// Numista turned the key down: go straight to the key box in Help & backup, marked as needing a new key.
+function fixKey() { closeSheet(); go({ name: "help", focus: "prices", badKey: true }); }
+// Fills `el` with what Numista knows about coin c. onUse(price) is called when Dad taps “Use $X”.
+async function showLookup(el, c, onUse) {
+  if (!numistaKey()) {
+    el.innerHTML = `<div class="lk"><p>To see prices here without leaving the app, add a free Numista price key once in Help &amp; backup.</p><button class="btn" type="button" data-k>Set up price lookups</button></div>`;
+    el.querySelector("[data-k]").onclick = () => { closeSheet(); go({ name: "help", focus: "prices" }); };
+    return;
+  }
+  el.innerHTML = '<div class="lk"><p class="busy">Looking up prices…</p></div>';
+  let r;
+  try { r = await lookupPrices(c); }
+  catch (e) {
+    if (e.message === "key") {
+      el.innerHTML = `<div class="lk"><p>${esc(lookupError(e))}</p><button class="btn primary" type="button" data-k>Update the price key</button></div>`;
+      el.querySelector("[data-k]").onclick = fixKey;
+    } else {
+      el.innerHTML = `<div class="lk"><p>${esc(lookupError(e))}</p><button class="btn" type="button" data-r>Try again</button></div>`;
+      el.querySelector("[data-r]").onclick = () => showLookup(el, c, onUse);
+    }
+    return e.message;
+  }
+  if (!r.found) { el.innerHTML = `<div class="lk"><p>${esc(r.why)}</p></div>`; return; }
+  const mine = nGradeOf(c.grade), pick = r.prices.find((x) => x.grade === mine);
+  const label = (g) => (NGRADES.find((x) => x[0] === g) || [g, g])[1];
+  el.innerHTML = `<div class="lk">
+    <div class="lk-head">${r.thumb ? `<img alt="" src="${esc(r.thumb)}" referrerpolicy="no-referrer">` : '<span></span>'}
+      <div><div class="t">${esc(r.title)}</div><div class="s">${esc(r.issue || "")}${r.issue ? " · " : ""}<a href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">N# ${esc(r.id)}</a></div></div></div>
+    ${r.prices.length ? `<div class="chips">${r.prices.map((x) => onUse
+      ? `<button type="button" class="chip${x.grade === mine ? " mine" : ""}" data-p="${esc(cleanMoney(x.price))}" aria-label="Use ${esc(label(x.grade))} price ${dollars(+x.price)}">${esc(label(x.grade))} ${dollars(+x.price)}</button>`
+      : `<span class="chip${x.grade === mine ? " mine" : ""}">${esc(label(x.grade))} ${dollars(+x.price)}</span>`).join("")}</div>
+      ${onUse ? "<p class=\"count\">Tap a price to use it.</p>" : ""}`
+      : `<p>Numista has no price estimates for ${r.issue ? "this date and mint mark" : "this exact date and mint mark"} yet.</p>`}
+    ${pick ? `<div class="lk-use"><span>${c.grade ? `For ${esc(c.grade.split(" ")[0])}: ` : ""}about <strong>${dollars(+pick.price)}</strong></span>${onUse ? `<button class="btn small primary" type="button" data-use>Use ${dollars(+pick.price)}</button>` : ""}</div>`
+      : r.prices.length && !c.grade ? "<p>Pick the condition to see the price for your coin.</p>" : ""}
+    <p class="src">Source: Numista price estimates. Prices change, so treat these as a guide.</p>
+  </div>`;
+  const u = el.querySelector("[data-use]"); if (u) u.onclick = () => onUse(cleanMoney(pick.price));
+  el.querySelectorAll("[data-p]").forEach((b) => b.onclick = () => onUse(b.dataset.p));
+}
+// A popup with the in-app lookup and the outside links, for a coin that may not be saved yet.
+function priceSheet(c, onUse) {
+  closeSheet();
+  sheetEl = document.createElement("div"); sheetEl.className = "sheet-bg";
+  sheetEl.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ps-h">
+    <h2 id="ps-h">Check prices: ${esc(title(c))}</h2>
+    <div data-lk></div>
+    <p>Or look outside the app:</p>
+    <div class="row"><button class="btn" type="button" data-a="ebay">Recent sold prices</button><button class="btn" type="button" data-a="web">Search the web</button></div>
+    <button class="btn wide" type="button" data-a="no">Close</button>
+  </div>`;
+  document.body.appendChild(sheetEl);
+  const open = (u) => { try { window.open(u, "_blank", "noopener"); } catch (e) {} };
+  sheetEl.querySelector('[data-a="ebay"]').onclick = () => open(ebaySold(c));
+  sheetEl.querySelector('[data-a="web"]').onclick = () => open(webSearch(c));
+  sheetEl.querySelector('[data-a="no"]').onclick = closeSheet;
+  showLookup(sheetEl.querySelector("[data-lk]"), c, (p) => { closeSheet(); onUse(p); });
+  sheetEl.querySelector('[data-a="no"]').focus();
+}
+
+function renderPrices() {
+  setBar("Recent prices", true);
+  const mine = coins.filter((c) => !c.example);
+  const list = mine.length ? mine : coins;
+  const key = numistaKey();
+  app.innerHTML = `
+    <p class="count">This looks up each coin on Numista, a large coin catalogue, and shows its price estimates by condition, right here in the app. Tap “Use” to make that the coin’s value.</p>
+    ${key ? `<button class="btn primary wide" id="p-all" type="button">${ICON.price} Look up all ${list.length} ${list.length === 1 ? "coin" : "coins"}</button>`
+      : `<div class="note"><p>First, add a free Numista price key. It only takes a few minutes and is done once on each phone or computer.</p><button class="btn" id="p-setup" type="button">Set up price lookups</button></div>`}
+    ${!mine.length && coins.length ? '<p class="count">You have no coins of your own yet, so the example coins are shown.</p>' : ""}
+    <div class="vlist" id="p-list"></div>`;
+  const pl = document.getElementById("p-list"), slots = [];
+  for (const c of list) {
+    const row = document.createElement("div"); row.className = "prow";
+    const v = toNum(c.value);
+    row.innerHTML = `<div class="top"><div class="ph"><img alt="" loading="lazy"></div>
+      <div><div class="t">${esc(title(c))}</div><div class="s">${esc([c.grade, c.example ? "Example" : ""].filter(Boolean).join(" · ")) || "Condition not filled in"}</div></div>
+      <div class="s" data-v>${v === null ? "" : "Worth " + dollars(v)}</div></div><div data-lk></div>`;
+    pl.appendChild(row);
+    if (c.photos && c.photos[0]) photoURL(c.photos[0]).then((u) => { if (u) row.querySelector("img").src = u; });
+    const box = row.querySelector("[data-lk]");
+    const use = async (p) => {
+      const cur = coins.find((x) => x.id === c.id) || c;
+      await put("coins", { ...cur, value: p, valueDate: Date.now() }); await refresh();
+      row.querySelector("[data-v]").textContent = "Worth " + dollars(+p); toast("Value saved: " + dollars(+p));
+    };
+    slots.push(() => showLookup(box, c, use));
+    if (key && lookups.has(lookupKey(c))) showLookup(box, c, use);
+  }
+  const all = document.getElementById("p-all");
+  // Stop early when the key is wrong or the month's limit is used up, instead of failing on every coin.
+  if (all) all.onclick = async () => { all.disabled = true; for (const run of slots) { const err = await run(); if (err === "key") { fixKey(); return; } if (err === "limit") { toast(lookupError(new Error(err)), 5000); break; } } all.disabled = false; };
+  const su = document.getElementById("p-setup"); if (su) su.onclick = () => go({ name: "help", focus: "prices" });
+}
+
 /* ---------- views ---------- */
 function setBar(text, withBack, right = "") {
   bar.innerHTML = (withBack ? '<button class="back" id="b-back" type="button">‹ Back</button>' : "") +
@@ -869,6 +1143,7 @@ async function renderHome() {
       <button class="btn" id="albums" type="button">${ICON.album} Albums</button>
       <button class="btn" id="report" type="button">${ICON.print} Insurance report</button>
       <button class="btn" id="sync" type="button">${ICON.sync} Sync phone and computer</button>
+      <button class="btn" id="prices" type="button">${ICON.price} Find recent prices</button>
     </div>
     ${worthCard()}
     ${examples ? `<div class="note"><p><strong>${examples} example coins</strong> are shown so you can see how it works. They are not yours.</p><button class="btn" id="rm-ex" type="button">Remove the examples</button></div>` : ""}
@@ -881,6 +1156,7 @@ async function renderHome() {
   document.getElementById("albums").onclick = () => go({ name: "albums" });
   document.getElementById("report").onclick = () => go({ name: "report" });
   document.getElementById("sync").onclick = () => go({ name: "sync" });
+  document.getElementById("prices").onclick = () => go({ name: "prices" });
   const wc = document.getElementById("worth"); if (wc) wc.onclick = () => go({ name: "values" });
   const rm = document.getElementById("rm-ex");
   if (rm) rm.onclick = async () => { for (const c of coins.filter((x) => x.example)) await removeCoin(c); await refresh(); toast("Examples removed"); render(); };
@@ -948,11 +1224,13 @@ function valueSheet(c) {
   sheetEl.innerHTML = `<form class="sheet" role="dialog" aria-modal="true" aria-labelledby="vs-h" novalidate>
     <h2 id="vs-h">${esc(title(c))}</h2>
     ${c.grade || c.paid ? `<p>${esc([c.grade, c.paid ? "Paid $" + c.paid : ""].filter(Boolean).join(" · "))}</p>` : ""}
+    <p>Here is what Numista says coins like this are worth. Tap a price to put it in the box below.</p>
+    <div data-lk></div>
+    <p>Or look outside the app:</p>
+    <div class="row"><button class="btn" type="button" data-a="ebay">Recent sold prices</button><button class="btn" type="button" data-a="web">Search the web</button></div>
     <div class="field"><label for="vs-v">What is it worth now? ($)</label><input id="vs-v" inputmode="decimal" autocomplete="off" value="${esc(c.value)}" placeholder="e.g. 45"></div>
     ${when}
-    <button class="btn primary wide" type="submit">Save value</button>
-    <p>Not sure? See what coins like this sold for recently, then come back and type it in.</p>
-    <div class="row"><button class="btn" type="button" data-a="ebay">Recent sold prices</button><button class="btn" type="button" data-a="web">Search the web</button></div>
+    <button class="btn primary wide" type="submit" id="vs-save">Save value</button>
     <button class="btn wide" type="button" data-a="no">Cancel</button>
   </form>`;
   document.body.appendChild(sheetEl);
@@ -961,6 +1239,8 @@ function valueSheet(c) {
   sheetEl.querySelector('[data-a="ebay"]').onclick = () => open(ebaySold(c));
   sheetEl.querySelector('[data-a="web"]').onclick = () => open(webSearch(c));
   sheetEl.querySelector('[data-a="no"]').onclick = closeSheet;
+  const save = sheetEl.querySelector("#vs-save");
+  showLookup(sheetEl.querySelector("[data-lk]"), c, (p) => { input.value = p; save.scrollIntoView({ block: "center", behavior: "smooth" }); save.focus({ preventScroll: true }); });
   sheetEl.querySelector("form").onsubmit = async (e) => {
     e.preventDefault();
     const raw = input.value.trim();
@@ -970,7 +1250,7 @@ function valueSheet(c) {
     await put("coins", rec);
     closeSheet(); await refresh(); toast(value ? "Value saved" : "Value removed"); render();
   };
-  input.focus();
+  sheetEl.querySelector("h2").setAttribute("tabindex", "-1"); sheetEl.querySelector("h2").focus();
 }
 
 async function renderCoin() {
@@ -1054,15 +1334,89 @@ function gradeSelect(cur) {
     + `<optgroup label="Other">${other.map(opt).join("")}</optgroup>`;
 }
 
-// The "Type of coin" list. Rarer types stay hidden until asked for, or when the coin already is one.
-let showRare = false;
-function seriesOptions(cur) {
-  const rare = showRare || (seriesById(cur) || {}).rare;
-  return `<option value="">Not on the list, or not sure</option>` + GROUPS.map((g) => {
-    const list = SERIES.filter((s) => s.group === g && (rare || !s.rare));
-    return list.length ? `<optgroup label="${g}">${list.map((s) => `<option value="${s.id}" ${s.id === cur ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</optgroup>` : "";
-  }).join("");
+/* ---------- example pictures for each coin type ---------- */
+// Each type's picture is the lead image of its Wikipedia article (mostly U.S. Mint and Smithsonian photos).
+// Fetched the first time it is needed, then kept on this device so the list works offline.
+const WIKI = {
+  "indian-cent": "Indian_Head_cent", "wheat-cent": "Lincoln_cent", "memorial-cent": "Lincoln_cent",
+  "v-nickel": "Liberty_Head_nickel", "buffalo-nickel": "Buffalo_nickel", "jefferson-nickel": "Jefferson_nickel",
+  "mercury-dime": "Mercury_dime", "roosevelt-dime": "Roosevelt_dime", "slq-quarter": "Standing_Liberty_quarter",
+  "washington-quarter": "Washington_quarter", "state-quarter": "50_State_quarters", "walking-half": "Walking_Liberty_half_dollar",
+  "franklin-half": "Franklin_half_dollar", "kennedy-half": "Kennedy_half_dollar", "morgan-dollar": "Morgan_dollar",
+  "peace-dollar": "Peace_dollar", "ike-dollar": "Eisenhower_dollar",
+  "lc-half-cent": ["Liberty_Cap_half_cent", "Half_cent_(United_States_coin)"], "db-half-cent": ["Draped_Bust_half_cent", "Half_cent_(United_States_coin)"],
+  "ch-half-cent": ["Classic_Head_half_cent", "Half_cent_(United_States_coin)"], "bh-half-cent": ["Braided_Hair_half_cent", "Half_cent_(United_States_coin)"],
+  "fh-large-cent": ["Flowing_Hair_cent", "Large_cent"], "lc-large-cent": ["Liberty_Cap_cent", "Large_cent"], "db-large-cent": ["Draped_Bust_cent", "Large_cent"],
+  "ch-large-cent": ["Classic_Head_cent", "Large_cent"], "cor-large-cent": ["Coronet_large_cent", "Large_cent"], "bh-large-cent": ["Braided_Hair_cent", "Large_cent"],
+  "flying-eagle": "Flying_Eagle_cent", "two-cent": "Two-cent_piece_(United_States)", "three-cent-silver": "Three-cent_silver",
+  "three-cent-nickel": "Three-cent_nickel", "shield-nickel": "Shield_nickel",
+  "seated-half-dime": ["Seated_Liberty_half_dime", "Half_dime"], "seated-dime": ["Seated_Liberty_dime", "Dime_(United_States_coin)"],
+  "barber-dime": ["Barber_dime", "Barber_coinage"], "twenty-cent": "Twenty-cent_piece_(United_States_coin)",
+  "seated-quarter": ["Seated_Liberty_quarter", "Quarter_(United_States_coin)"], "barber-quarter": ["Barber_quarter", "Barber_coinage"],
+  "seated-half": ["Seated_Liberty_half_dollar", "Half_dollar_(United_States_coin)"], "barber-half": ["Barber_half_dollar", "Barber_coinage"],
+  "seated-dollar": "Seated_Liberty_dollar", "trade-dollar": "Trade_dollar_(United_States_coin)", "gold-dollar": "Gold_dollar",
+  "indian-quarter-eagle": ["Indian_Head_quarter_eagle", "Indian_Head_gold_pieces"], "indian-half-eagle": ["Indian_Head_half_eagle", "Indian_Head_gold_pieces"],
+  "indian-eagle": "Indian_Head_eagle", "liberty-double-eagle": ["Liberty_Head_double_eagle", "Double_eagle"], "saint-gaudens": "Saint-Gaudens_double_eagle",
+};
+const TCACHE = "coin-thumbs-1", thumbURLs = new Map();
+async function typeThumb(id) {
+  if (thumbURLs.has(id)) return thumbURLs.get(id);
+  const job = (async () => {
+    const key = "https://coin-thumbs.local/" + id;
+    let cache = null; try { cache = await caches.open(TCACHE); } catch (e) {}
+    const hit = cache && (await cache.match(key));
+    if (hit) return URL.createObjectURL(await hit.blob());
+    for (const t of [].concat(WIKI[id] || [])) {
+      try {
+        const r = await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + encodeURIComponent(t));
+        if (!r.ok) continue;
+        const j = await r.json(), src = j.thumbnail && j.thumbnail.source;
+        if (!src) continue;
+        const img = await fetch(src); if (!img.ok) continue;
+        const blob = await img.blob();
+        if (cache) cache.put(key, new Response(blob, { headers: { "content-type": blob.type } })).catch(() => {});
+        return URL.createObjectURL(blob);
+      } catch (e) { /* offline or blocked: no picture */ }
+    }
+    return "";
+  })();
+  thumbURLs.set(id, job);
+  const u = await job; if (!u) thumbURLs.delete(id); // try again next time
+  return u;
 }
+// Fills every <span data-thumb="id"> inside el with that type's picture.
+function fillThumbs(el) {
+  el.querySelectorAll("[data-thumb]").forEach(async (sp) => {
+    const u = await typeThumb(sp.dataset.thumb);
+    if (u && sp.isConnected) sp.innerHTML = `<img class="tthumb" alt="" src="${u}">`;
+  });
+}
+const thumbSpan = (id) => `<span class="tthumb" data-thumb="${esc(id)}" aria-hidden="true">${ICON_COIN}</span>`;
+const ICON_COIN = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="6"/></svg>';
+// A popup listing every type of coin with its picture. onPick(id) gets "" for "not on the list".
+function typeSheet(current, onPick) {
+  closeSheet();
+  sheetEl = document.createElement("div"); sheetEl.className = "sheet-bg";
+  const yrs = (s) => s.from === s.to ? s.from : s.from + "–" + (s.to || "today");
+  sheetEl.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ts-h">
+    <h2 id="ts-h">Pick the type of coin</h2>
+    <div class="tlist">
+      <button type="button" class="trow${current ? "" : " on"}" data-id=""><span class="tthumb" aria-hidden="true">?</span><span>Not on the list, or not sure</span></button>
+      ${GROUPS.map((g) => `<h3>${esc(g)}</h3>${SERIES.filter((s) => s.group === g).map((s) => `<button type="button" class="trow${s.id === current ? " on" : ""}" data-id="${s.id}">${thumbSpan(s.id)}<span>${esc(s.name)}<span class="yrs">${esc(String(yrs(s)))}</span></span></button>`).join("")}`).join("")}
+    </div>
+    <p class="count">Pictures from Wikipedia. They show what the type looks like, not a particular year.</p>
+    <button class="btn wide" type="button" data-a="no">Cancel</button>
+  </div>`;
+  document.body.appendChild(sheetEl);
+  fillThumbs(sheetEl);
+  sheetEl.querySelectorAll(".trow").forEach((b) => b.onclick = () => { closeSheet(); onPick(b.dataset.id); });
+  sheetEl.querySelector('[data-a="no"]').onclick = () => { closeSheet(); const f = document.getElementById("f-series"); if (f) f.focus(); };
+  (sheetEl.querySelector(".trow.on") || sheetEl.querySelector(".trow")).focus();
+}
+
+// Clears defaults saved by the short-lived "Set default" button.
+try { localStorage.removeItem("coin-catalog-defaults"); localStorage.removeItem("coin-catalog-defaults-history"); } catch (e) {}
+const MINT_NAMES = { P: "Philadelphia", D: "Denver", S: "San Francisco", O: "New Orleans", CC: "Carson City", W: "West Point" };
 
 function renderEdit() {
   const isNew = !view.id;
@@ -1070,6 +1424,17 @@ function renderEdit() {
   setBar(isNew ? "Add a coin" : "Change details", true);
   const d = draft;
   const ser = seriesById(d.series);
+  const slots = ser ? slotsOf(ser) : [];
+  const fromSlot = !!(d.slot && slots.some((z) => z.key === d.slot));
+  const lab = (key, forId, text, extra = "") => extra ? `<div class="lab-row"><label for="${forId}">${text}</label>${extra}</div>` : `<label for="${forId}">${text}</label>`;
+  // Date choices grouped by decade, each saying which mint it is, so the list can't be mistaken for the Year box.
+  const decade = (y) => { const a = Math.floor(+y / 10) * 10; return a + "–" + (a + 9); };
+  const slotOptions = () => {
+    if (ser.states) return slots.map((z) => `<option value="${esc(z.key)}" ${d.slot === z.key ? "selected" : ""}>${esc(z.label)}</option>`).join("");
+    const groups = [];
+    for (const z of slots) { const g = decade(z.year); if (!groups.length || groups[groups.length - 1][0] !== g) groups.push([g, []]); groups[groups.length - 1][1].push(z); }
+    return groups.map(([g, zs]) => `<optgroup label="Dates ${g}">${zs.map((z) => `<option value="${esc(z.key)}" ${d.slot === z.key ? "selected" : ""}>${esc(z.label)} — ${MINT_NAMES[z.mint] || z.mint} mint${z.isKey ? " (key date)" : ""}</option>`).join("")}</optgroup>`).join("");
+  };
   app.innerHTML = `
     <form id="f" novalidate>
       <div class="field"><label>Photos <span class="hint">(optional) front and back</span></label>
@@ -1080,35 +1445,36 @@ function renderEdit() {
             ${d.photos[i] ? `<button class="btn danger" type="button" data-rm="${i}">Remove</button>` : ""}
           </div>`).join("")}</div>
       </div>
-      <div class="field"><label for="f-series">Type of coin</label>
+      <div class="field">${lab("series", "f-series", "Type of coin")}
         <span class="hint">Pick it from the list of U.S. coins and the year, mint mark and name fill in by themselves.</span>
-        <select id="f-series">${seriesOptions(d.series)}</select>
-        ${showRare || (ser && ser.rare) ? "" : `<button class="btn more-types" type="button" id="more-types">Show rarer coins, like the 3-cent piece</button>`}
+        <button class="btn tpick" type="button" id="f-series">${ser ? thumbSpan(ser.id) : '<span class="tthumb" aria-hidden="true">?</span>'}<span class="nm">${ser ? esc(ser.name) : "Not on the list, or not sure"}</span><span aria-hidden="true">▾</span></button>
       </div>
-      ${ser ? `<div class="field"><label for="f-slot">${ser.states ? "Which state and mint mark?" : "Which date and mint mark?"}</label>
-        <select id="f-slot"><option value="">Choose…</option>${slotsOf(ser).map((z) => `<option value="${esc(z.key)}" ${d.slot === z.key ? "selected" : ""}>${esc(z.label)}${z.isKey ? " (key date)" : ""}</option>`).join("")}</select>
+      ${slots.length ? `<div class="field"><label for="f-slot">${ser.states ? "Which state and mint mark?" : "Which date and mint mark?"}</label>
+        <span class="hint">Pick this and the year and mint mark below fill in by themselves.</span>
+        <select id="f-slot"><option value="">${ser.states ? "Pick the state and mint mark…" : "Pick the date and mint mark…"}</option>${slotOptions()}</select>
       </div>` : ""}
       <div class="two">
-        <div class="field"><label for="f-year">Year</label><input id="f-year" inputmode="numeric" autocomplete="off" value="${esc(d.year)}" placeholder="e.g. 1943"></div>
-        <div class="field"><label for="f-country">Country</label><input id="f-country" list="countries" autocomplete="off" value="${esc(d.country)}" placeholder="e.g. United States"></div>
+        <div class="field">${lab("year", "f-year", "Year")}${fromSlot ? '<span class="hint">Filled in from the date and mint mark above.</span>' : ""}<input id="f-year" name="coin-year-typed" inputmode="numeric" autocomplete="off" ${fromSlot ? "readonly" : ""} value="${esc(d.year)}" placeholder="Type the year, e.g. 1943"></div>
+        <div class="field">${lab("country", "f-country", "Country")}<input id="f-country" list="countries" autocomplete="off" value="${esc(d.country)}" placeholder="e.g. United States"></div>
       </div>
       <div class="two">
-        <div class="field"><label for="f-den">Coin</label><input id="f-den" list="dens" autocomplete="off" value="${esc(d.denomination)}" placeholder="e.g. Lincoln cent"></div>
-        <div class="field"><label for="f-mint">Mint mark</label><select id="f-mint">${["", "None (Philadelphia)", "P", "D", "S", "O", "CC", "W", "Other"].map((m) => `<option ${m === (d.mint || "") ? "selected" : ""} value="${esc(m)}">${m || "Choose…"}</option>`).join("")}${d.mint && !["", "None (Philadelphia)", "P", "D", "S", "O", "CC", "W", "Other"].includes(d.mint) ? `<option selected value="${esc(d.mint)}">${esc(d.mint)}</option>` : ""}</select></div>
+        <div class="field">${lab("denomination", "f-den", "Coin")}<input id="f-den" list="dens" autocomplete="off" value="${esc(d.denomination)}" placeholder="e.g. Lincoln cent"></div>
+        <div class="field">${lab("mint", "f-mint", "Mint mark")}${fromSlot ? '<span class="hint">Filled in from the date and mint mark above.</span>' : ""}<select id="f-mint" ${fromSlot ? "disabled" : ""}>${["", "None (Philadelphia)", "P", "D", "S", "O", "CC", "W", "Other"].map((m) => `<option ${m === (d.mint || "") ? "selected" : ""} value="${esc(m)}">${m || "Choose…"}</option>`).join("")}${d.mint && !["", "None (Philadelphia)", "P", "D", "S", "O", "CC", "W", "Other"].includes(d.mint) ? `<option selected value="${esc(d.mint)}">${esc(d.mint)}</option>` : ""}</select></div>
+      </div>
+      ${fromSlot ? '<button class="linkbtn" type="button" id="f-unlock">Type the year and mint mark in myself</button>' : ""}
+      <div class="two">
+        <div class="field">${lab("grade", "f-grade", "Condition")}<select id="f-grade">${gradeSelect(d.grade)}</select></div>
+        <div class="field">${lab("paid", "f-paid", "Price paid ($)")}<input id="f-paid" inputmode="decimal" autocomplete="off" value="${esc(d.paid)}" placeholder="e.g. 12.50"></div>
       </div>
       <div class="two">
-        <div class="field"><label for="f-grade">Condition</label><select id="f-grade">${gradeSelect(d.grade)}</select></div>
-        <div class="field"><label for="f-paid">Price paid ($)</label><input id="f-paid" inputmode="decimal" autocomplete="off" value="${esc(d.paid)}" placeholder="e.g. 12.50"></div>
+        <div class="field">${lab("value", "f-value", "Worth now ($)", `<button class="btn small" id="f-check" type="button">${ICON.price} Check prices</button>`)}<span class="hint">Your best guess. You can change it any time.</span><input id="f-value" inputmode="decimal" autocomplete="off" value="${esc(d.value)}" placeholder="e.g. 45"></div>
       </div>
-      <div class="two">
-        <div class="field"><label for="f-value">Worth now ($)</label><span class="hint">Your best guess. You can change it any time.</span><input id="f-value" inputmode="decimal" autocomplete="off" value="${esc(d.value)}" placeholder="e.g. 45"></div>
-      </div>
-      <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" placeholder="Where you got it, anything special">${esc(d.notes)}</textarea></div>
+      <div class="field">${lab("notes", "f-notes", "Notes")}<textarea id="f-notes" placeholder="Where you got it, anything special">${esc(d.notes)}</textarea></div>
       <button class="btn primary wide" type="submit">Save this coin</button>
       <button class="btn wide" type="button" id="cancel">Cancel</button>
     </form>
     <datalist id="countries">${["United States", "Canada", "Mexico", "United Kingdom", "Germany", "France", "Italy", "Spain", "Australia", "China", "Japan", "India", "South Africa", "Ireland", "Netherlands", "Switzerland"].map((x) => `<option value="${x}">`).join("")}</datalist>
-    <datalist id="dens">${["Lincoln cent", "Indian Head cent", "Wheat cent", "Jefferson nickel", "Buffalo nickel", "Roosevelt dime", "Mercury dime", "Washington quarter", "State quarter", "Kennedy half dollar", "Walking Liberty half", "Franklin half", "Morgan dollar", "Peace dollar", "Eisenhower dollar", "Sacagawea dollar", "1 cent", "5 cents", "10 cents", "25 cents", "50 cents", "1 dollar"].map((x) => `<option value="${x}">`).join("")}</datalist>`;
+    <datalist id="dens">${["Lincoln cent", "Indian Head cent", "Wheat cent", "Jefferson nickel", "Buffalo nickel", "Roosevelt dime", "Mercury dime", "Washington quarter", "State quarter", "Kennedy half dollar", "Walking Liberty half", "Franklin half", "Morgan dollar", "Peace dollar", "Eisenhower dollar", "Sacagawea dollar", "Half cent", "Large cent", "Flying Eagle cent", "Two-cent piece", "Three-cent silver", "Three-cent nickel", "Shield nickel", "Half dime", "Seated Liberty dime", "Barber dime", "Twenty-cent piece", "Seated Liberty quarter", "Barber quarter", "Seated Liberty half", "Barber half", "Seated Liberty dollar", "Trade dollar", "Gold dollar", "Quarter eagle ($2.50 gold)", "Half eagle ($5 gold)", "Eagle ($10 gold)", "Double eagle ($20 gold)", "1 cent", "5 cents", "10 cents", "25 cents", "50 cents", "1 dollar"].map((x) => `<option value="${x}">`).join("")}</datalist>`;
   const keep = () => {
     d.year = val("f-year"); d.country = val("f-country"); d.denomination = val("f-den");
     d.mint = val("f-mint"); d.grade = val("f-grade"); d.paid = val("f-paid").replace(/^\$/, ""); d.notes = val("f-notes");
@@ -1118,8 +1484,11 @@ function renderEdit() {
   app.querySelectorAll("[data-cam]").forEach((b) => b.onclick = () => { keep(); pickFiles("slot", +b.dataset.cam, true); });
   app.querySelectorAll("[data-file]").forEach((b) => b.onclick = () => { keep(); pickFiles("slot", +b.dataset.file, false); });
   app.querySelectorAll("[data-rm]").forEach((b) => b.onclick = () => { keep(); d.photos[+b.dataset.rm] = null; renderEdit(); });
-  document.getElementById("f-series").onchange = (e) => {
-    keep(); const s = seriesById(e.target.value);
+  const fc = document.getElementById("f-check"); if (fc) fc.onclick = () => { keep(); priceSheet({ ...d }, (p) => { d.value = p; const f = document.getElementById("f-value"); if (f) { f.value = p; f.focus(); } }); };
+  fillThumbs(app);
+  document.getElementById("f-series").onclick = () => { keep(); typeSheet(d.series, pickSeries); };
+  const pickSeries = (id) => {
+    const s = seriesById(id);
     d.series = s ? s.id : ""; d.slot = "";
     if (s) { d.country = "United States"; if (!s.states) d.denomination = s.den; }
     renderEdit(); const n = document.getElementById(s ? "f-slot" : "f-series"); if (n) n.focus();
@@ -1138,18 +1507,15 @@ function renderEdit() {
   };
   jump.onclick = () => window.scrollTo({ top: jump.dataset.down === "true" ? target() : 0, behavior: "smooth" });
   jump.update();
-  const more = document.getElementById("more-types");
-  if (more) more.onclick = () => {
-    showRare = true; const sel = document.getElementById("f-series");
-    sel.innerHTML = seriesOptions(d.series); more.remove(); toast("Rarer coins are now at the bottom of the list"); sel.focus();
-  };
   const slotSel = document.getElementById("f-slot");
   if (slotSel) slotSel.onchange = () => {
     keep(); const z = slotsOf(ser).find((x) => x.key === slotSel.value);
     if (z) Object.assign(d, fieldsForSlot(ser, z)); else d.slot = "";
     renderEdit(); document.getElementById("f-slot").focus();
   };
-  document.getElementById("cancel").onclick = () => { draft = null; back(); };
+  const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+  on("cancel", () => { draft = null; back(); });
+  on("f-unlock", () => { keep(); d.slot = ""; renderEdit(); const y = document.getElementById("f-year"); if (y) y.focus(); });
   document.getElementById("f").onsubmit = async (e) => {
     e.preventDefault(); keep();
     const rec = { ...d, photos: d.photos.filter(Boolean), id: d.id || uid(), created: d.created || Date.now() };
@@ -1174,7 +1540,8 @@ function renderEdit() {
 const val = (id) => (document.getElementById(id).value || "").trim();
 
 function aboutFacts(s) {
-  const rows = [["Years made", s.from + "–" + s.to], ["Metal", s.metal], ["Weight", s.weight], ["Size across", s.size], ["Silver in it", s.silver], ["Designer", s.designer], ["Where the mint mark is", s.mintMark]];
+  const rows = [["Years made", s.from === s.to ? String(s.from) : s.from + "–" + s.to], ["Metal", s.metal], ["Weight", s.weight], ["Size across", s.size], ["Silver in it", s.silver], ["Gold in it", s.gold],
+    ["Designer", s.designer], ["Where the mint mark is", s.mintMark], ["Key dates", (s.keys || []).join(", ")], ["Good to know", s.note]];
   return `<dl class="facts">${rows.filter((r) => r[1]).map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>`;
 }
 
@@ -1194,17 +1561,18 @@ const progress = (have, total) => `<div class="prog" role="img" aria-label="${ha
 
 function renderAlbums() {
   setBar("Albums", true);
-  const info = SERIES.map((s) => ({ s, have: albumFill(s).size, total: slotsOf(s).length }));
-  const item = ({ s, have, total }) => `<button class="alb" type="button" data-id="${s.id}">
+  const info = SERIES.filter((s) => slotsOf(s).length).map((s) => ({ s, have: albumFill(s).size, total: slotsOf(s).length }));
+  const item = ({ s, have, total }) => `<button class="alb" type="button" data-id="${s.id}">${thumbSpan(s.id)}<span class="alb-b">
       <span class="alb-t">${esc(s.name)}</span>
       <span class="alb-s">${s.from}–${s.to} · ${have ? `<strong>${have} of ${total}</strong> filled` : `${total} spots`}</span>
-      ${progress(have, total)}</button>`;
+      ${progress(have, total)}</span></button>`;
   const started = info.filter((x) => x.have);
   app.innerHTML = `
     <p class="count">Each album lays out every date and mint mark of one kind of U.S. coin, like a coin folder. Coins you have show their photo. Empty circles are the ones still to find.</p>
     ${started.length ? `<h2 class="sec">Albums you have started</h2><div class="albs">${started.map(item).join("")}</div>` : ""}
-    ${GROUPS.map((g) => `<h2 class="sec">${g}</h2><div class="albs">${info.filter((x) => x.s.group === g).map(item).join("")}</div>`).join("")}`;
+    ${GROUPS.filter((g) => info.some((x) => x.s.group === g)).map((g) => `<h2 class="sec">${g}</h2><div class="albs">${info.filter((x) => x.s.group === g).map(item).join("")}</div>`).join("")}`;
   app.querySelectorAll(".alb").forEach((b) => b.onclick = () => go({ name: "album", id: b.dataset.id }));
+  fillThumbs(app);
 }
 
 function renderAlbum() {
@@ -1391,6 +1759,17 @@ function renderHelp() {
       <p>Tap “My collection is worth about” on the main screen to see every coin’s value and the total. Tap a coin there to type in what it is worth.</p>
       <p>The values are your own estimates. “Recent sold prices” opens eBay’s list of coins like it that actually sold, which is a good guide. Prices change, so update your best coins now and then.</p>
     </section>
+    <section class="help" id="h-prices">
+      <h2 class="sec">Prices inside the app</h2>
+      <p>“Find recent prices” and “Check prices” look up each coin on Numista, a large coin catalogue, and show its price estimates and a picture without leaving the app. Numista asks for a free price key.</p>
+      <ol>
+        <li>Open <a href="https://en.numista.com/api/index.php" target="_blank" rel="noopener noreferrer">Numista’s API page</a>, make a free account, and turn on API access.</li>
+        <li>Copy the key it gives you and paste it below.</li>
+      </ol>
+      <p>The free key allows about 500 coin look-ups a month. The key is kept on this device only, so add it on the phone and on the computer.</p>
+      <div class="keybox"><input id="n-key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste the Numista key here" aria-label="Numista price key" value="${esc(numistaKey())}"><button class="btn primary" id="n-save" type="button">Save key</button></div>
+      <p class="count" id="n-status">${numistaKey() ? "✓ A price key is saved on this device." : "No price key yet."}</p>
+    </section>
     <section class="help">
       <h2 class="sec">Albums</h2>
       <p>Tap “Albums” to see each kind of U.S. coin laid out by date and mint mark, like a coin folder. Coins you have show their photo. Tap an empty circle to add that coin; the details fill in by themselves.</p>
@@ -1427,6 +1806,24 @@ function renderHelp() {
       : "";
   });
   document.getElementById("save-b").onclick = saveBackup;
+  const keyIn = document.getElementById("n-key"), keyStatus = document.getElementById("n-status");
+  const keyBad = (msg) => { keyIn.classList.add("bad"); keyStatus.className = "count bad-note"; keyStatus.textContent = msg; };
+  document.getElementById("n-save").onclick = async () => {
+    const k = keyIn.value.trim(); setNumistaKey(k);
+    keyIn.classList.remove("bad"); keyStatus.className = "count";
+    if (!k) { keyStatus.textContent = "Price key removed."; return; }
+    // Check the new key with Numista right away, so a wrong one is caught here and not later.
+    keyStatus.textContent = "Checking the key with Numista…";
+    try { await nGet("/types", { q: "cent", count: 1 }); keyStatus.textContent = "✓ Numista accepted the key. Try “Find recent prices” on the main screen."; view.badKey = false; }
+    catch (e) {
+      if (e.message === "key") keyBad("✗ Numista didn’t accept this key either. Copy it again from Numista’s API page and paste it here.");
+      else keyStatus.textContent = "✓ Price key saved. (" + lookupError(e) + ")";
+    }
+  };
+  if (view.badKey) {
+    keyBad("✗ Numista didn’t accept the price key saved here, so it needs to be updated. Paste the key from Numista’s API page, then tap “Save key”.");
+    setTimeout(() => { keyIn.scrollIntoView({ block: "center" }); keyIn.focus(); keyIn.select(); }, 60);
+  } else if (view.focus === "prices") setTimeout(() => { const h = document.getElementById("h-prices"); if (h) h.scrollIntoView({ block: "start" }); }, 60);
   document.getElementById("go-sync").onclick = () => go({ name: "sync" });
   document.getElementById("load-b").onclick = () => document.getElementById("pick-backup").click();
 }
@@ -1438,6 +1835,7 @@ async function render() {
   if (view.name === "edit") return renderEdit();
   if (view.name === "help") return renderHelp();
   if (view.name === "values") return renderValues();
+  if (view.name === "prices") return renderPrices();
   if (view.name === "albums") return renderAlbums();
   if (view.name === "album") return renderAlbum();
   if (view.name === "grade") return renderGrade();
