@@ -325,7 +325,47 @@ function withoutResolutionUnit(buf) {
   }
   return null;
 }
+// Microscopes known to squeeze their pictures: a widescreen view saved into a 4:3 picture,
+// so round coins come out tall and narrow. Widening by 4/3 makes them round again.
+const SQUEEZERS = [{ make: "JLDV", model: "AC57", widen: 4 / 3 }];
+function cameraOf(buf) {
+  const v = new DataView(buf), d = new Uint8Array(buf), out = {};
+  try {
+    if (v.getUint16(0) !== 0xffd8) return out;
+    for (let o = 2; o + 4 < d.length && d[o] === 0xff;) {
+      const mark = d[o + 1], len = v.getUint16(o + 2);
+      if (mark === 0xda) break;
+      if (mark === 0xe1 && v.getUint32(o + 4) === 0x45786966) {
+        const t = o + 10, le = v.getUint16(t) === 0x4949, ifd = t + v.getUint32(t + 4, le), n = v.getUint16(ifd, le);
+        for (let i = 0; i < n; i++) {
+          const e = ifd + 2 + i * 12, tag = v.getUint16(e, le), cnt = v.getUint32(e + 4, le);
+          if (tag !== 0x010f && tag !== 0x0110) continue;
+          const at = cnt <= 4 ? e + 8 : t + v.getUint32(e + 8, le);
+          const text = String.fromCharCode(...d.subarray(at, at + cnt)).replace(/\0.*$/s, "").trim();
+          out[tag === 0x010f ? "make" : "model"] = text;
+        }
+        return out;
+      }
+      o += 2 + len;
+    }
+  } catch (e) {}
+  return out;
+}
+async function unsqueeze(blob) {
+  const cam = cameraOf(await blob.arrayBuffer());
+  const m = SQUEEZERS.find((x) => x.make === cam.make && x.model === cam.model);
+  if (!m) return blob;
+  const bm = await createImageBitmap(blob);
+  // Only the 4:3 pictures are squeezed; leave anything else (or a turned picture) alone.
+  if (Math.abs(bm.width / bm.height - 4 / 3) > 0.02) { bm.close(); return blob; }
+  const c = document.createElement("canvas"); c.width = Math.round(bm.width * m.widen); c.height = bm.height;
+  const g = c.getContext("2d"); g.imageSmoothingQuality = "high"; g.drawImage(bm, 0, 0, c.width, c.height); bm.close();
+  return await new Promise((res) => c.toBlob((b) => res(b || blob), "image/jpeg", 0.92));
+}
 async function squarePixels(blob) {
+  try { return await unsqueeze(await densityFixed(blob)); } catch (e) { return blob; }
+}
+async function densityFixed(blob) {
   try {
     const first = await shapeOf(blob);
     if (first.ok) { if (first.bm) first.bm.close(); return blob; }
@@ -345,17 +385,18 @@ async function savePhoto(file) {
   const id = uid(), blob = await squarePixels(file);
   const thumb = await makeThumb(blob);
   // print: the original file's fingerprint, so the same SD card picture is still spotted as a repeat.
-  await put("photos", { id, blob, thumb, name: file.name || "", added: Date.now(), shapeOk: 1, ...(blob !== file ? { print: await makePrint(file) } : {}) });
+  await put("photos", { id, blob, thumb, name: file.name || "", added: Date.now(), shapeV: SHAPE_VERSION, ...(blob !== file ? { print: await makePrint(file) } : {}) });
   return id;
 }
-// Pictures brought in before this fix, or from a backup or sync: check each once and repair oval ones.
+// Pictures brought in before these fixes, or from a backup or sync: check each once and repair oval ones.
+const SHAPE_VERSION = 2;
 async function repairShapes() {
   let fixed = 0;
   for (const p of (await all("photos")) || []) {
-    if (p.shapeOk || !p.blob) continue;
+    if ((p.shapeV || 0) >= SHAPE_VERSION || !p.blob) continue;
     const blob = await squarePixels(p.blob);
-    if (blob !== p.blob) { await put("photos", { ...p, blob, thumb: await makeThumb(blob), print: p.print || await makePrint(p.blob), shapeOk: 1 }); fixed++; }
-    else await put("photos", { ...p, shapeOk: 1 });
+    if (blob !== p.blob) { await put("photos", { ...p, blob, thumb: await makeThumb(blob), print: p.print || await makePrint(p.blob), shapeV: SHAPE_VERSION }); fixed++; }
+    else await put("photos", { ...p, shapeV: SHAPE_VERSION });
   }
   if (fixed) { urlCache.forEach((u) => URL.revokeObjectURL(u)); urlCache.clear(); render(); }
 }
