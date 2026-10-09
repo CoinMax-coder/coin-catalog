@@ -242,6 +242,16 @@ h2.sec { font-size: var(--step-1); margin: 8px 0 0 }
 /* in-app price lookup */
 .lk { border: 2px solid var(--line); border-radius: var(--radius); padding: 12px; display: grid; gap: 10px; background: var(--surface) }
 .lk-head { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; align-items: center }
+.tpick { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; justify-content: flex-start; font-weight: 600 }
+.tpick .nm { flex: 1 }
+.tthumb { width: 56px; height: 56px; flex: none; border-radius: 50%; object-fit: cover; background: var(--bg); border: 1px solid var(--line); display: inline-grid; place-items: center; color: var(--muted); font-size: .8rem; overflow: hidden }
+img.tthumb { object-fit: contain; border-radius: 8px; background: #fff } /* some pictures show both sides side by side */
+.tlist { display: grid; gap: 6px }
+.tlist h3 { margin: 12px 0 2px; font-size: 1.05rem; color: var(--muted) }
+.trow { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 8px 12px; border: 2px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; min-height: 72px }
+.trow:hover, .trow:focus-visible { border-color: var(--brass) }
+.trow.on { border-color: var(--brass); background: var(--brass-soft) }
+.trow .yrs { display: block; color: var(--muted); font-size: 1rem; font-weight: 400 }
 .lk-head img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; background: var(--bg); border: 1px solid var(--line) }
 .lk-head .t { font-weight: 700; line-height: 1.25 }
 .lk-head .s { color: var(--muted); font-size: 1.05rem }
@@ -262,8 +272,6 @@ button.chip:hover { border-color: var(--brass) }
 .prow > .top .ph img { width: 100%; height: 100%; object-fit: cover }
 .prow > .top .t { font-weight: 700; line-height: 1.25 }
 .prow > .top .s { color: var(--muted); font-size: 1.05rem }
-.defbox { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: var(--brass); cursor: pointer; padding: 4px 10px; border: 2px solid var(--brass); border-radius: var(--radius); background: var(--brass-soft); min-height: 44px }
-.defbox input { width: 26px; height: 26px; accent-color: var(--brass); margin: 0 }
 .field input[readonly], .field select:disabled { background: var(--bg); color: var(--muted); border-style: dashed }
 .linkbtn { background: none; border: 0; padding: 4px 0; color: var(--focus); text-decoration: underline; font-weight: 700; cursor: pointer; justify-self: start; min-height: 44px }
 .keybox { display: flex; gap: 10px; flex-wrap: wrap }
@@ -1192,21 +1200,88 @@ function gradeSelect(cur) {
     + `<optgroup label="Other">${other.map(opt).join("")}</optgroup>`;
 }
 
-/* ---------- defaults for new coins ---------- */
-// "Set default" saves what is typed in the ticked fields; every new coin starts with those. Kept on this device only.
-const DEF_FIELDS = [["series", "Type of coin"], ["year", "Year"], ["country", "Country"], ["denomination", "Coin"], ["mint", "Mint mark"], ["grade", "Condition"], ["paid", "Price paid"], ["value", "Worth now"], ["notes", "Notes"]];
-const DKEY = "coin-catalog-defaults", DHIST = "coin-catalog-defaults-history";
-const loadJSON = (k, fb) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? fb : v; } catch (e) { return fb; } };
-const saveJSON = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const getDefaults = () => loadJSON(DKEY, {});
-function setDefaults(next) { const h = loadJSON(DHIST, []); h.push(getDefaults()); saveJSON(DHIST, h.slice(-20)); saveJSON(DKEY, next); }
-function undoDefaults() { const h = loadJSON(DHIST, []); if (!h.length) return false; saveJSON(DKEY, h.pop()); saveJSON(DHIST, h); return true; }
-const canUndoDefaults = () => loadJSON(DHIST, []).length > 0;
-function defaultsText() {
-  const d = getDefaults();
-  return DEF_FIELDS.filter(([k]) => d[k]).map(([k, label]) => label + ": " + (k === "series" ? (seriesById(d[k]) || { name: d[k] }).name : d[k])).join(" · ");
+/* ---------- example pictures for each coin type ---------- */
+// Each type's picture is the lead image of its Wikipedia article (mostly U.S. Mint and Smithsonian photos).
+// Fetched the first time it is needed, then kept on this device so the list works offline.
+const WIKI = {
+  "indian-cent": "Indian_Head_cent", "wheat-cent": "Lincoln_cent", "memorial-cent": "Lincoln_cent",
+  "v-nickel": "Liberty_Head_nickel", "buffalo-nickel": "Buffalo_nickel", "jefferson-nickel": "Jefferson_nickel",
+  "mercury-dime": "Mercury_dime", "roosevelt-dime": "Roosevelt_dime", "slq-quarter": "Standing_Liberty_quarter",
+  "washington-quarter": "Washington_quarter", "state-quarter": "50_State_quarters", "walking-half": "Walking_Liberty_half_dollar",
+  "franklin-half": "Franklin_half_dollar", "kennedy-half": "Kennedy_half_dollar", "morgan-dollar": "Morgan_dollar",
+  "peace-dollar": "Peace_dollar", "ike-dollar": "Eisenhower_dollar",
+  "lc-half-cent": ["Liberty_Cap_half_cent", "Half_cent_(United_States_coin)"], "db-half-cent": ["Draped_Bust_half_cent", "Half_cent_(United_States_coin)"],
+  "ch-half-cent": ["Classic_Head_half_cent", "Half_cent_(United_States_coin)"], "bh-half-cent": ["Braided_Hair_half_cent", "Half_cent_(United_States_coin)"],
+  "fh-large-cent": ["Flowing_Hair_cent", "Large_cent"], "lc-large-cent": ["Liberty_Cap_cent", "Large_cent"], "db-large-cent": ["Draped_Bust_cent", "Large_cent"],
+  "ch-large-cent": ["Classic_Head_cent", "Large_cent"], "cor-large-cent": ["Coronet_large_cent", "Large_cent"], "bh-large-cent": ["Braided_Hair_cent", "Large_cent"],
+  "flying-eagle": "Flying_Eagle_cent", "two-cent": "Two-cent_piece_(United_States)", "three-cent-silver": "Three-cent_silver",
+  "three-cent-nickel": "Three-cent_nickel", "shield-nickel": "Shield_nickel",
+  "seated-half-dime": ["Seated_Liberty_half_dime", "Half_dime"], "seated-dime": ["Seated_Liberty_dime", "Dime_(United_States_coin)"],
+  "barber-dime": ["Barber_dime", "Barber_coinage"], "twenty-cent": "Twenty-cent_piece_(United_States_coin)",
+  "seated-quarter": ["Seated_Liberty_quarter", "Quarter_(United_States_coin)"], "barber-quarter": ["Barber_quarter", "Barber_coinage"],
+  "seated-half": ["Seated_Liberty_half_dollar", "Half_dollar_(United_States_coin)"], "barber-half": ["Barber_half_dollar", "Barber_coinage"],
+  "seated-dollar": "Seated_Liberty_dollar", "trade-dollar": "Trade_dollar_(United_States_coin)", "gold-dollar": "Gold_dollar",
+  "indian-quarter-eagle": ["Indian_Head_quarter_eagle", "Indian_Head_gold_pieces"], "indian-half-eagle": ["Indian_Head_half_eagle", "Indian_Head_gold_pieces"],
+  "indian-eagle": "Indian_Head_eagle", "liberty-double-eagle": ["Liberty_Head_double_eagle", "Double_eagle"], "saint-gaudens": "Saint-Gaudens_double_eagle",
+};
+const TCACHE = "coin-thumbs-1", thumbURLs = new Map();
+async function typeThumb(id) {
+  if (thumbURLs.has(id)) return thumbURLs.get(id);
+  const job = (async () => {
+    const key = "https://coin-thumbs.local/" + id;
+    let cache = null; try { cache = await caches.open(TCACHE); } catch (e) {}
+    const hit = cache && (await cache.match(key));
+    if (hit) return URL.createObjectURL(await hit.blob());
+    for (const t of [].concat(WIKI[id] || [])) {
+      try {
+        const r = await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + encodeURIComponent(t));
+        if (!r.ok) continue;
+        const j = await r.json(), src = j.thumbnail && j.thumbnail.source;
+        if (!src) continue;
+        const img = await fetch(src); if (!img.ok) continue;
+        const blob = await img.blob();
+        if (cache) cache.put(key, new Response(blob, { headers: { "content-type": blob.type } })).catch(() => {});
+        return URL.createObjectURL(blob);
+      } catch (e) { /* offline or blocked: no picture */ }
+    }
+    return "";
+  })();
+  thumbURLs.set(id, job);
+  const u = await job; if (!u) thumbURLs.delete(id); // try again next time
+  return u;
 }
-let defPick = null; // the set of ticked fields while choosing defaults, else null
+// Fills every <span data-thumb="id"> inside el with that type's picture.
+function fillThumbs(el) {
+  el.querySelectorAll("[data-thumb]").forEach(async (sp) => {
+    const u = await typeThumb(sp.dataset.thumb);
+    if (u && sp.isConnected) sp.innerHTML = `<img class="tthumb" alt="" src="${u}">`;
+  });
+}
+const thumbSpan = (id) => `<span class="tthumb" data-thumb="${esc(id)}" aria-hidden="true">${ICON_COIN}</span>`;
+const ICON_COIN = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="6"/></svg>';
+// A popup listing every type of coin with its picture. onPick(id) gets "" for "not on the list".
+function typeSheet(current, onPick) {
+  closeSheet();
+  sheetEl = document.createElement("div"); sheetEl.className = "sheet-bg";
+  const yrs = (s) => s.from === s.to ? s.from : s.from + "–" + (s.to || "today");
+  sheetEl.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ts-h">
+    <h2 id="ts-h">Pick the type of coin</h2>
+    <div class="tlist">
+      <button type="button" class="trow${current ? "" : " on"}" data-id=""><span class="tthumb" aria-hidden="true">?</span><span>Not on the list, or not sure</span></button>
+      ${GROUPS.map((g) => `<h3>${esc(g)}</h3>${SERIES.filter((s) => s.group === g).map((s) => `<button type="button" class="trow${s.id === current ? " on" : ""}" data-id="${s.id}">${thumbSpan(s.id)}<span>${esc(s.name)}<span class="yrs">${esc(String(yrs(s)))}</span></span></button>`).join("")}`).join("")}
+    </div>
+    <p class="count">Pictures from Wikipedia. They show what the type looks like, not a particular year.</p>
+    <button class="btn wide" type="button" data-a="no">Cancel</button>
+  </div>`;
+  document.body.appendChild(sheetEl);
+  fillThumbs(sheetEl);
+  sheetEl.querySelectorAll(".trow").forEach((b) => b.onclick = () => { closeSheet(); onPick(b.dataset.id); });
+  sheetEl.querySelector('[data-a="no"]').onclick = () => { closeSheet(); const f = document.getElementById("f-series"); if (f) f.focus(); };
+  (sheetEl.querySelector(".trow.on") || sheetEl.querySelector(".trow")).focus();
+}
+
+// Clears defaults saved by the short-lived "Set default" button.
+try { localStorage.removeItem("coin-catalog-defaults"); localStorage.removeItem("coin-catalog-defaults-history"); } catch (e) {}
 const MINT_NAMES = { P: "Philadelphia", D: "Denver", S: "San Francisco", O: "New Orleans", CC: "Carson City", W: "West Point" };
 
 function renderEdit() {
@@ -1217,10 +1292,7 @@ function renderEdit() {
   const ser = seriesById(d.series);
   const slots = ser ? slotsOf(ser) : [];
   const fromSlot = !!(d.slot && slots.some((z) => z.key === d.slot));
-  if (!isNew) defPick = null;
-  // A field label, with a "Default" tick box beside it while choosing defaults.
-  const lab = (key, forId, text, extra = "") => `<div class="lab-row"><label for="${forId}">${text}</label>${defPick ? `<label class="defbox"><input type="checkbox" data-def="${key}" ${defPick.has(key) ? "checked" : ""}> Default</label>` : extra}</div>`;
-  const dtext = defaultsText();
+  const lab = (key, forId, text, extra = "") => extra ? `<div class="lab-row"><label for="${forId}">${text}</label>${extra}</div>` : `<label for="${forId}">${text}</label>`;
   // Date choices grouped by decade, each saying which mint it is, so the list can't be mistaken for the Year box.
   const decade = (y) => { const a = Math.floor(+y / 10) * 10; return a + "–" + (a + 9); };
   const slotOptions = () => {
@@ -1231,10 +1303,6 @@ function renderEdit() {
   };
   app.innerHTML = `
     <form id="f" novalidate>
-      ${isNew ? (defPick
-        ? `<div class="note"><p><strong>Tick “Default” next to each field you want new coins to start with</strong>, then press OK at the bottom. Whatever is in the field now becomes the default. An empty field clears its default.</p></div>`
-        : `<div class="row"><button class="btn" type="button" id="def-set">Set default</button><button class="btn" type="button" id="def-undo" ${canUndoDefaults() ? "" : "disabled"}>Undo default</button></div>
-           ${dtext ? `<p class="count">New coins start with: ${esc(dtext)}</p>` : ""}`) : ""}
       <div class="field"><label>Photos</label><span class="hint">Add the front and the back. Photos are optional.</span>
         <div class="slots">${[0, 1].map((i) => `
           <div class="slot"><div class="ph" data-ph="${i}">${d.photos[i] ? '<img alt="">' : (i ? "Back" : "Front")}</div>
@@ -1245,7 +1313,7 @@ function renderEdit() {
       </div>
       <div class="field">${lab("series", "f-series", "Type of coin")}
         <span class="hint">Pick it from the list of U.S. coins and the year, mint mark and name fill in by themselves.</span>
-        <select id="f-series"><option value="">Not on the list, or not sure</option>${GROUPS.map((g) => `<optgroup label="${g}">${SERIES.filter((s) => s.group === g).map((s) => `<option value="${s.id}" ${s.id === d.series ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</optgroup>`).join("")}</select>
+        <button class="btn tpick" type="button" id="f-series">${ser ? thumbSpan(ser.id) : '<span class="tthumb" aria-hidden="true">?</span>'}<span class="nm">${ser ? esc(ser.name) : "Not on the list, or not sure"}</span><span aria-hidden="true">▾</span></button>
       </div>
       ${slots.length ? `<div class="field"><label for="f-slot">${ser.states ? "Which state and mint mark?" : "Which date and mint mark?"}</label>
         <span class="hint">Pick this and the year and mint mark below fill in by themselves.</span>
@@ -1268,10 +1336,8 @@ function renderEdit() {
         <div class="field">${lab("value", "f-value", "Worth now ($)", `<button class="btn small" id="f-check" type="button">${ICON.price} Check prices</button>`)}<span class="hint">Your best guess. You can change it any time.</span><input id="f-value" inputmode="decimal" autocomplete="off" value="${esc(d.value)}" placeholder="e.g. 45"></div>
       </div>
       <div class="field">${lab("notes", "f-notes", "Notes")}<textarea id="f-notes" placeholder="Where you got it, anything special">${esc(d.notes)}</textarea></div>
-      ${defPick ? `<button class="btn primary wide" type="button" id="def-ok">OK – make these the defaults</button>
-      <button class="btn wide" type="button" id="def-cancel">Cancel</button>`
-      : `<button class="btn primary wide" type="submit">Save this coin</button>
-      <button class="btn wide" type="button" id="cancel">Cancel</button>`}
+      <button class="btn primary wide" type="submit">Save this coin</button>
+      <button class="btn wide" type="button" id="cancel">Cancel</button>
     </form>
     <datalist id="countries">${["United States", "Canada", "Mexico", "United Kingdom", "Germany", "France", "Italy", "Spain", "Australia", "China", "Japan", "India", "South Africa", "Ireland", "Netherlands", "Switzerland"].map((x) => `<option value="${x}">`).join("")}</datalist>
     <datalist id="dens">${["Lincoln cent", "Indian Head cent", "Wheat cent", "Jefferson nickel", "Buffalo nickel", "Roosevelt dime", "Mercury dime", "Washington quarter", "State quarter", "Kennedy half dollar", "Walking Liberty half", "Franklin half", "Morgan dollar", "Peace dollar", "Eisenhower dollar", "Sacagawea dollar", "Half cent", "Large cent", "Flying Eagle cent", "Two-cent piece", "Three-cent silver", "Three-cent nickel", "Shield nickel", "Half dime", "Seated Liberty dime", "Barber dime", "Twenty-cent piece", "Seated Liberty quarter", "Barber quarter", "Seated Liberty half", "Barber half", "Seated Liberty dollar", "Trade dollar", "Gold dollar", "Quarter eagle ($2.50 gold)", "Half eagle ($5 gold)", "Eagle ($10 gold)", "Double eagle ($20 gold)", "1 cent", "5 cents", "10 cents", "25 cents", "50 cents", "1 dollar"].map((x) => `<option value="${x}">`).join("")}</datalist>`;
@@ -1285,8 +1351,10 @@ function renderEdit() {
   app.querySelectorAll("[data-file]").forEach((b) => b.onclick = () => { keep(); pickFiles("slot", +b.dataset.file, false); });
   app.querySelectorAll("[data-rm]").forEach((b) => b.onclick = () => { keep(); d.photos[+b.dataset.rm] = null; renderEdit(); });
   const fc = document.getElementById("f-check"); if (fc) fc.onclick = () => { keep(); priceSheet({ ...d }, (p) => { d.value = p; const f = document.getElementById("f-value"); if (f) { f.value = p; f.focus(); } }); };
-  document.getElementById("f-series").onchange = (e) => {
-    keep(); const s = seriesById(e.target.value);
+  fillThumbs(app);
+  document.getElementById("f-series").onclick = () => { keep(); typeSheet(d.series, pickSeries); };
+  const pickSeries = (id) => {
+    const s = seriesById(id);
     d.series = s ? s.id : ""; d.slot = "";
     if (s) { d.country = "United States"; if (!s.states) d.denomination = s.den; }
     renderEdit(); const n = document.getElementById(s ? "f-slot" : "f-series"); if (n) n.focus();
@@ -1300,22 +1368,8 @@ function renderEdit() {
   const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
   on("cancel", () => { draft = null; back(); });
   on("f-unlock", () => { keep(); d.slot = ""; renderEdit(); const y = document.getElementById("f-year"); if (y) y.focus(); });
-  on("def-set", () => { keep(); defPick = new Set(); renderEdit(); window.scrollTo(0, 0); });
-  on("def-cancel", () => { keep(); defPick = null; renderEdit(); });
-  on("def-undo", () => { keep(); if (undoDefaults()) { const t = defaultsText(); toast(t ? "Defaults put back to: " + t : "Defaults put back: none set", 4000); } renderEdit(); });
-  on("def-ok", () => {
-    keep();
-    const ticked = [...app.querySelectorAll("[data-def]:checked")].map((x) => x.dataset.def);
-    if (!ticked.length) { toast("Tick “Default” next to at least one field first"); return; }
-    const next = { ...getDefaults() };
-    for (const k of ticked) { if (d[k]) next[k] = d[k]; else delete next[k]; }
-    setDefaults(next); defPick = null;
-    toast("Defaults saved for " + ticked.map((k) => DEF_FIELDS.find((f) => f[0] === k)[1]).join(", "), 4000);
-    renderEdit();
-  });
-  app.querySelectorAll("[data-def]").forEach((x) => x.onchange = () => { if (x.checked) defPick.add(x.dataset.def); else defPick.delete(x.dataset.def); });
   document.getElementById("f").onsubmit = async (e) => {
-    e.preventDefault(); if (defPick) return; keep();
+    e.preventDefault(); keep();
     const rec = { ...d, photos: d.photos.filter(Boolean), id: d.id || uid(), created: d.created || Date.now() };
     // Forget the album spot if the year or mint mark was changed by hand afterwards.
     const rs = seriesById(rec.series), rz = rs && slotsOf(rs).find((x) => x.key === rec.slot);
@@ -1398,7 +1452,7 @@ function renderAlbum() {
       const c = list[0];
       if (c.photos && c.photos[0]) photoURL(c.photos[0]).then((u) => { if (u) b.querySelector("img").src = u; });
       b.onclick = () => go({ name: "coin", id: c.id });
-    } else b.onclick = () => { defPick = null; draft = { ...getDefaults(), photos: [], ...fieldsForSlot(s, z) }; go({ name: "edit" }); };
+    } else b.onclick = () => { draft = { photos: [], ...fieldsForSlot(s, z) }; go({ name: "edit" }); };
   });
   if (view.focus) setTimeout(() => { const f = app.querySelector(".slotc.focus"); if (f) f.scrollIntoView({ block: "center" }); }, 60);
 }
@@ -1787,7 +1841,7 @@ async function makeCoins() {
 }
 document.getElementById("pick-camera").onchange = onPicked;
 document.getElementById("pick-files").onchange = onPicked;
-function startAdd() { defPick = null; draft = { ...getDefaults(), photos: [] }; go({ name: "edit" }); }
+function startAdd() { draft = { photos: [] }; go({ name: "edit" }); }
 
 async function removeCoin(c) {
   for (const p of c.photos || []) await del("photos", p);
