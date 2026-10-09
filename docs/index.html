@@ -1766,7 +1766,7 @@ function renderHelp() {
         <li>Open <a href="https://en.numista.com/api/index.php" target="_blank" rel="noopener noreferrer">Numista’s API page</a>, make a free account, and turn on API access.</li>
         <li>Copy the key it gives you and paste it below.</li>
       </ol>
-      <p>The free key allows about 500 coin look-ups a month. The key is kept on this device only, so add it on the phone and on the computer.</p>
+      <p>The free key allows about 500 coin look-ups a month. The key is kept on this device. Type it on one device, then sync the phone and computer and it is copied to the other one.</p>
       <div class="keybox"><input id="n-key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste the Numista key here" aria-label="Numista price key" value="${esc(numistaKey())}"><button class="btn primary" id="n-save" type="button">Save key</button></div>
       <p class="count" id="n-status">${numistaKey() ? "✓ A price key is saved on this device." : "No price key yet."}</p>
     </section>
@@ -2143,12 +2143,12 @@ async function startSync(mode, code) {
 
 function runSync(conn) {
   let theirs = null, myDone = false, theirDone = false, sentAck = false, gotAck = false;
-  let got = 0, gone = 0, sent = 0, photosIn = 0, photosExpected = 0;
+  let got = 0, gone = 0, sent = 0, photosIn = 0, photosExpected = 0, keyIn = false;
   const finish = async () => {
     clearTimeout(syncTimer);
     await refresh(); keepStorage();
     const el = document.getElementById("s-code"); if (el && el.tagName !== "INPUT") el.textContent = "✓";
-    setSyncStatus(`All done. ${got} new or changed ${got === 1 ? "coin" : "coins"} came in${gone ? `, ${gone} deleted` : ""}, and ${sent} went to the other device.`);
+    setSyncStatus(`All done. ${got} new or changed ${got === 1 ? "coin" : "coins"} came in${gone ? `, ${gone} deleted` : ""}, and ${sent} went to the other device.${keyIn ? " The price key came over too." : ""}`);
     const b = document.getElementById("s-cancel"); if (b) b.textContent = "Done";
     setTimeout(stopSync, 1500);
     toast("Sync finished");
@@ -2159,7 +2159,8 @@ function runSync(conn) {
     clearTimeout(syncTimer);
     setSyncStatus("Connected. Comparing coins…");
     const photos = ((await all("photos")) || []).map((p) => p.id);
-    conn.send({ t: "hello", app: "coin-catalog", v: 1, coins: await summary(), photos });
+    // The Numista price key goes along so it only has to be typed on one of Dad's devices.
+    conn.send({ t: "hello", app: "coin-catalog", v: 1, coins: await summary(), photos, nkey: numistaKey() });
   });
   // Handle messages one at a time, in the order they arrive.
   let queue = Promise.resolve();
@@ -2169,6 +2170,7 @@ function runSync(conn) {
     if (m.t === "hello") {
       if (m.app !== "coin-catalog") return;
       theirs = m;
+      if (m.nkey && !numistaKey()) { setNumistaKey(m.nkey); keyIn = true; }
       // Send every coin that is newer here, and the photos the other side is missing.
       const theirTime = new Map(m.coins.map((c) => [c.id, c.updated]));
       const theirPhotos = new Set(m.photos);
@@ -2212,6 +2214,7 @@ async function saveBackup(kind) {
   const photos = (await all("photos")) || [];
   const list = sync ? ((await all("coins")) || []).filter((c) => !c.example) : coins.filter((c) => !c.example);
   const out = { app: "coin-catalog", version: 1, kind: sync ? "sync" : "backup", saved: new Date().toISOString(), coins: list, photos: [] };
+  if (sync && numistaKey()) out.nkey = numistaKey(); // sync files only, never backups
   const needed = new Set(list.flatMap((c) => c.deleted ? [] : c.photos || []));
   for (const p of photos) if (needed.has(p.id)) out.photos.push({ id: p.id, name: p.name, data: await blobToDataURL(p.blob) });
   const blob = new Blob([JSON.stringify(out)], { type: "application/json" });
@@ -2259,6 +2262,7 @@ async function loadSyncFile(f, st) {
     const data = JSON.parse(await f.text());
     if (data.app !== "coin-catalog") throw new Error("not ours");
     st.textContent = "Syncing…";
+    const keyIn = !!(data.nkey && !numistaKey()); if (keyIn) setNumistaKey(data.nkey);
     const used = [];
     for (const c of data.coins || []) if (await mergeCoin(c)) used.push(c);
     const want = new Set(used.flatMap((c) => c.deleted ? [] : c.photos || []));
@@ -2269,7 +2273,7 @@ async function loadSyncFile(f, st) {
     }
     await refresh(); keepStorage();
     const n = used.filter((c) => !c.deleted).length, d = used.length - n;
-    st.textContent = (n || d ? `Synced. ${n} new or changed ${n === 1 ? "coin" : "coins"} came in${d ? `, ${d} deleted` : ""}.` : "Synced. Nothing new: this device already had everything in that file.") +
+    st.textContent = (n || d ? `Synced. ${n} new or changed ${n === 1 ? "coin" : "coins"} came in${d ? `, ${d} deleted` : ""}.` : "Synced. Nothing new: this device already had everything in that file.") + (keyIn ? " The price key came over too." : "") +
       " To send this device's changes back, tap Save a sync file and load it on the other device.";
     toast("Sync file loaded");
   } catch (err) { st.textContent = "That file is not a coin sync file. Choose a file whose name starts with “coin-sync”."; }
