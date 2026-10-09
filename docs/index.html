@@ -298,12 +298,72 @@ function loadImage(blob) {
     img.src = url;
   });
 }
+// Finds the coin in a picture so the round thumbnail can be centered on it. Works on a small copy:
+// takes the color around the edges as the background, marks what differs from it most (the coin),
+// keeps the biggest patch (not a date stamp or a speck) and returns its box, or null if it doesn't look like one coin.
+function findCoin(img) {
+  const W = img.naturalWidth, H = img.naturalHeight, k = 200 / Math.max(W, H);
+  const w = Math.max(1, Math.round(W * k)), h = Math.max(1, Math.round(H * k)), N = w * h;
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const g = c.getContext("2d", { willReadFrequently: true }); g.drawImage(img, 0, 0, w, h);
+  const px = g.getImageData(0, 0, w, h).data, edge = [[], [], []];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (x && y && x < w - 1 && y < h - 1) continue;
+    for (let ch = 0; ch < 3; ch++) edge[ch].push(px[(y * w + x) * 4 + ch]);
+  }
+  const bg = edge.map((v) => v.sort((p, q) => p - q)[v.length >> 1]);
+  const dist = new Uint8Array(N), hist = new Array(256).fill(0);
+  for (let i = 0; i < N; i++) {
+    const d = Math.min(255, Math.hypot(px[i * 4] - bg[0], px[i * 4 + 1] - bg[1], px[i * 4 + 2] - bg[2]));
+    dist[i] = d; hist[dist[i]]++;
+  }
+  // Otsu threshold between "like the background" and "not".
+  let sum = 0, sumB = 0, wB = 0, best = 0, cut = 40;
+  for (let t = 0; t < 256; t++) sum += t * hist[t];
+  for (let t = 0; t < 256; t++) {
+    wB += hist[t]; if (!wB) continue; const wF = N - wB; if (!wF) break;
+    sumB += t * hist[t]; const d = sumB / wB - (sum - sumB) / wF, between = wB * wF * d * d;
+    if (between > best) { best = between; cut = t; }
+  }
+  const mask = new Uint8Array(N);
+  for (let i = 0; i < N; i++) mask[i] = dist[i] > Math.max(cut, 20) ? 1 : 0;
+  // Biggest connected patch.
+  const seen = new Uint8Array(N), stack = [];
+  let top = null;
+  for (let s = 0; s < N; s++) {
+    if (!mask[s] || seen[s]) continue;
+    let n = 0, x0 = w, y0 = h, x1 = 0, y1 = 0; seen[s] = 1; stack.push(s);
+    while (stack.length) {
+      const i = stack.pop(), x = i % w, y = (i - x) / w; n++;
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+      for (const j of [x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, y > 0 ? i - w : -1, y < h - 1 ? i + w : -1])
+        if (j >= 0 && mask[j] && !seen[j]) { seen[j] = 1; stack.push(j); }
+    }
+    if (!top || n > top.n) top = { n, x0, y0, x1, y1 };
+  }
+  if (!top) return null;
+  const bw = top.x1 - top.x0 + 1, bh = top.y1 - top.y0 + 1;
+  // A coin: a fair share of the picture, about as wide as tall, and filling most of its box.
+  if (top.n < N * 0.02 || bw / bh > 1.3 || bh / bw > 1.3 || top.n < bw * bh * 0.3) return null;
+  return {
+    cx: (top.x0 + top.x1 + 1) / 2 / k, cy: (top.y0 + top.y1 + 1) / 2 / k, size: Math.max(bw, bh) / k,
+    bg: `rgb(${bg.join(",")})`,
+  };
+}
 async function makeThumb(blob) {
   const { img, url } = await loadImage(blob);
-  const size = 360, c = document.createElement("canvas");
-  const side = Math.min(img.naturalWidth, img.naturalHeight);
+  const size = 360, c = document.createElement("canvas"), g = c.getContext("2d");
   c.width = c.height = size;
-  c.getContext("2d").drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, size, size);
+  let coin = null; try { coin = findCoin(img); } catch (e) {}
+  if (coin) {
+    // Centered on the coin with a thin margin; any gap past the picture's edge gets the background color.
+    const side = coin.size * 1.06;
+    g.fillStyle = coin.bg; g.fillRect(0, 0, size, size);
+    g.drawImage(img, coin.cx - side / 2, coin.cy - side / 2, side, side, 0, 0, size, size);
+  } else {
+    const side = Math.min(img.naturalWidth, img.naturalHeight);
+    g.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, size, size);
+  }
   URL.revokeObjectURL(url);
   return new Promise((res) => c.toBlob((b) => res(b || blob), "image/jpeg", 0.85));
 }
@@ -400,15 +460,16 @@ async function savePhoto(file) {
   await put("photos", { id, blob, thumb, name: file.name || "", added: Date.now(), shapeV: SHAPE_VERSION, ...(blob !== file ? { print: await makePrint(file) } : {}) });
   return id;
 }
-// Pictures brought in before these fixes, or from a backup or sync: check each once and repair oval ones.
-const SHAPE_VERSION = 2;
+// Pictures brought in before these fixes, or from a backup or sync: check each once, repair oval ones
+// and redo the round thumbnail so it is centered on the coin (version 3).
+const SHAPE_VERSION = 3;
 async function repairShapes() {
   let fixed = 0;
   for (const p of (await all("photos")) || []) {
     if ((p.shapeV || 0) >= SHAPE_VERSION || !p.blob) continue;
     const blob = await squarePixels(p.blob);
     if (blob !== p.blob) { await put("photos", { ...p, blob, thumb: await makeThumb(blob), print: p.print || await makePrint(p.blob), shapeV: SHAPE_VERSION }); fixed++; }
-    else await put("photos", { ...p, shapeV: SHAPE_VERSION });
+    else { await put("photos", { ...p, thumb: await makeThumb(p.blob), shapeV: SHAPE_VERSION }); fixed++; }
   }
   if (fixed) { urlCache.forEach((u) => URL.revokeObjectURL(u)); urlCache.clear(); render(); }
 }
