@@ -239,6 +239,29 @@ h2.sec { font-size: var(--step-1); margin: 8px 0 0 }
 .sheet .field input { width: 100%; min-height: 64px; padding: 10px 14px; border: 2px solid var(--line); border-radius: var(--radius); background: var(--surface); font-size: var(--step-1) }
 .sheet .field { display: grid; gap: 6px }
 .sheet .field label { font-weight: 700 }
+/* in-app price lookup */
+.lk { border: 2px solid var(--line); border-radius: var(--radius); padding: 12px; display: grid; gap: 10px; background: var(--surface) }
+.lk-head { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; align-items: center }
+.lk-head img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; background: var(--bg); border: 1px solid var(--line) }
+.lk-head .t { font-weight: 700; line-height: 1.25 }
+.lk-head .s { color: var(--muted); font-size: 1.05rem }
+.chips { display: flex; flex-wrap: wrap; gap: 8px }
+.chip { border: 1px solid var(--line); border-radius: 999px; padding: 2px 12px; font-size: 1.05rem; white-space: nowrap }
+.chip.mine { border: 2px solid var(--brass); background: var(--brass-soft); font-weight: 700 }
+.lk-use { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between }
+.lk-use strong { font-size: var(--step-1) }
+.lk .src { color: var(--muted); font-size: 1rem; margin: 0 }
+.lk .src a { color: inherit }
+.btn.small { min-height: 52px; padding: 8px 16px; font-size: 1.1rem }
+.lab-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap }
+.prow { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 12px; display: grid; gap: 10px }
+.prow > .top { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 12px; align-items: center }
+.prow > .top .ph { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; background: var(--bg); border: 2px solid var(--line) }
+.prow > .top .ph img { width: 100%; height: 100%; object-fit: cover }
+.prow > .top .t { font-weight: 700; line-height: 1.25 }
+.prow > .top .s { color: var(--muted); font-size: 1.05rem }
+.keybox { display: flex; gap: 10px; flex-wrap: wrap }
+.keybox input { flex: 1 1 260px; min-height: 60px; padding: 10px 14px; border: 2px solid var(--line); border-radius: var(--radius); background: var(--surface) }
 </style>
 
 <header class="bar"><div class="bar-in" id="bar"></div></header>
@@ -631,6 +654,7 @@ window.addEventListener("popstate", (e) => {
 function back() { try { if (history.state && history.state.v && view.name !== "home") { history.back(); return; } } catch (e) {} go({ name: "home" }, false); }
 
 const ICON = {
+  price: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5 20 20M10 7v6M8.2 8.6c0-.9.8-1.4 1.8-1.4s1.8.5 1.8 1.3c0 1.7-3.6 1-3.6 2.8 0 .8.8 1.3 1.8 1.3s1.8-.5 1.8-1.4"/></svg>',
   camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h3l2-3h6l2 3h3v13H4z"/><circle cx="12" cy="13" r="4"/></svg>',
   card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5V3h10v2M8 12h8M8 15h5"/></svg>',
   plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
@@ -668,6 +692,164 @@ function lookupText(c) {
 const ebaySold = (c) => "https://www.ebay.com/sch/i.html?LH_Sold=1&LH_Complete=1&_nkw=" + encodeURIComponent(lookupText(c));
 const webSearch = (c) => "https://www.google.com/search?q=" + encodeURIComponent(lookupText(c) + " coin value");
 
+/* ---------- in-app price lookup (Numista) ---------- */
+// Numista's free catalogue API gives price estimates by grade, plus a picture of each coin type.
+// Its terms say the key stays private and results are not stored, so the key is typed in on each
+// device (never in this file) and results are only kept while the app is open.
+const NUMISTA = "https://api.numista.com/v3";
+const NKEY = "coin-catalog-numista-key";
+const numistaKey = () => { try { return (localStorage.getItem(NKEY) || "").trim(); } catch (e) { return ""; } };
+function setNumistaKey(k) { try { if (k) localStorage.setItem(NKEY, k.trim()); else localStorage.removeItem(NKEY); } catch (e) {} lookups.clear(); }
+async function nGet(path, params = {}) {
+  const u = new URL(NUMISTA + path);
+  for (const [k, v] of Object.entries(params)) if (v !== "" && v != null) u.searchParams.set(k, v);
+  let r;
+  try { r = await fetch(u, { headers: { "Numista-API-Key": numistaKey() } }); } catch (e) { throw new Error("offline"); }
+  if (r.status === 401 || r.status === 403) throw new Error("key");
+  if (r.status === 429) throw new Error("limit");
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error("server");
+  return r.json();
+}
+// Numista prices use these grade bands; the number is the lowest Sheldon grade in each band.
+const NGRADES = [["g", "Good", 1], ["vg", "Very Good", 8], ["f", "Fine", 12], ["vf", "Very Fine", 20], ["xf", "Extremely Fine", 40], ["au", "About Unc.", 50], ["unc", "Uncirculated", 60]];
+function nGradeOf(grade) {
+  const m = /(\d+)/.exec(grade || ""); if (!m) return null;
+  const n = +m[1]; let best = null;
+  for (const g of NGRADES) if (n >= g[2]) best = g[0];
+  return best;
+}
+const lookups = new Map();
+function lookupKey(c) { const s = seriesOf(c); return [s ? s.id : c.denomination, c.country, c.year, normMint(c.mint), c.grade].join("|").toLowerCase(); }
+// Finds the coin on Numista and its price estimates. Resolves to { found, ... } or throws Error("key" | "limit" | "offline" | "server").
+function lookupPrices(c) {
+  const k = lookupKey(c);
+  if (!lookups.has(k)) lookups.set(k, findPrices(c).catch((e) => { lookups.delete(k); throw e; }));
+  return lookups.get(k);
+}
+async function findPrices(c) {
+  const s = seriesOf(c), year = parseInt(c.year, 10);
+  const clean = (x) => String(x || "").replace(/[“”"]/g, "").replace(/\s*\(.*?\)/g, "").trim();
+  // Numista names coins its own way ("1 Cent 'Lincoln Wheat Ears Cent'"), so try a few wordings, then just the design name.
+  const tries = [...new Set([clean(s ? s.den : c.denomination), clean(s && s.name), clean(s ? s.den : c.denomination).split(" ")[0]].filter((x) => x && x.length > 2))];
+  if (!tries.length) return { found: false, why: "Add the kind of coin first, like “Morgan dollar”." };
+  let types = [];
+  for (const q of tries) {
+    const res = await nGet("/types", { q, category: "coin", year: isFinite(year) ? year : "", lang: "en", count: 10 });
+    types = pickTypes((res && res.types) || [], c, year);
+    if (types.length) break;
+  }
+  return finishPrices(types[0], c, year, tries[0]);
+}
+function pickTypes(types, c, year) {
+  const us = !c.country || /^(united states|usa?|u\.s\.?a?\.?|america)$/i.test(c.country.trim());
+  const fromIssuer = (t) => ((t.issuer && (t.issuer.name || t.issuer.code)) || "");
+  if (us) types = types.filter((t) => /united states|etats-unis|usa/i.test(fromIssuer(t)) || !fromIssuer(t));
+  else if (c.country) types = types.filter((t) => fromIssuer(t).toLowerCase().includes(c.country.trim().toLowerCase()) || !fromIssuer(t));
+  if (isFinite(year)) types = types.filter((t) => !(t.min_year > year || t.max_year < year));
+  return types;
+}
+async function finishPrices(t, c, year, q) {
+  if (!t) return { found: false, why: "Numista didn’t find this coin." };
+  let thumb = t.obverse_thumbnail || (t.obverse && t.obverse.thumbnail) || "";
+  if (!thumb) { try { const d = await nGet("/types/" + t.id, { lang: "en" }); thumb = (d && d.obverse && (d.obverse.thumbnail || d.obverse.picture)) || ""; } catch (e) {} }
+  const base = { found: true, id: t.id, title: t.title || q, thumb, url: "https://en.numista.com/catalogue/pieces" + t.id + ".html" };
+  const issues = (await nGet("/types/" + t.id + "/issues", { lang: "en" })) || [];
+  const list = Array.isArray(issues) ? issues : (issues.issues || []);
+  const mint = normMint(c.mint), byYear = list.filter((i) => !isFinite(year) || i.year === year || i.gregorian_year === year);
+  const sameMint = (i) => normMint(i.mint_letter || "") === mint;
+  const issue = byYear.find(sameMint) || (mint === "P" ? byYear.find((i) => !i.mint_letter) : null) || (byYear.length === 1 ? byYear[0] : null);
+  if (!issue) return { ...base, prices: [], issue: "" };
+  const pr = await nGet("/types/" + t.id + "/issues/" + issue.id + "/prices", { currency: "USD" });
+  const prices = ((pr && pr.prices) || []).filter((x) => x && x.price != null && NGRADES.some((g) => g[0] === x.grade))
+    .sort((a, b) => NGRADES.findIndex((g) => g[0] === a.grade) - NGRADES.findIndex((g) => g[0] === b.grade));
+  return { ...base, prices, issue: [issue.year || issue.gregorian_year, issue.mint_letter].filter(Boolean).join(" ") };
+}
+const lookupError = (e) => ({
+  key: "Numista didn’t accept the price key. Check it in Help & backup.",
+  limit: "The free Numista limit for this month is used up. It starts again on the 1st.",
+  offline: "Couldn’t reach Numista. Check the internet connection and try again.",
+}[e && e.message] || "Numista had a problem. Try again later.");
+// Fills `el` with what Numista knows about coin c. onUse(price) is called when Dad taps “Use $X”.
+async function showLookup(el, c, onUse) {
+  if (!numistaKey()) {
+    el.innerHTML = `<div class="lk"><p>To see prices here without leaving the app, add a free Numista price key once in Help &amp; backup.</p><button class="btn" type="button" data-k>Set up price lookups</button></div>`;
+    el.querySelector("[data-k]").onclick = () => { closeSheet(); go({ name: "help", focus: "prices" }); };
+    return;
+  }
+  el.innerHTML = '<div class="lk"><p class="busy">Looking up prices…</p></div>';
+  let r;
+  try { r = await lookupPrices(c); }
+  catch (e) { el.innerHTML = `<div class="lk"><p>${esc(lookupError(e))}</p><button class="btn" type="button" data-r>Try again</button></div>`; el.querySelector("[data-r]").onclick = () => showLookup(el, c, onUse); return e.message; }
+  if (!r.found) { el.innerHTML = `<div class="lk"><p>${esc(r.why)}</p></div>`; return; }
+  const mine = nGradeOf(c.grade), pick = r.prices.find((x) => x.grade === mine);
+  const label = (g) => (NGRADES.find((x) => x[0] === g) || [g, g])[1];
+  el.innerHTML = `<div class="lk">
+    <div class="lk-head">${r.thumb ? `<img alt="" src="${esc(r.thumb)}" referrerpolicy="no-referrer">` : '<span></span>'}
+      <div><div class="t">${esc(r.title)}</div><div class="s">${esc(r.issue || "")}${r.issue ? " · " : ""}<a href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">N# ${esc(r.id)}</a></div></div></div>
+    ${r.prices.length ? `<div class="chips">${r.prices.map((x) => `<span class="chip${x.grade === mine ? " mine" : ""}">${esc(label(x.grade))} ${dollars(+x.price)}</span>`).join("")}</div>`
+      : `<p>Numista has no price estimates for ${r.issue ? "this date and mint mark" : "this exact date and mint mark"} yet.</p>`}
+    ${pick ? `<div class="lk-use"><span>${c.grade ? `For ${esc(c.grade.split(" ")[0])}: ` : ""}about <strong>${dollars(+pick.price)}</strong></span>${onUse ? `<button class="btn small primary" type="button" data-use>Use ${dollars(+pick.price)}</button>` : ""}</div>`
+      : r.prices.length && !c.grade ? "<p>Pick the condition to see the price for your coin.</p>" : ""}
+    <p class="src">Source: Numista price estimates. Prices change, so treat these as a guide.</p>
+  </div>`;
+  const u = el.querySelector("[data-use]"); if (u) u.onclick = () => onUse(cleanMoney(pick.price));
+}
+// A popup with the in-app lookup and the outside links, for a coin that may not be saved yet.
+function priceSheet(c, onUse) {
+  closeSheet();
+  sheetEl = document.createElement("div"); sheetEl.className = "sheet-bg";
+  sheetEl.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ps-h">
+    <h2 id="ps-h">Check prices: ${esc(title(c))}</h2>
+    <div data-lk></div>
+    <p>Or look outside the app:</p>
+    <div class="row"><button class="btn" type="button" data-a="ebay">Recent sold prices</button><button class="btn" type="button" data-a="web">Search the web</button></div>
+    <button class="btn wide" type="button" data-a="no">Close</button>
+  </div>`;
+  document.body.appendChild(sheetEl);
+  const open = (u) => { try { window.open(u, "_blank", "noopener"); } catch (e) {} };
+  sheetEl.querySelector('[data-a="ebay"]').onclick = () => open(ebaySold(c));
+  sheetEl.querySelector('[data-a="web"]').onclick = () => open(webSearch(c));
+  sheetEl.querySelector('[data-a="no"]').onclick = closeSheet;
+  showLookup(sheetEl.querySelector("[data-lk]"), c, (p) => { closeSheet(); onUse(p); });
+  sheetEl.querySelector('[data-a="no"]').focus();
+}
+
+function renderPrices() {
+  setBar("Recent prices", true);
+  const mine = coins.filter((c) => !c.example);
+  const list = mine.length ? mine : coins;
+  const key = numistaKey();
+  app.innerHTML = `
+    <p class="count">This looks up each coin on Numista, a large coin catalogue, and shows its price estimates by condition, right here in the app. Tap “Use” to make that the coin’s value.</p>
+    ${key ? `<button class="btn primary wide" id="p-all" type="button">${ICON.price} Look up all ${list.length} ${list.length === 1 ? "coin" : "coins"}</button>`
+      : `<div class="note"><p>First, add a free Numista price key. It only takes a few minutes and is done once on each phone or computer.</p><button class="btn" id="p-setup" type="button">Set up price lookups</button></div>`}
+    ${!mine.length && coins.length ? '<p class="count">You have no coins of your own yet, so the example coins are shown.</p>' : ""}
+    <div class="vlist" id="p-list"></div>`;
+  const pl = document.getElementById("p-list"), slots = [];
+  for (const c of list) {
+    const row = document.createElement("div"); row.className = "prow";
+    const v = toNum(c.value);
+    row.innerHTML = `<div class="top"><div class="ph"><img alt="" loading="lazy"></div>
+      <div><div class="t">${esc(title(c))}</div><div class="s">${esc([c.grade, c.example ? "Example" : ""].filter(Boolean).join(" · ")) || "Condition not filled in"}</div></div>
+      <div class="s" data-v>${v === null ? "" : "Worth " + dollars(v)}</div></div><div data-lk></div>`;
+    pl.appendChild(row);
+    if (c.photos && c.photos[0]) photoURL(c.photos[0]).then((u) => { if (u) row.querySelector("img").src = u; });
+    const box = row.querySelector("[data-lk]");
+    const use = async (p) => {
+      const cur = coins.find((x) => x.id === c.id) || c;
+      await put("coins", { ...cur, value: p, valueDate: Date.now() }); await refresh();
+      row.querySelector("[data-v]").textContent = "Worth " + dollars(+p); toast("Value saved: " + dollars(+p));
+    };
+    slots.push(() => showLookup(box, c, use));
+    if (key && lookups.has(lookupKey(c))) showLookup(box, c, use);
+  }
+  const all = document.getElementById("p-all");
+  // Stop early when the key is wrong or the month's limit is used up, instead of failing on every coin.
+  if (all) all.onclick = async () => { all.disabled = true; for (const run of slots) { const err = await run(); if (err === "key" || err === "limit") { toast(lookupError(new Error(err)), 5000); break; } } all.disabled = false; };
+  const su = document.getElementById("p-setup"); if (su) su.onclick = () => go({ name: "help", focus: "prices" });
+}
+
 /* ---------- views ---------- */
 function setBar(text, withBack, right = "") {
   bar.innerHTML = (withBack ? '<button class="back" id="b-back" type="button">‹ Back</button>' : "") +
@@ -690,6 +872,7 @@ async function renderHome() {
       <button class="btn" id="albums" type="button">${ICON.album} Albums</button>
       <button class="btn" id="report" type="button">${ICON.print} Insurance report</button>
       <button class="btn" id="sync" type="button">${ICON.sync} Sync phone and computer</button>
+      <button class="btn" id="prices" type="button">${ICON.price} Find recent prices</button>
     </div>
     ${worthCard()}
     ${examples ? `<div class="note"><p><strong>${examples} example coins</strong> are shown so you can see how it works. They are not yours.</p><button class="btn" id="rm-ex" type="button">Remove the examples</button></div>` : ""}
@@ -702,6 +885,7 @@ async function renderHome() {
   document.getElementById("albums").onclick = () => go({ name: "albums" });
   document.getElementById("report").onclick = () => go({ name: "report" });
   document.getElementById("sync").onclick = () => go({ name: "sync" });
+  document.getElementById("prices").onclick = () => go({ name: "prices" });
   const wc = document.getElementById("worth"); if (wc) wc.onclick = () => go({ name: "values" });
   const rm = document.getElementById("rm-ex");
   if (rm) rm.onclick = async () => { for (const c of coins.filter((x) => x.example)) await removeCoin(c); await refresh(); toast("Examples removed"); render(); };
@@ -772,7 +956,9 @@ function valueSheet(c) {
     <div class="field"><label for="vs-v">What is it worth now? ($)</label><input id="vs-v" inputmode="decimal" autocomplete="off" value="${esc(c.value)}" placeholder="e.g. 45"></div>
     ${when}
     <button class="btn primary wide" type="submit">Save value</button>
-    <p>Not sure? See what coins like this sold for recently, then come back and type it in.</p>
+    <p>Not sure? Here is what Numista says coins like this are worth:</p>
+    <div data-lk></div>
+    <p>Or look outside the app:</p>
     <div class="row"><button class="btn" type="button" data-a="ebay">Recent sold prices</button><button class="btn" type="button" data-a="web">Search the web</button></div>
     <button class="btn wide" type="button" data-a="no">Cancel</button>
   </form>`;
@@ -782,6 +968,7 @@ function valueSheet(c) {
   sheetEl.querySelector('[data-a="ebay"]').onclick = () => open(ebaySold(c));
   sheetEl.querySelector('[data-a="web"]').onclick = () => open(webSearch(c));
   sheetEl.querySelector('[data-a="no"]').onclick = closeSheet;
+  showLookup(sheetEl.querySelector("[data-lk]"), c, (p) => { input.value = p; input.focus(); });
   sheetEl.querySelector("form").onsubmit = async (e) => {
     e.preventDefault();
     const raw = input.value.trim();
@@ -911,7 +1098,7 @@ function renderEdit() {
         <div class="field"><label for="f-paid">Price paid ($)</label><input id="f-paid" inputmode="decimal" autocomplete="off" value="${esc(d.paid)}" placeholder="e.g. 12.50"></div>
       </div>
       <div class="two">
-        <div class="field"><label for="f-value">Worth now ($)</label><span class="hint">Your best guess. You can change it any time.</span><input id="f-value" inputmode="decimal" autocomplete="off" value="${esc(d.value)}" placeholder="e.g. 45"></div>
+        <div class="field"><div class="lab-row"><label for="f-value">Worth now ($)</label><button class="btn small" id="f-check" type="button">${ICON.price} Check prices</button></div><span class="hint">Your best guess. You can change it any time.</span><input id="f-value" inputmode="decimal" autocomplete="off" value="${esc(d.value)}" placeholder="e.g. 45"></div>
       </div>
       <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" placeholder="Where you got it, anything special">${esc(d.notes)}</textarea></div>
       <button class="btn primary wide" type="submit">Save this coin</button>
@@ -928,6 +1115,7 @@ function renderEdit() {
   app.querySelectorAll("[data-cam]").forEach((b) => b.onclick = () => { keep(); pickFiles("slot", +b.dataset.cam, true); });
   app.querySelectorAll("[data-file]").forEach((b) => b.onclick = () => { keep(); pickFiles("slot", +b.dataset.file, false); });
   app.querySelectorAll("[data-rm]").forEach((b) => b.onclick = () => { keep(); d.photos[+b.dataset.rm] = null; renderEdit(); });
+  document.getElementById("f-check").onclick = () => { keep(); priceSheet({ ...d }, (p) => { d.value = p; const f = document.getElementById("f-value"); if (f) { f.value = p; f.focus(); } }); };
   document.getElementById("f-series").onchange = (e) => {
     keep(); const s = seriesById(e.target.value);
     d.series = s ? s.id : ""; d.slot = "";
@@ -1182,6 +1370,17 @@ function renderHelp() {
       <p>Tap “My collection is worth about” on the main screen to see every coin’s value and the total. Tap a coin there to type in what it is worth.</p>
       <p>The values are your own estimates. “Recent sold prices” opens eBay’s list of coins like it that actually sold, which is a good guide. Prices change, so update your best coins now and then.</p>
     </section>
+    <section class="help" id="h-prices">
+      <h2 class="sec">Prices inside the app</h2>
+      <p>“Find recent prices” and “Check prices” look up each coin on Numista, a large coin catalogue, and show its price estimates and a picture without leaving the app. Numista asks for a free price key.</p>
+      <ol>
+        <li>Open <a href="https://en.numista.com/api/index.php" target="_blank" rel="noopener noreferrer">Numista’s API page</a>, make a free account, and turn on API access.</li>
+        <li>Copy the key it gives you and paste it below.</li>
+      </ol>
+      <p>The free key allows about 500 coin look-ups a month. The key is kept on this device only, so add it on the phone and on the computer.</p>
+      <div class="keybox"><input id="n-key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste the Numista key here" aria-label="Numista price key" value="${esc(numistaKey())}"><button class="btn primary" id="n-save" type="button">Save key</button></div>
+      <p class="count" id="n-status">${numistaKey() ? "✓ A price key is saved on this device." : "No price key yet."}</p>
+    </section>
     <section class="help">
       <h2 class="sec">Albums</h2>
       <p>Tap “Albums” to see each kind of U.S. coin laid out by date and mint mark, like a coin folder. Coins you have show their photo. Tap an empty circle to add that coin; the details fill in by themselves.</p>
@@ -1218,6 +1417,11 @@ function renderHelp() {
       : "";
   });
   document.getElementById("save-b").onclick = saveBackup;
+  document.getElementById("n-save").onclick = () => {
+    const k = document.getElementById("n-key").value.trim(); setNumistaKey(k);
+    document.getElementById("n-status").textContent = k ? "✓ Price key saved. Try “Find recent prices” on the main screen." : "Price key removed.";
+  };
+  if (view.focus === "prices") setTimeout(() => { const h = document.getElementById("h-prices"); if (h) h.scrollIntoView({ block: "start" }); }, 60);
   document.getElementById("go-sync").onclick = () => go({ name: "sync" });
   document.getElementById("load-b").onclick = () => document.getElementById("pick-backup").click();
 }
@@ -1229,6 +1433,7 @@ async function render() {
   if (view.name === "edit") return renderEdit();
   if (view.name === "help") return renderHelp();
   if (view.name === "values") return renderValues();
+  if (view.name === "prices") return renderPrices();
   if (view.name === "albums") return renderAlbums();
   if (view.name === "album") return renderAlbum();
   if (view.name === "grade") return renderGrade();
