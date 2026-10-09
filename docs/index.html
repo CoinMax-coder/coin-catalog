@@ -158,8 +158,10 @@ form { display: grid; gap: 18px }
 .viewer .tools .btn { flex: 1 1 100px; background: #222; color: #fff; border-color: #555 }
 
 /* confirm sheet + toast */
-.sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 30; display: grid; place-items: end center; padding: 16px }
-.sheet { background: var(--surface); color: var(--ink); border-radius: var(--radius); padding: 20px; width: min(560px, 100%); display: grid; gap: 16px; margin-bottom: env(safe-area-inset-bottom, 0px); max-height: calc(100dvh - 32px); overflow-y: auto }
+/* The dimmed layer itself scrolls, so a tall popup can always be scrolled (wheel, touch or keyboard) on any screen. */
+.sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 30; display: flex; flex-direction: column; align-items: center; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior: contain }
+.sheet { background: var(--surface); color: var(--ink); border-radius: var(--radius); padding: 20px; width: min(560px, 100%); display: grid; gap: 16px; margin-top: auto; flex: none }
+@media (min-width: 700px) { .sheet { margin-block: auto } }
 .sheet h2 { margin: 0; font-size: var(--step-1) }
 .sheet p { margin: 0 }
 .toast { position: fixed; left: 16px; right: 16px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); margin: 0 auto; max-width: 560px; background: var(--album); color: var(--album-ink); padding: 16px 20px; border-radius: var(--radius); font-weight: 700; z-index: 40; text-align: center }
