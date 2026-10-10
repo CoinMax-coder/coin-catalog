@@ -1650,7 +1650,8 @@ function renderAlbums() {
 }
 
 /* Top prices for an album: the highest Numista estimate (best condition) for each spot.
-   Saved on this device with the date they were looked up (Numista's terms allow storing for a personal project). */
+   Looked up on their own in the background, a little at a time, and saved on this device as each one
+   arrives (Numista's terms allow storing for a personal project). Sync copies them to the other device. */
 const albumPrices = new Map(); // series id -> { prices: Map(slot key -> number | null), running, error, done, date }
 const APKEY = "coin-catalog-album-prices";
 function savedAlbumPrices() { try { return JSON.parse(localStorage.getItem(APKEY) || "{}") || {}; } catch (e) { return {}; } }
@@ -1664,47 +1665,91 @@ function albumState(id) {
 function saveAlbumPrices(id, st) {
   try { const all = savedAlbumPrices(); all[id] = { date: st.date, prices: Object.fromEntries(st.prices) }; localStorage.setItem(APKEY, JSON.stringify(all)); } catch (e) {}
 }
+// Adds prices from the other device: dates this device has no price for, or the other device's newer ones.
+function mergeAlbumPrices(inc) {
+  if (!inc || typeof inc !== "object") return 0;
+  const all = savedAlbumPrices(); let n = 0;
+  for (const [id, a] of Object.entries(inc)) {
+    if (!seriesById(id) || !a || !a.prices || (albumPrices.get(id) || {}).running) continue;
+    const mine = all[id] || { date: 0, prices: {} }, newer = (a.date || 0) > (mine.date || 0);
+    for (const [k, v] of Object.entries(a.prices)) {
+      if (v !== null && typeof v !== "number") continue;
+      if (!(k in mine.prices) || (mine.prices[k] === null && v !== null) || (newer && v !== null && mine.prices[k] !== v)) { mine.prices[k] = v; n++; }
+    }
+    mine.date = Math.max(mine.date || 0, a.date || 0);
+    all[id] = mine; albumPrices.delete(id);
+  }
+  try { localStorage.setItem(APKEY, JSON.stringify(all)); } catch (e) {}
+  return n;
+}
+const albumDone = (s) => { const st = albumState(s.id); return !!st && slotsOf(s).every((z) => st.prices.has(z.key)); };
+// Lookups used this month on this device. The free Numista plan allows 2,000 a month; the background
+// lookups stop at 1,500 so there are always some left for checking single coins.
+const NUSE = "coin-catalog-numista-use", BG_BUDGET = 1500;
+const monthNow = () => new Date().toISOString().slice(0, 7);
+function lookupsUsed() { try { const u = JSON.parse(localStorage.getItem(NUSE) || "{}"); return u.m === monthNow() ? u.n || 0 : 0; } catch (e) { return 0; } }
+function countLookup() { try { localStorage.setItem(NUSE, JSON.stringify({ m: monthNow(), n: lookupsUsed() + 1 })); } catch (e) {} }
 const TIERS = [[10000, 4, "$10,000 and up"], [1000, 3, "$1,000 to $9,999"], [100, 2, "$100 to $999"], [10, 1, "$10 to $99"], [0, 0, "Under $10"]];
 const tierOf = (v) => TIERS.find((t) => v >= t[0])[1];
-async function loadAlbumPrices(s, onStep) {
-  const old = albumState(s.id);
+// Looks up the album's dates that have no saved answer yet (every date when `again`).
+async function loadAlbumPrices(s, again = false) {
+  const cur = albumState(s.id);
+  if (cur && cur.running) return cur.error;
   // Saved prices stay showing while new ones come in.
-  const st = { prices: new Map(old ? old.prices : []), running: true, error: "", done: 0, date: old && old.date };
+  const st = { prices: new Map(cur ? cur.prices : []), running: true, error: "", done: 0, date: cur && cur.date };
   albumPrices.set(s.id, st);
-  let got = 0;
+  const step = () => paintPrices(s);
+  const get = (path, params) => { if (!again && lookupsUsed() >= BG_BUDGET) throw new Error("budget"); countLookup(); return nGet(path, params); };
+  const keep = (k, v) => { if (v !== null || !st.prices.has(k) || st.prices.get(k) === null) st.prices.set(k, v); st.date = Date.now(); saveAlbumPrices(s.id, st); };
   try {
-    const clean = (x) => String(x || "").replace(/[“”"]/g, "").replace(/\s*\(.*?\)/g, "").trim();
-    const tries = [...new Set([clean(s.den), clean(s.name), clean(s.den).split(" ")[0]].filter((x) => x && x.length > 2))];
-    let types = [];
-    for (const q of tries) {
-      const res = await nGet("/types", { q, category: "coin", lang: "en", count: 25 });
-      types = ((res && res.types) || []).filter((t) => /united states|etats-unis|usa/i.test((t.issuer && (t.issuer.name || t.issuer.code)) || "") && !(t.min_year > (s.to || 9999) || t.max_year < s.from));
-      if (types.length) break;
-    }
-    if (!types.length) throw new Error("notfound");
-    // Some designs are split into several Numista types (like the silver war nickels), so gather the dates of each.
-    const issues = [];
-    for (const t of types.slice(0, 4)) {
-      const r = (await nGet("/types/" + t.id + "/issues", { lang: "en" })) || [];
-      for (const i of (Array.isArray(r) ? r : (r.issues || []))) issues.push({ t: t.id, i });
-    }
-    const queue = slotsOf(s).map((z) => ({ z, m: issues.filter(({ i }) => String(i.year || i.gregorian_year) === z.year && normMint(i.mint_letter || "") === z.mint) }));
-    const one = async ({ z, m }) => {
-      let top = null;
-      for (const { t, i } of m) {
-        const pr = await nGet("/types/" + t + "/issues/" + i.id + "/prices", { currency: "USD" });
-        for (const x of (pr && pr.prices) || []) if (x && x.price != null && (top === null || +x.price > top)) top = +x.price;
+    const todo = slotsOf(s).filter((z) => again || !st.prices.has(z.key));
+    if (todo.length) {
+      const clean = (x) => String(x || "").replace(/[“”"]/g, "").replace(/\s*\(.*?\)/g, "").trim();
+      const tries = [...new Set([clean(s.den), clean(s.name), clean(s.den).split(" ")[0]].filter((x) => x && x.length > 2))];
+      let types = [];
+      for (const q of tries) {
+        const res = await get("/types", { q, category: "coin", lang: "en", count: 25 });
+        types = ((res && res.types) || []).filter((t) => /united states|etats-unis|usa/i.test((t.issuer && (t.issuer.name || t.issuer.code)) || "") && !(t.min_year > (s.to || 9999) || t.max_year < s.from));
+        if (types.length) break;
       }
-      if (top !== null || !old) st.prices.set(z.key, top);
-      if (top !== null) got++;
-      st.done++; onStep();
-    };
-    const work = async () => { while (queue.length && !st.error) await one(queue.shift()); };
-    await Promise.all([work(), work(), work()]).catch((e) => { st.error = e.message; });
+      if (!types.length) { for (const z of todo) keep(z.key, null); throw new Error("notfound"); } // don't ask again
+      // Some designs are split into several Numista types (like the silver war nickels), so gather the dates of each.
+      const issues = [];
+      for (const t of types.slice(0, 4)) {
+        const r = (await get("/types/" + t.id + "/issues", { lang: "en" })) || [];
+        for (const i of (Array.isArray(r) ? r : (r.issues || []))) issues.push({ t: t.id, i });
+      }
+      const queue = todo.map((z) => ({ z, m: issues.filter(({ i }) => String(i.year || i.gregorian_year) === z.year && normMint(i.mint_letter || "") === z.mint) }));
+      const one = async ({ z, m }) => {
+        let top = null;
+        for (const { t, i } of m) {
+          const pr = await get("/types/" + t + "/issues/" + i.id + "/prices", { currency: "USD" });
+          for (const x of (pr && pr.prices) || []) if (x && x.price != null && (top === null || +x.price > top)) top = +x.price;
+        }
+        keep(z.key, top); st.done++; step();
+      };
+      const work = async () => { while (queue.length && !st.error) await one(queue.shift()); };
+      await Promise.all([work(), work()]).catch((e) => { st.error = e.message; });
+    }
   } catch (e) { st.error = e.message; }
-  st.running = false;
-  if (got) { st.date = Date.now(); saveAlbumPrices(s.id, st); }
-  onStep();
+  st.running = false; step();
+  return st.error;
+}
+// Goes through every album on its own, the ones Dad has started first, until all have prices or the
+// month's lookups run out. Runs whenever the app opens with a price key, and picks up where it left off.
+let bgPrices = false;
+async function backgroundPrices() {
+  if (bgPrices || !numistaKey()) return;
+  bgPrices = true;
+  try {
+    const list = SERIES.filter((s) => slotsOf(s).length);
+    const order = [...list.filter((s) => albumFill(s).size), ...list.filter((s) => !albumFill(s).size)];
+    for (const s of order) {
+      if (albumDone(s)) continue;
+      const err = await loadAlbumPrices(s);
+      if (err && err !== "notfound") break; // no key, limit, offline: try again next time
+    }
+  } finally { bgPrices = false; }
 }
 // The price box above the album, and the colors and "up to $" on each circle.
 function paintPrices(s) {
@@ -1719,27 +1764,33 @@ function paintPrices(s) {
     b.querySelector(".lab").insertAdjacentHTML("afterend", `<span class="pr">Up to ${dollars(v)}</span>`);
   });
   const legend = `<ul class="legend">${TIERS.slice().reverse().map(([, t, lab]) => `<li><span class="dot" style="${t ? `border-color:var(--t${t});background:color-mix(in srgb, var(--t${t}) 35%, transparent)` : ""}"></span>${lab}</li>`).join("")}</ul>`;
-  if (!st) {
+  if (!numistaKey() && !(st && st.prices.size)) {
     box.innerHTML = `<h2>What could these coins be worth?</h2>
-      <p>Color the circles by the highest price each date reaches in the best condition, using Numista price estimates.</p>
-      ${numistaKey() ? `<button class="btn primary" type="button" id="ap-go">${ICON.price} Show top prices for this album</button><p>This uses about ${n} of your monthly Numista lookups. The colors stay until the app is closed.</p>`
-        : '<button class="btn primary" type="button" id="ap-key">Set up price lookups first</button>'}`;
-    const goB = document.getElementById("ap-go"); if (goB) goB.onclick = () => loadAlbumPrices(s, () => paintPrices(s));
-    const kB = document.getElementById("ap-key"); if (kB) kB.onclick = () => go({ name: "help", focus: "prices" });
+      <p>Once price lookups are set up, the circles are colored by the highest price each date reaches in the best condition.</p>
+      <button class="btn primary" type="button" id="ap-key">Set up price lookups</button>`;
+    document.getElementById("ap-key").onclick = () => go({ name: "help", focus: "prices" });
     return;
   }
-  let best = null; for (const [k, v] of st.prices) if (v != null && (!best || v > best[1])) best = [k, v];
-  const known = [...st.prices.values()].filter((v) => v != null).length;
+  let best = null; if (st) for (const [k, v] of st.prices) if (v != null && (!best || v > best[1])) best = [k, v];
+  const known = st ? [...st.prices.values()].filter((v) => v != null).length : 0;
+  const asked = st ? slotsOf(s).filter((z) => st.prices.has(z.key)).length : 0;
+  const err = st && !st.running ? st.error : "";
+  const status = st && st.running ? `Looking up prices… ${asked} of ${n} dates done.`
+    : err === "notfound" ? "Numista doesn’t list this kind of coin, so the album isn’t colored."
+    : err === "budget" || err === "limit" ? `${asked} of ${n} dates done. The rest are looked up next month, when the free Numista lookups start again.`
+    : err === "key" ? "Numista didn’t accept the price key."
+    : err ? `${asked} of ${n} dates done. The rest are looked up the next time the app is open and online.`
+    : asked < n ? `${asked} of ${n} dates done. The rest are being looked up.`
+    : `Prices found for ${known} of ${n} dates.${known < n ? " Dates without a price are left plain." : ""}`;
   box.innerHTML = `<h2>Top price for each date</h2>
-    ${st.date ? `<p class="when">Prices as of <strong>${longDate(st.date)}</strong></p>` : ""}
+    ${st && st.date ? `<p class="when">Prices as of <strong>${longDate(st.date)}</strong></p>` : ""}
     ${known ? `<p>Each circle is colored by the highest price that date reaches in the best condition. Most coins in average condition are worth much less.</p>${legend}` : ""}
     ${best ? `<div class="top">Most valuable here: <strong>${esc(best[0])}</strong>, up to <strong>${dollars(best[1])}</strong></div>` : ""}
-    <p>${st.running ? `Looking up prices… ${st.done} of ${n}` : st.error ? esc(st.error === "notfound" ? "Numista didn’t find this kind of coin, so the album isn’t colored." : lookupError(new Error(st.error))) : `${known ? "" : "Numista has no prices for these dates yet. "}Prices found for ${known} of ${n} dates.${known < n ? " Dates without a price are left plain." : ""}`} Source: Numista price estimates, a guide only.</p>
-    ${!st.running && st.error === "key" ? '<button class="btn" type="button" id="ap-fix">Update the price key</button>' : ""}
-    ${!st.running && st.error && !["key", "notfound"].includes(st.error) ? '<button class="btn" type="button" id="ap-go">Try again</button>'
-      : !st.running && !st.error && numistaKey() ? `<button class="btn" type="button" id="ap-go">Look up prices again</button><p>Uses about ${n} of your monthly Numista lookups.</p>` : ""}`;
+    <p>${esc(status)} Source: Numista price estimates, a guide only.</p>
+    ${err === "key" ? '<button class="btn" type="button" id="ap-fix">Update the price key</button>' : ""}
+    ${st && !st.running && asked === n && numistaKey() ? `<button class="btn" type="button" id="ap-go">Update these prices now</button><p>Uses about ${n} of the ${(2000).toLocaleString()} free Numista lookups each month.</p>` : ""}`;
   const f = document.getElementById("ap-fix"); if (f) f.onclick = fixKey;
-  const g = document.getElementById("ap-go"); if (g) g.onclick = () => loadAlbumPrices(s, () => paintPrices(s));
+  const g = document.getElementById("ap-go"); if (g) g.onclick = () => loadAlbumPrices(s, true);
 }
 
 function renderAlbum() {
@@ -1772,6 +1823,7 @@ function renderAlbum() {
     } else b.onclick = () => { draft = { photos: [], ...fieldsForSlot(s, z) }; go({ name: "edit" }); };
   });
   paintPrices(s);
+  if (numistaKey() && !albumDone(s)) loadAlbumPrices(s);
   if (view.focus) setTimeout(() => { const f = app.querySelector(".slotc.focus"); if (f) f.scrollIntoView({ block: "center" }); }, 60);
 }
 
@@ -1983,7 +2035,7 @@ function renderHelp() {
     if (!k) { keyStatus.textContent = "Price key removed."; return; }
     // Check the new key with Numista right away, so a wrong one is caught here and not later.
     keyStatus.textContent = "Checking the key with Numista…";
-    try { await nGet("/types", { q: "cent", count: 1 }); keyStatus.textContent = "✓ Numista accepted the key. Try “Find recent prices” on the main screen."; view.badKey = false; }
+    try { await nGet("/types", { q: "cent", count: 1 }); keyStatus.textContent = "✓ Numista accepted the key. Try “Find recent prices” on the main screen."; view.badKey = false; backgroundPrices().catch(() => {}); }
     catch (e) {
       if (e.message === "key") keyBad("✗ Numista didn’t accept this key either. Copy it again from Numista’s API page and paste it here.");
       else keyStatus.textContent = "✓ Price key saved. (" + lookupError(e) + ")";
@@ -2329,7 +2381,7 @@ function runSync(conn) {
     setSyncStatus("Connected. Comparing coins…");
     const photos = ((await all("photos")) || []).map((p) => p.id);
     // The Numista price key goes along so it only has to be typed on one of Dad's devices.
-    conn.send({ t: "hello", app: "coin-catalog", v: 1, coins: await summary(), photos, nkey: numistaKey() });
+    conn.send({ t: "hello", app: "coin-catalog", v: 1, coins: await summary(), photos, nkey: numistaKey(), aprices: savedAlbumPrices() });
   });
   // Handle messages one at a time, in the order they arrive.
   let queue = Promise.resolve();
@@ -2340,6 +2392,7 @@ function runSync(conn) {
       if (m.app !== "coin-catalog") return;
       theirs = m;
       if (m.nkey && !numistaKey()) { setNumistaKey(m.nkey); keyIn = true; }
+      mergeAlbumPrices(m.aprices);
       // Send every coin that is newer here, and the photos the other side is missing.
       const theirTime = new Map(m.coins.map((c) => [c.id, c.updated]));
       const theirPhotos = new Set(m.photos);
@@ -2384,6 +2437,7 @@ async function saveBackup(kind) {
   const list = sync ? ((await all("coins")) || []).filter((c) => !c.example) : coins.filter((c) => !c.example);
   const out = { app: "coin-catalog", version: 1, kind: sync ? "sync" : "backup", saved: new Date().toISOString(), coins: list, photos: [] };
   if (sync && numistaKey()) out.nkey = numistaKey(); // sync files only, never backups
+  if (sync) out.aprices = savedAlbumPrices(); // album top prices, so the other device needn't look them up again
   const needed = new Set(list.flatMap((c) => c.deleted ? [] : c.photos || []));
   for (const p of photos) if (needed.has(p.id)) out.photos.push({ id: p.id, name: p.name, data: await blobToDataURL(p.blob) });
   const blob = new Blob([JSON.stringify(out)], { type: "application/json" });
@@ -2432,6 +2486,7 @@ async function loadSyncFile(f, st) {
     if (data.app !== "coin-catalog") throw new Error("not ours");
     st.textContent = "Syncing…";
     const keyIn = !!(data.nkey && !numistaKey()); if (keyIn) setNumistaKey(data.nkey);
+    mergeAlbumPrices(data.aprices);
     const used = [];
     for (const c of data.coins || []) if (await mergeCoin(c)) used.push(c);
     const want = new Set(used.flatMap((c) => c.deleted ? [] : c.photos || []));
@@ -2540,6 +2595,8 @@ async function keepStorage() {
   render();
   keepStorage();
   repairShapes().catch(() => {});
+  setTimeout(() => backgroundPrices().catch(() => {}), 3000);
+  window.addEventListener("online", () => backgroundPrices().catch(() => {}));
   if ("serviceWorker" in navigator && window.isSecureContext && window.top === window.self) {
     navigator.serviceWorker.register("sw.js").catch(() => {});
   }
