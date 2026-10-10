@@ -1358,7 +1358,7 @@ const WIKI = {
   "indian-quarter-eagle": ["Indian_Head_quarter_eagle", "Indian_Head_gold_pieces"], "indian-half-eagle": ["Indian_Head_half_eagle", "Indian_Head_gold_pieces"],
   "indian-eagle": "Indian_Head_eagle", "liberty-double-eagle": ["Liberty_Head_double_eagle", "Double_eagle"], "saint-gaudens": "Saint-Gaudens_double_eagle",
 };
-const TCACHE = "coin-thumbs-1", thumbURLs = new Map();
+const TCACHE = "coin-thumbs-2", thumbURLs = new Map();
 async function typeThumb(id) {
   if (thumbURLs.has(id)) return thumbURLs.get(id);
   const job = (async () => {
@@ -1366,11 +1366,18 @@ async function typeThumb(id) {
     let cache = null; try { cache = await caches.open(TCACHE); } catch (e) {}
     const hit = cache && (await cache.match(key));
     if (hit) return URL.createObjectURL(await hit.blob());
+    try { caches.delete("coin-thumbs-1"); } catch (e) {} // older pictures, some of the wrong years
+    const s = seriesById(id);
     for (const t of [].concat(WIKI[id] || [])) {
       try {
-        const r = await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + encodeURIComponent(t));
-        if (!r.ok) continue;
-        const j = await r.json(), src = j.thumbnail && j.thumbnail.source;
+        // An article's main picture can be today's design (the Jefferson nickel shows a 2006 one), so first
+        // look through the article's pictures for one whose name or caption has a year from this series.
+        let src = s ? await pictureFromYears(t, s.from, s.to || new Date().getFullYear()) : "";
+        if (!src) {
+          const r = await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + encodeURIComponent(t));
+          if (!r.ok) continue;
+          const j = await r.json(); src = j.thumbnail && j.thumbnail.source;
+        }
         if (!src) continue;
         const img = await fetch(src); if (!img.ok) continue;
         const blob = await img.blob();
@@ -1383,6 +1390,25 @@ async function typeThumb(id) {
   thumbURLs.set(id, job);
   const u = await job; if (!u) thumbURLs.delete(id); // try again next time
   return u;
+}
+// The first picture in a Wikipedia article whose file name or caption mentions a year from..to,
+// preferring the front of the coin. Returns its address, or "" when there is none.
+async function pictureFromYears(title, from, to) {
+  const r = await fetch("https://en.wikipedia.org/api/rest_v1/page/media-list/" + encodeURIComponent(title));
+  if (!r.ok) return "";
+  const items = ((await r.json()).items || []).filter((x) => x.type === "image" && x.srcset && x.srcset.length);
+  const score = (x) => {
+    const text = (x.title || "") + " " + ((x.caption && x.caption.text) || "");
+    const years = (text.match(/\b(1[789]\d\d|20\d\d)\b/g) || []).map(Number);
+    if (!years.some((y) => y >= from && y <= to) || years.some((y) => y < from || y > to)) return 0;
+    if (/reverse|monticello|eagle|building|portrait of|photograph of|designer/i.test(text) && !/obverse/i.test(text)) return 1;
+    return /obverse|front/i.test(text) ? 3 : 2;
+  };
+  let best = null, bestScore = 0;
+  for (const x of items) { const sc = score(x); if (sc > bestScore) { best = x; bestScore = sc; } }
+  if (!best) return "";
+  const src = best.srcset[0].src;
+  return src.startsWith("//") ? "https:" + src : src;
 }
 // Fills every <span data-thumb="id"> inside el with that type's picture.
 function fillThumbs(el) {
