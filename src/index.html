@@ -1665,14 +1665,9 @@ async function loadAlbumPrices(s, onStep) {
       }
       st.prices.set(z.key, top); st.done++; onStep();
     };
-    // Try a few dates spread through the album first, so lookups aren't spent on an album Numista has almost no prices for.
-    const n = queue.length, sample = [...new Set([0, 1, 2, 3, 4, 5].map((k) => Math.floor(k * (n - 1) / 5)))].reverse().map((k) => queue.splice(k, 1)[0]);
-    for (const q of sample) await one(q);
-    if ([...st.prices.values()].filter((v) => v != null).length < 2) throw new Error("few");
     const work = async () => { while (queue.length && !st.error) await one(queue.shift()); };
     await Promise.all([work(), work(), work()]).catch((e) => { st.error = e.message; });
   } catch (e) { st.error = e.message; }
-  if (st.error === "few") st.prices.clear();
   st.running = false; onStep();
 }
 // The price box above the album, and the colors and "up to $" on each circle.
@@ -1702,9 +1697,9 @@ function paintPrices(s) {
   box.innerHTML = `<h2>Top price for each date</h2>
     ${known ? `<p>Each circle is colored by the highest price that date reaches in the best condition. Most coins in average condition are worth much less.</p>${legend}` : ""}
     ${best ? `<div class="top">Most valuable here: <strong>${esc(best[0])}</strong>, up to <strong>${dollars(best[1])}</strong></div>` : ""}
-    <p>${st.running ? `Looking up prices… ${st.done} of ${n}` : st.error ? esc(st.error === "notfound" ? "Numista didn’t find this kind of coin, so the album isn’t colored." : st.error === "few" ? "Numista has almost no prices for these dates, so the album isn’t colored." : lookupError(new Error(st.error))) : `Prices found for ${known} of ${n} dates.${known < n ? " Dates without a price are left plain." : ""}`} Source: Numista price estimates, a guide only.</p>
+    <p>${st.running ? `Looking up prices… ${st.done} of ${n}` : st.error ? esc(st.error === "notfound" ? "Numista didn’t find this kind of coin, so the album isn’t colored." : lookupError(new Error(st.error))) : `${known ? "" : "Numista has no prices for these dates yet. "}Prices found for ${known} of ${n} dates.${known < n ? " Dates without a price are left plain." : ""}`} Source: Numista price estimates, a guide only.</p>
     ${!st.running && st.error === "key" ? '<button class="btn" type="button" id="ap-fix">Update the price key</button>' : ""}
-    ${!st.running && st.error && !["key", "notfound", "few"].includes(st.error) ? '<button class="btn" type="button" id="ap-go">Try again</button>' : ""}`;
+    ${!st.running && st.error && !["key", "notfound"].includes(st.error) ? '<button class="btn" type="button" id="ap-go">Try again</button>' : ""}`;
   const f = document.getElementById("ap-fix"); if (f) f.onclick = fixKey;
   const g = document.getElementById("ap-go"); if (g) g.onclick = () => loadAlbumPrices(s, () => paintPrices(s));
 }
