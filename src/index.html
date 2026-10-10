@@ -1723,10 +1723,14 @@ async function loadAlbumPrices(s, again = false) {
       }
       const queue = todo.map((z) => ({ z, m: issues.filter(({ i }) => String(i.year || i.gregorian_year) === z.year && normMint(i.mint_letter || "") === z.mint) }));
       const one = async ({ z, m }) => {
+        // Use the best-matching coin only (Numista's search order, as the single-coin lookup does), so a
+        // different coin of the same year, like the rarer three-cent silver of 1865, isn't mixed in.
+        // The next match is tried only when the first has no prices.
         let top = null;
         for (const { t, i } of m) {
           const pr = await get("/types/" + t + "/issues/" + i.id + "/prices", { currency: "USD" });
           for (const x of (pr && pr.prices) || []) if (x && x.price != null && (top === null || +x.price > top)) top = +x.price;
+          if (top !== null) break;
         }
         keep(z.key, top); st.done++; step();
       };
