@@ -88,6 +88,11 @@ a.btn { text-decoration: none; color: inherit }
 .card .ph img { width: 100%; height: 100%; object-fit: cover }
 .card .t { font-weight: 700; font-size: var(--step-0); line-height: 1.25 }
 .card .s { color: var(--muted); font-size: 1.1rem }
+.ph.stock, .ring.stock, .frame.stock { position: relative; border-style: dashed }
+.ph.stock img, .ring.stock img, .frame.stock img { object-fit: contain; background: #fff }
+.stockmark { position: absolute; left: 0; right: 0; bottom: 0; padding: 3px 4px 10%; background: rgba(20,26,43,.82); color: #fff; font-weight: 700; font-size: 1rem; text-align: center; line-height: 1.2 }
+.frame .stockmark, .card .stockmark { padding-bottom: 6px; font-size: 1.3rem }
+.card .stockmark { padding-bottom: 12% }
 .tag { display: inline-block; background: var(--brass-soft); color: var(--ink); border: 1px solid var(--brass); border-radius: 999px; padding: 0 10px; font-size: 1rem; font-weight: 700 }
 
 .empty { text-align: center; padding: 30px 10px; color: var(--muted) }
@@ -1105,7 +1110,7 @@ function renderPrices() {
       <div><div class="t">${esc(title(c))}</div><div class="s">${esc([c.grade, c.example ? "Example" : ""].filter(Boolean).join(" · ")) || "Condition not filled in"}</div></div>
       <div class="s" data-v>${v === null ? "" : "Worth " + dollars(v)}</div></div><div data-lk></div>`;
     pl.appendChild(row);
-    if (c.photos && c.photos[0]) photoURL(c.photos[0]).then((u) => { if (u) row.querySelector("img").src = u; });
+    coinPic(c, row.querySelector(".ph"), row.querySelector(".top .s"));
     const box = row.querySelector("[data-lk]");
     const use = async (p) => {
       const cur = coins.find((x) => x.id === c.id) || c;
@@ -1170,7 +1175,7 @@ async function renderHome() {
       b.innerHTML = `<div class="ph"><img alt="" loading="lazy"></div><div class="t">${esc(title(c))}</div><div class="s">${esc(subtitle(c)) || "&nbsp;"}</div>${c.example ? '<div><span class="tag">Example</span></div>' : ""}`;
       b.onclick = () => go({ name: "coin", id: c.id });
       grid.appendChild(b);
-      if (c.photos && c.photos[0]) photoURL(c.photos[0]).then((u) => { if (u) b.querySelector("img").src = u; });
+      coinPic(c, b.querySelector(".ph"));
     }
   }
 }
@@ -1191,7 +1196,7 @@ function valueRow(c) {
     <div><div class="t">${esc(title(c))}</div><div class="s">${esc([c.grade, c.example ? "Example" : ""].filter(Boolean).join(" · ")) || "&nbsp;"}</div></div>
     <div class="amt${v === null ? " none" : ""}">${v === null ? "Add value" : dollars(v)}</div>`;
   b.onclick = () => valueSheet(c);
-  if (c.photos && c.photos[0]) photoURL(c.photos[0]).then((u) => { if (u) b.querySelector("img").src = u; });
+  coinPic(c, b.querySelector(".ph"), b.querySelector(".s"));
   return b;
 }
 
@@ -1263,7 +1268,8 @@ async function renderCoin() {
   const s = seriesOf(c), sl = slotOf(c, s);
   app.innerHTML = `<div class="detail"><div style="display:grid;gap:20px">
     <div class="photo-big">
-      <div class="frame" id="frame" role="button" tabindex="0" aria-label="Open photo to zoom">${photos.length ? '<img alt="Coin photo">' : '<span class="busy">No photo</span>'}</div>
+      <div class="frame" id="frame" role="button" tabindex="0" aria-label="Open photo to zoom">${photos.length ? '<img alt="Coin photo">' : s ? '<img alt="">' : '<span class="busy">No photo</span>'}</div>
+      ${!photos.length && s ? `<p class="count" id="stock-note" hidden>This is a stock photo of a ${esc(s.name)}, not your coin. Tap “Change details” to add your own photo.</p>` : ""}
       ${photos.length > 1 ? `<div class="seg">${photos.map((_, i) => `<button type="button" data-i="${i}" aria-pressed="${i === side}">${labels[i] || "Photo " + (i + 1)}</button>`).join("")}</div>` : ""}
       ${photos.length ? '<button class="btn wide" id="zoom" type="button">Zoom in on this photo</button>' : ""}
       ${photos.length > 1 ? '<button class="btn wide" id="swap" type="button">Swap front and back</button>' : ""}
@@ -1293,6 +1299,15 @@ async function renderCoin() {
     document.getElementById("frame").onclick = open;
     document.getElementById("frame").onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } };
     document.getElementById("zoom").onclick = open;
+  } else if (s) {
+    const fr = document.getElementById("frame");
+    fr.removeAttribute("role"); fr.removeAttribute("tabindex"); fr.removeAttribute("aria-label"); fr.style.cursor = "default";
+    typeThumb(s.id).then((u) => {
+      if (!u || !fr.isConnected) { if (fr.isConnected) fr.innerHTML = '<span class="busy">No photo</span>'; return; }
+      const im = fr.querySelector("img"); im.src = u; im.alt = "Stock photo of a " + s.name + ", not this coin";
+      fr.classList.add("stock"); fr.insertAdjacentHTML("beforeend", '<span class="stockmark" aria-hidden="true">Stock photo</span>');
+      document.getElementById("stock-note").hidden = false;
+    });
   }
   app.querySelectorAll(".seg button").forEach((b) => b.onclick = () => { view.side = +b.dataset.i; render(); });
   const sw = document.getElementById("swap");
@@ -1415,6 +1430,20 @@ function fillThumbs(el) {
   el.querySelectorAll("[data-thumb]").forEach(async (sp) => {
     const u = await typeThumb(sp.dataset.thumb);
     if (u && sp.isConnected) sp.innerHTML = `<img class="tthumb" alt="" src="${u}">`;
+  });
+}
+// Puts a coin's first photo in box's <img>. A coin with no photo gets the stock picture of its type
+// instead, clearly marked: a "Stock photo" band across the picture, or a tag in tagEl for small rows.
+function coinPic(c, box, tagEl) {
+  const img = box.querySelector("img");
+  if (c.photos && c.photos[0]) return photoURL(c.photos[0]).then((u) => { if (u) img.src = u; });
+  const s = seriesOf(c); if (!s) return;
+  typeThumb(s.id).then((u) => {
+    if (!u || !box.isConnected) return;
+    img.src = u; img.alt = "Stock photo of a " + s.name + ", not this coin";
+    box.classList.add("stock");
+    if (tagEl) tagEl.insertAdjacentHTML("beforeend", ' <span class="tag">Stock photo</span>');
+    else box.insertAdjacentHTML("beforeend", '<span class="stockmark" aria-hidden="true">Stock photo</span>');
   });
 }
 const thumbSpan = (id) => `<span class="tthumb" data-thumb="${esc(id)}" aria-hidden="true">${ICON_COIN}</span>`;
@@ -1625,7 +1654,7 @@ function renderAlbum() {
     const z = slots.find((x) => x.key === b.dataset.k), list = fill.get(z.key) || [];
     if (list.length) {
       const c = list[0];
-      if (c.photos && c.photos[0]) photoURL(c.photos[0]).then((u) => { if (u) b.querySelector("img").src = u; });
+      coinPic(c, b.querySelector(".ring"));
       b.onclick = () => go({ name: "coin", id: c.id });
     } else b.onclick = () => { draft = { photos: [], ...fieldsForSlot(s, z) }; go({ name: "edit" }); };
   });
