@@ -273,6 +273,13 @@ h2.sec { font-size: var(--step-1); margin: 8px 0 0 }
 .tthumb { width: 56px; height: 56px; flex: none; border-radius: 50%; object-fit: cover; background: var(--bg); border: 1px solid var(--line); display: inline-grid; place-items: center; color: var(--muted); font-size: .8rem; overflow: hidden }
 img.tthumb { object-fit: contain; border-radius: 8px; background: #fff } /* some pictures show both sides side by side */
 .tlist { display: grid; gap: 6px }
+/* The type list scrolls inside its own box (not the whole page), with a scroll bar that stands out. */
+.tsheet { max-height: calc(100dvh - 32px - env(safe-area-inset-bottom, 0px)); grid-template-rows: auto minmax(0, 1fr) auto auto; overflow: hidden }
+.tsheet .tlist { display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; padding-right: 8px; align-content: start; scrollbar-width: auto; scrollbar-color: var(--brass) var(--bg) }
+.tsheet .tlist > * { flex: none }
+.tsheet .tlist::-webkit-scrollbar { width: 16px }
+.tsheet .tlist::-webkit-scrollbar-track { background: var(--bg); border-radius: 8px }
+.tsheet .tlist::-webkit-scrollbar-thumb { background: var(--brass); border-radius: 8px; border: 3px solid var(--bg) }
 .tlist h3 { margin: 12px 0 2px; font-size: 1.05rem; color: var(--muted) }
 .trow { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 8px 12px; border: 2px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; min-height: 72px }
 .trow:hover, .trow:focus-visible { border-color: var(--brass) }
@@ -629,7 +636,7 @@ const SERIES = [
     hp: "the feather tips, the ribbon by the ear, and the word LIBERTY on the headband",
     grading: { g: "The head is outlined. LIBERTY on the headband is worn away.", vg: "At least 3 letters of LIBERTY show on the headband.", f: "All of LIBERTY can be read on the headband, even if weak.", vf: "LIBERTY is sharp. The feather ends and the ribbon show detail.", ef: "The diamond pattern on the ribbon shows. Light wear on the hair and feather tips.", au: "Only a trace of wear on the hair above the ear and the feather tips." } },
   { id: "wheat-cent", group: "Cents", name: "Lincoln Wheat cent", den: "Lincoln cent", from: 1909, to: 1958, aliases: ["lincoln cent", "wheat cent", "lincoln wheat", "wheat penny", "lincoln penny", "steel penny", "steel cent"],
-    note: "Includes the 1943 steel cents", tags: { 1943: "Steel" },
+    pickNote: "Includes the 1943 steel cents", tags: { 1943: "Steel" },
     metal: "Bronze. 1943: zinc-coated steel. 1944–1946: brass from shell cases", weight: "3.11 g (1943 steel: 2.7 g)", size: "19 mm", designer: "Victor David Brenner",
     mintMark: "Front, below the date",
     dates: "1909:P P*VDB S S*VDB; 1910:P S; 1911-1920:P D S; 1921:P S; 1922:D P*No_D; 1923:P S; 1924-1931:P D S; 1932-1934:P D; 1935-1954:P D S; 1955:P P*Doubled_die D S; 1956-1958:P D",
@@ -857,7 +864,7 @@ const seriesById = (id) => SERIES.find((s) => s.id === id) || null;
 // (half cents, large cents, cents, and two- and three-cent pieces).
 const SYN = { pennies: "penny", cents: "cent", nickels: "nickel", dimes: "dime", quarters: "quarter", halves: "half", dollars: "dollar" };
 const searchWords = (q) => q.toLowerCase().split(/\s+/).filter(Boolean).map((w) => SYN[w] || w);
-const seriesText = (s) => s ? [s.name, s.den, s.group, s.note || "", ...(s.aliases || []), /^(half cents|large cents|cents|two and three cents)$/i.test(s.group) ? "penny" : ""].join(" ").toLowerCase() : "";
+const seriesText = (s) => s ? [s.name, s.den, s.group, s.pickNote || "", ...(s.aliases || []), /^(half cents|large cents|cents|two and three cents)$/i.test(s.group) ? "penny" : ""].join(" ").toLowerCase() : "";
 const normMint = (m) => (!m || /^none/i.test(m) || m === "P") ? "P" : m;
 
 function slotsOf(s) {
@@ -1475,11 +1482,11 @@ function typeSheet(current, onPick) {
   closeSheet();
   sheetEl = document.createElement("div"); sheetEl.className = "sheet-bg";
   const yrs = (s) => s.from === s.to ? s.from : s.from + "–" + (s.to || "today");
-  sheetEl.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ts-h">
+  sheetEl.innerHTML = `<div class="sheet tsheet" role="dialog" aria-modal="true" aria-labelledby="ts-h">
     <h2 id="ts-h">Pick the type of coin</h2>
     <div class="tlist">
       <button type="button" class="trow${current ? "" : " on"}" data-id=""><span class="tthumb" aria-hidden="true">?</span><span>Not on the list, or not sure</span></button>
-      ${GROUPS.map((g) => `<h3>${esc(g)}</h3>${SERIES.filter((s) => s.group === g).map((s) => `<button type="button" class="trow${s.id === current ? " on" : ""}" data-id="${s.id}">${thumbSpan(s.id)}<span>${esc(s.name)}<span class="yrs">${esc(String(yrs(s)))}${s.note ? " · " + esc(s.note) : ""}</span></span></button>`).join("")}`).join("")}
+      ${GROUPS.map((g) => `<h3>${esc(g)}</h3>${SERIES.filter((s) => s.group === g).map((s) => `<button type="button" class="trow${s.id === current ? " on" : ""}" data-id="${s.id}">${thumbSpan(s.id)}<span>${esc(s.name)}<span class="yrs">${esc(String(yrs(s)))}${s.pickNote ? " · " + esc(s.pickNote) : ""}</span></span></button>`).join("")}`).join("")}
     </div>
     <p class="count">Pictures from Wikipedia. They show what the type looks like, not a particular year.</p>
     <button class="btn wide" type="button" data-a="no">Cancel</button>
