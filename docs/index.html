@@ -21,7 +21,7 @@
   --ink: #141a2b;
   --muted: #4a5266;
   --line: #c9cedb;
-  --album: #1d2c55;
+  --album: #1d2c55; --money: #1a7a37;
   --album-ink: #ffffff;
   --brass: #9a6b12;
   --brass-soft: #f4e7c8;
@@ -37,11 +37,11 @@
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #0f1424; --surface: #1a2136; --ink: #f2f3f7; --muted: #b9bfd0; --line: #39425c;
-  --album: #2b3d70; --album-ink: #ffffff; --brass: #e2b65a; --brass-soft: #3a2f17;
+  --album: #2b3d70; --album-ink: #ffffff; --money: #7fd88a; --brass: #e2b65a; --brass-soft: #3a2f17;
   --danger: #ff8a7f; --danger-soft: #3d1c1a; --focus: #8fb0ff; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #0f1424; --surface: #1a2136; --ink: #f2f3f7; --muted: #b9bfd0; --line: #39425c;
-  --album: #2b3d70; --album-ink: #ffffff; --brass: #e2b65a; --brass-soft: #3a2f17;
+  --album: #2b3d70; --album-ink: #ffffff; --money: #7fd88a; --brass: #e2b65a; --brass-soft: #3a2f17;
   --danger: #ff8a7f; --danger-soft: #3d1c1a; --focus: #8fb0ff; color-scheme: dark }
 
 * { box-sizing: border-box }
@@ -204,6 +204,8 @@ h2.sec { font-size: var(--step-1); margin: 8px 0 0 }
 .aprice { background: var(--album); color: var(--album-ink); border-radius: var(--radius); padding: 16px; display: grid; gap: 12px; --t1: #7fd88a; --t2: #6cc0ff; --t3: #d3a6ff; --t4: #ffd34d }
 .album-grid { --t1: #7fd88a; --t2: #6cc0ff; --t3: #d3a6ff; --t4: #ffd34d }
 .aprice h2 { margin: 0; font-size: var(--step-1) }
+.worth-s { font-weight: 800; color: var(--money); letter-spacing: 1px; white-space: nowrap; margin-left: 4px }
+.worth-s .dim { opacity: .22 }
 .aprice .when { font-size: var(--step-0) }
 .aprice p { margin: 0; font-size: 1.15rem }
 .aprice .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; margin: 0; padding: 0; font-size: 1.15rem; font-weight: 700 }
@@ -1635,7 +1637,7 @@ function renderAlbums() {
   const info = SERIES.filter((s) => slotsOf(s).length).map((s) => ({ s, have: albumFill(s).size, total: slotsOf(s).length }));
   const item = ({ s, have, total }) => `<button class="alb" type="button" data-id="${s.id}">${thumbSpan(s.id)}<span class="alb-b">
       <span class="alb-t">${esc(s.name)}</span>
-      <span class="alb-s">${s.from}–${s.to} · ${have ? `<strong>${have} of ${total}</strong> filled` : `${total} spots`}</span>
+      <span class="alb-s">${s.from}–${s.to} · ${have ? `<strong>${have} of ${total}</strong> filled` : `${total} spots`}${worthSigns(s)}</span>
       ${progress(have, total)}</span></button>`;
   const started = info.filter((x) => x.have);
   app.innerHTML = `
@@ -1746,6 +1748,14 @@ async function loadAlbumPrices(s, again = false) {
   } catch (e) { st.error = e.message; }
   st.running = false; step();
   return st.error;
+}
+// 1 to 5 dollar signs for the albums list, from the album's most valuable date (the same bands as the colors).
+function worthSigns(s) {
+  const st = albumState(s.id); let top = null;
+  if (st) for (const v of st.prices.values()) if (v != null && (top === null || v > top)) top = v;
+  if (top === null) return "";
+  const n = tierOf(top) + 1;
+  return ` <span class="worth-s" role="img" aria-label="Most valuable date up to ${dollars(top)}">${"$".repeat(n)}<span class="dim" aria-hidden="true">${"$".repeat(5 - n)}</span></span>`;
 }
 // Goes through every album on its own, the ones Dad has started first, until all have prices or the
 // month's lookups run out. Runs whenever the app opens with a price key, and picks up where it left off.
