@@ -167,6 +167,7 @@ h2.sec { font-size: var(--step-1); margin: 8px 0 0 }
 .sync-code { font-size: 3.4rem; font-weight: 700; letter-spacing: .12em; text-align: center; background: var(--surface); border: 3px solid var(--brass); border-radius: var(--radius); padding: 18px 10px; font-variant-numeric: tabular-nums }
 /* albums */
 .albs { display: grid; gap: 12px }
+[hidden] { display: none !important }
 .alb { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); padding: 14px 16px; text-align: left; cursor: pointer; display: grid; gap: 6px; min-height: 64px }
 .alb:hover { border-color: var(--brass) }
 .alb { grid-template-columns: 56px 1fr; align-items: center; column-gap: 14px }
@@ -191,6 +192,7 @@ h2.sec { font-size: var(--step-1); margin: 8px 0 0 }
 .aprice { background: var(--album); color: var(--album-ink); border-radius: var(--radius); padding: 16px; display: grid; gap: 12px; --t1: #7fd88a; --t2: #6cc0ff; --t3: #d3a6ff; --t4: #ffd34d }
 .album-grid { --t1: #7fd88a; --t2: #6cc0ff; --t3: #d3a6ff; --t4: #ffd34d }
 .aprice h2 { margin: 0; font-size: var(--step-1) }
+.aprice .when { font-size: var(--step-0) }
 .aprice p { margin: 0; font-size: 1.15rem }
 .aprice .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; margin: 0; padding: 0; font-size: 1.15rem; font-weight: 700 }
 .aprice .legend li { display: flex; align-items: center; gap: 8px }
@@ -1625,21 +1627,51 @@ function renderAlbums() {
       ${progress(have, total)}</span></button>`;
   const started = info.filter((x) => x.have);
   app.innerHTML = `
+    <div class="search"><input id="aq" type="search" placeholder="Search albums: coin name or year…" aria-label="Search albums" autocomplete="off"></div>
     <p class="count">Each album lays out every date and mint mark of one kind of U.S. coin, like a coin folder. Coins you have show their photo. Empty circles are the ones still to find.</p>
-    ${started.length ? `<h2 class="sec">Albums you have started</h2><div class="albs">${started.map(item).join("")}</div>` : ""}
-    ${GROUPS.filter((g) => info.some((x) => x.s.group === g)).map((g) => `<h2 class="sec">${g}</h2><div class="albs">${info.filter((x) => x.s.group === g).map(item).join("")}</div>`).join("")}`;
+    ${started.length ? `<section class="albsec"><h2 class="sec">Albums you have started</h2><div class="albs">${started.map(item).join("")}</div></section>` : ""}
+    ${GROUPS.filter((g) => info.some((x) => x.s.group === g)).map((g) => `<section class="albsec"><h2 class="sec">${g}</h2><div class="albs">${info.filter((x) => x.s.group === g).map(item).join("")}</div></section>`).join("")}
+    <div class="empty" id="aq-none" hidden>No album matches that.</div>`;
+  // Filters as you type: words match the album's name or group, and a year shows the albums made that year.
+  const aq = document.getElementById("aq");
+  aq.oninput = () => {
+    const words = aq.value.toLowerCase().split(/\s+/).filter(Boolean);
+    let any = false;
+    app.querySelectorAll(".alb").forEach((b) => {
+      const s = seriesById(b.dataset.id), text = [s.name, s.den, s.group].join(" ").toLowerCase();
+      const ok = words.every((w) => /^\d{4}$/.test(w) ? +w >= s.from && +w <= (s.to || 9999) : text.includes(w));
+      b.hidden = !ok; any = any || ok;
+    });
+    app.querySelectorAll(".albsec").forEach((sec) => { sec.hidden = ![...sec.querySelectorAll(".alb")].some((b) => !b.hidden); });
+    document.getElementById("aq-none").hidden = any;
+  };
   app.querySelectorAll(".alb").forEach((b) => b.onclick = () => go({ name: "album", id: b.dataset.id }));
   fillThumbs(app);
 }
 
 /* Top prices for an album: the highest Numista estimate (best condition) for each spot.
-   Like other lookups, kept only while the app is open (Numista's terms). */
-const albumPrices = new Map(); // series id -> { prices: Map(slot key -> number | null), running, error, done }
+   Saved on this device with the date they were looked up (Numista's terms allow storing for a personal project). */
+const albumPrices = new Map(); // series id -> { prices: Map(slot key -> number | null), running, error, done, date }
+const APKEY = "coin-catalog-album-prices";
+function savedAlbumPrices() { try { return JSON.parse(localStorage.getItem(APKEY) || "{}") || {}; } catch (e) { return {}; } }
+function albumState(id) {
+  if (!albumPrices.has(id)) {
+    const sv = savedAlbumPrices()[id];
+    if (sv && sv.prices) albumPrices.set(id, { prices: new Map(Object.entries(sv.prices)), running: false, error: "", done: 0, date: sv.date });
+  }
+  return albumPrices.get(id);
+}
+function saveAlbumPrices(id, st) {
+  try { const all = savedAlbumPrices(); all[id] = { date: st.date, prices: Object.fromEntries(st.prices) }; localStorage.setItem(APKEY, JSON.stringify(all)); } catch (e) {}
+}
 const TIERS = [[10000, 4, "$10,000 and up"], [1000, 3, "$1,000 to $9,999"], [100, 2, "$100 to $999"], [10, 1, "$10 to $99"], [0, 0, "Under $10"]];
 const tierOf = (v) => TIERS.find((t) => v >= t[0])[1];
 async function loadAlbumPrices(s, onStep) {
-  const st = { prices: new Map(), running: true, error: "", done: 0 };
+  const old = albumState(s.id);
+  // Saved prices stay showing while new ones come in.
+  const st = { prices: new Map(old ? old.prices : []), running: true, error: "", done: 0, date: old && old.date };
   albumPrices.set(s.id, st);
+  let got = 0;
   try {
     const clean = (x) => String(x || "").replace(/[“”"]/g, "").replace(/\s*\(.*?\)/g, "").trim();
     const tries = [...new Set([clean(s.den), clean(s.name), clean(s.den).split(" ")[0]].filter((x) => x && x.length > 2))];
@@ -1663,17 +1695,21 @@ async function loadAlbumPrices(s, onStep) {
         const pr = await nGet("/types/" + t + "/issues/" + i.id + "/prices", { currency: "USD" });
         for (const x of (pr && pr.prices) || []) if (x && x.price != null && (top === null || +x.price > top)) top = +x.price;
       }
-      st.prices.set(z.key, top); st.done++; onStep();
+      if (top !== null || !old) st.prices.set(z.key, top);
+      if (top !== null) got++;
+      st.done++; onStep();
     };
     const work = async () => { while (queue.length && !st.error) await one(queue.shift()); };
     await Promise.all([work(), work(), work()]).catch((e) => { st.error = e.message; });
   } catch (e) { st.error = e.message; }
-  st.running = false; onStep();
+  st.running = false;
+  if (got) { st.date = Date.now(); saveAlbumPrices(s.id, st); }
+  onStep();
 }
 // The price box above the album, and the colors and "up to $" on each circle.
 function paintPrices(s) {
   const box = document.getElementById("aprice"); if (!box || view.name !== "album" || view.id !== s.id) return;
-  const st = albumPrices.get(s.id), n = slotsOf(s).length;
+  const st = albumState(s.id), n = slotsOf(s).length;
   app.querySelectorAll(".slotc").forEach((b) => {
     const v = st ? st.prices.get(b.dataset.k) : null;
     b.classList.remove("t1", "t2", "t3", "t4");
@@ -1695,11 +1731,13 @@ function paintPrices(s) {
   let best = null; for (const [k, v] of st.prices) if (v != null && (!best || v > best[1])) best = [k, v];
   const known = [...st.prices.values()].filter((v) => v != null).length;
   box.innerHTML = `<h2>Top price for each date</h2>
+    ${st.date ? `<p class="when">Prices as of <strong>${longDate(st.date)}</strong></p>` : ""}
     ${known ? `<p>Each circle is colored by the highest price that date reaches in the best condition. Most coins in average condition are worth much less.</p>${legend}` : ""}
     ${best ? `<div class="top">Most valuable here: <strong>${esc(best[0])}</strong>, up to <strong>${dollars(best[1])}</strong></div>` : ""}
     <p>${st.running ? `Looking up prices… ${st.done} of ${n}` : st.error ? esc(st.error === "notfound" ? "Numista didn’t find this kind of coin, so the album isn’t colored." : lookupError(new Error(st.error))) : `${known ? "" : "Numista has no prices for these dates yet. "}Prices found for ${known} of ${n} dates.${known < n ? " Dates without a price are left plain." : ""}`} Source: Numista price estimates, a guide only.</p>
     ${!st.running && st.error === "key" ? '<button class="btn" type="button" id="ap-fix">Update the price key</button>' : ""}
-    ${!st.running && st.error && !["key", "notfound"].includes(st.error) ? '<button class="btn" type="button" id="ap-go">Try again</button>' : ""}`;
+    ${!st.running && st.error && !["key", "notfound"].includes(st.error) ? '<button class="btn" type="button" id="ap-go">Try again</button>'
+      : !st.running && !st.error && numistaKey() ? `<button class="btn" type="button" id="ap-go">Look up prices again</button><p>Uses about ${n} of your monthly Numista lookups.</p>` : ""}`;
   const f = document.getElementById("ap-fix"); if (f) f.onclick = fixKey;
   const g = document.getElementById("ap-go"); if (g) g.onclick = () => loadAlbumPrices(s, () => paintPrices(s));
 }
