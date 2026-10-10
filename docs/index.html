@@ -206,6 +206,11 @@ h2.sec { font-size: var(--step-1); margin: 8px 0 0 }
 .aprice h2 { margin: 0; font-size: var(--step-1) }
 .worth-s { font-weight: 800; color: var(--money); letter-spacing: 1px; white-space: nowrap; margin-left: 4px }
 .worth-s .dim { opacity: .22 }
+.worth-s.pending { color: var(--muted) }
+.alb-w { display: block; font-size: 1.2rem; line-height: 1.2 }
+.alb-w .worth-s { margin-left: 0 }
+.signs-key ul { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 1.1rem }
+.signs-key li .worth-s { margin: 0 4px 0 0; font-size: 1.2rem }
 .aprice .when { font-size: var(--step-0) }
 .aprice p { margin: 0; font-size: 1.15rem }
 .aprice .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; margin: 0; padding: 0; font-size: 1.15rem; font-weight: 700 }
@@ -1637,12 +1642,16 @@ function renderAlbums() {
   const info = SERIES.filter((s) => slotsOf(s).length).map((s) => ({ s, have: albumFill(s).size, total: slotsOf(s).length }));
   const item = ({ s, have, total }) => `<button class="alb" type="button" data-id="${s.id}">${thumbSpan(s.id)}<span class="alb-b">
       <span class="alb-t">${esc(s.name)}</span>
-      <span class="alb-s">${s.from}–${s.to} · ${have ? `<strong>${have} of ${total}</strong> filled` : `${total} spots`}${worthSigns(s)}</span>
+      <span class="alb-s">${s.from}–${s.to} · ${have ? `<strong>${have} of ${total}</strong> filled` : `${total} spots`}</span>
+      <span class="alb-w">${worthSigns(s)}</span>
       ${progress(have, total)}</span></button>`;
   const started = info.filter((x) => x.have);
   app.innerHTML = `
     <div class="search"><input id="aq" type="search" placeholder="Search albums: coin name or year…" aria-label="Search albums" autocomplete="off"></div>
     <p class="count">Each album lays out every date and mint mark of one kind of U.S. coin, like a coin folder. Coins you have show their photo. Empty circles are the ones still to find.</p>
+    <div class="note signs-key"><p><strong>What the dollar signs mean:</strong> how much the most valuable coin in that album can be worth, in the best condition. Look for albums with more signs.</p>
+      <ul><li><span class="worth-s">$</span> under $10</li><li><span class="worth-s">$$</span> $10 to $99</li><li><span class="worth-s">$$$</span> $100 to $999</li><li><span class="worth-s">$$$$</span> $1,000 to $9,999</li><li><span class="worth-s">$$$$$</span> $10,000 and up</li><li><span class="worth-s pending">$?</span> no prices yet</li></ul>
+      ${numistaKey() ? "" : '<p>The signs appear once price lookups are set up in Help &amp; backup.</p>'}</div>
     ${started.length ? `<section class="albsec"><h2 class="sec">Albums you have started</h2><div class="albs">${started.map(item).join("")}</div></section>` : ""}
     ${GROUPS.filter((g) => info.some((x) => x.s.group === g)).map((g) => `<section class="albsec"><h2 class="sec">${g}</h2><div class="albs">${info.filter((x) => x.s.group === g).map(item).join("")}</div></section>`).join("")}
     <div class="empty" id="aq-none" hidden>No album matches that.</div>`;
@@ -1712,7 +1721,7 @@ async function loadAlbumPrices(s, again = false) {
   // Saved prices stay showing while new ones come in.
   const st = { prices: new Map(cur ? cur.prices : []), running: true, error: "", done: 0, date: cur && cur.date };
   albumPrices.set(s.id, st);
-  const step = () => paintPrices(s);
+  const step = () => { paintPrices(s); refreshSigns(s); };
   const get = (path, params) => { if (!again && lookupsUsed() >= BG_BUDGET) throw new Error("budget"); countLookup(); return nGet(path, params); };
   const keep = (k, v) => { if (v !== null || !st.prices.has(k) || st.prices.get(k) === null) st.prices.set(k, v); st.date = Date.now(); saveAlbumPrices(s.id, st); };
   try {
@@ -1757,9 +1766,14 @@ async function loadAlbumPrices(s, again = false) {
 function worthSigns(s) {
   const st = albumState(s.id); let top = null;
   if (st) for (const v of st.prices.values()) if (v != null && (top === null || v > top)) top = v;
-  if (top === null) return "";
+  if (top === null) return '<span class="worth-s pending" role="img" aria-label="No prices yet">$?</span>';
   const n = tierOf(top) + 1;
-  return ` <span class="worth-s" role="img" aria-label="Most valuable date up to ${dollars(top)}">${"$".repeat(n)}<span class="dim" aria-hidden="true">${"$".repeat(5 - n)}</span></span>`;
+  return `<span class="worth-s" role="img" aria-label="Most valuable date up to ${dollars(top)}">${"$".repeat(n)}<span class="dim" aria-hidden="true">${"$".repeat(5 - n)}</span></span>`;
+}
+// Keeps the dollar signs on the albums list up to date while prices come in.
+function refreshSigns(s) {
+  if (view.name !== "albums") return;
+  app.querySelectorAll(`.alb[data-id="${s.id}"] .alb-w`).forEach((el) => { el.innerHTML = worthSigns(s); });
 }
 // Goes through every album on its own, the ones Dad has started first, until all have prices or the
 // month's lookups run out. Runs whenever the app opens with a price key, and picks up where it left off.
