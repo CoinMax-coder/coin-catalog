@@ -853,11 +853,11 @@ const SERIES = [
 ];
 const GROUPS = ["Half cents", "Large cents", "Cents", "Two and three cents", "Nickels", "Half dimes", "Dimes", "Twenty cents", "Quarters", "Half dollars", "Dollars", "Gold"];
 const seriesById = (id) => SERIES.find((s) => s.id === id) || null;
-// Search words: plurals find the singular, and "penny" or "pennies" finds the one-cent coins
-// (large cents and small cents, not half cents or two- and three-cent pieces).
+// Search words: plurals find the singular, and "penny" or "pennies" finds every coin under five cents
+// (half cents, large cents, cents, and two- and three-cent pieces).
 const SYN = { pennies: "penny", cents: "cent", nickels: "nickel", dimes: "dime", quarters: "quarter", halves: "half", dollars: "dollar" };
 const searchWords = (q) => q.toLowerCase().split(/\s+/).filter(Boolean).map((w) => SYN[w] || w);
-const seriesText = (s) => s ? [s.name, s.den, s.group, s.note || "", ...(s.aliases || []), /^(cents|large cents)$/i.test(s.group) ? "penny" : ""].join(" ").toLowerCase() : "";
+const seriesText = (s) => s ? [s.name, s.den, s.group, s.note || "", ...(s.aliases || []), /^(half cents|large cents|cents|two and three cents)$/i.test(s.group) ? "penny" : ""].join(" ").toLowerCase() : "";
 const normMint = (m) => (!m || /^none/i.test(m) || m === "P") ? "P" : m;
 
 function slotsOf(s) {
