@@ -1321,6 +1321,7 @@ async function renderCoin() {
       ${[["Country", c.country], ["Year", c.year], ["Coin", c.denomination], ["Mint mark", c.mint], ["Condition", c.grade], ["Price paid", c.paid ? "$" + c.paid : ""], ["Worth now", toNum(c.value) !== null ? dollars(toNum(c.value)) + (c.valueDate ? ` (as of ${longDate(c.valueDate)})` : "") : ""], ["Notes", c.notes]]
         .map(([k, v]) => `<div><dt>${k}</dt><dd>${v ? esc(v) : '<span style="color:var(--muted)">Not filled in</span>'}</dd></div>`).join("")}
     </dl>
+    ${(() => { const ap = albumPriceOf(c); return ap ? `<div class="note"><p><strong>Album price for ${esc(ap.label)}:</strong> ${esc(albumLine(ap))} Your coin is worth less if it is worn.</p></div>` : ""; })()}
     <div class="row">
       <button class="btn primary" id="edit" type="button">Change details</button>
       <button class="btn" id="val" type="button">${toNum(c.value) !== null ? "Update value" : "Add value"}</button>
@@ -1563,7 +1564,7 @@ function renderEdit() {
         <div class="field">${lab("paid", "f-paid", "Price paid ($)")}<input id="f-paid" inputmode="decimal" autocomplete="off" value="${esc(d.paid)}" placeholder="e.g. 12.50"></div>
       </div>
       <div class="two">
-        <div class="field">${lab("value", "f-value", "Worth now ($)", `<button class="btn small" id="f-check" type="button">${ICON.price} Check prices</button>`)}<span class="hint">Your best guess. You can change it any time.</span><input id="f-value" inputmode="decimal" autocomplete="off" value="${esc(d.value)}" placeholder="e.g. 45"></div>
+        <div class="field">${lab("value", "f-value", "Worth now ($)", `<button class="btn small" id="f-check" type="button">${ICON.price} Check prices</button>`)}<span class="hint">Your best guess. You can change it any time.</span>${(() => { const ap = albumPriceOf(d); return ap ? `<span class="hint" id="f-album"><strong>Album price for ${esc(ap.label)}:</strong> ${esc(albumLine(ap))}</span>` : ""; })()}<input id="f-value" inputmode="decimal" autocomplete="off" value="${esc(d.value)}" placeholder="e.g. 45"></div>
       </div>
       <div class="field">${lab("notes", "f-notes", "Notes")}<textarea id="f-notes" placeholder="Where you got it, anything special">${esc(d.notes)}</textarea></div>
       <button class="btn primary wide" type="submit">Save this coin</button>
@@ -1723,6 +1724,12 @@ function mergeAlbumPrices(inc) {
   try { localStorage.setItem(APKEY, JSON.stringify(all)); } catch (e) {}
   return n;
 }
+// The saved album price for this coin's date and mint mark (top condition), or null.
+function albumPriceOf(c) {
+  const s = seriesOf(c), z = slotOf(c, s), st = z && albumState(s.id), v = st ? st.prices.get(z.key) : null;
+  return v == null ? null : { value: v, date: st.date, label: z.label };
+}
+const albumLine = (ap) => `Up to ${dollars(ap.value)} in top condition${ap.date ? `, checked ${longDate(ap.date)}` : ""}. Source: Numista.`;
 const albumDone = (s) => { const st = albumState(s.id); return !!st && slotsOf(s).every((z) => st.prices.has(z.key)); };
 // Lookups used this month on this device. The free Numista plan allows 2,000 a month; the background
 // lookups stop at 1,500 so there are always some left for checking single coins.
