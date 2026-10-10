@@ -628,7 +628,8 @@ const SERIES = [
     dates: "1859-1907:P; 1908-1909:P S", keys: ["1877", "1908-S", "1909-S"],
     hp: "the feather tips, the ribbon by the ear, and the word LIBERTY on the headband",
     grading: { g: "The head is outlined. LIBERTY on the headband is worn away.", vg: "At least 3 letters of LIBERTY show on the headband.", f: "All of LIBERTY can be read on the headband, even if weak.", vf: "LIBERTY is sharp. The feather ends and the ribbon show detail.", ef: "The diamond pattern on the ribbon shows. Light wear on the hair and feather tips.", au: "Only a trace of wear on the hair above the ear and the feather tips." } },
-  { id: "wheat-cent", group: "Cents", name: "Lincoln Wheat cent", den: "Lincoln cent", from: 1909, to: 1958, aliases: ["lincoln cent", "wheat cent", "lincoln wheat", "wheat penny", "lincoln penny"],
+  { id: "wheat-cent", group: "Cents", name: "Lincoln Wheat cent", den: "Lincoln cent", from: 1909, to: 1958, aliases: ["lincoln cent", "wheat cent", "lincoln wheat", "wheat penny", "lincoln penny", "steel penny", "steel cent"],
+    note: "Includes the 1943 steel cents", tags: { 1943: "Steel" },
     metal: "Bronze. 1943: zinc-coated steel. 1944–1946: brass from shell cases", weight: "3.11 g (1943 steel: 2.7 g)", size: "19 mm", designer: "Victor David Brenner",
     mintMark: "Front, below the date",
     dates: "1909:P P*VDB S S*VDB; 1910:P S; 1911-1920:P D S; 1921:P S; 1922:D P*No_D; 1923:P S; 1924-1931:P D S; 1932-1934:P D; 1935-1954:P D S; 1955:P P*Doubled_die D S; 1956-1958:P D",
@@ -852,6 +853,11 @@ const SERIES = [
 ];
 const GROUPS = ["Half cents", "Large cents", "Cents", "Two and three cents", "Nickels", "Half dimes", "Dimes", "Twenty cents", "Quarters", "Half dollars", "Dollars", "Gold"];
 const seriesById = (id) => SERIES.find((s) => s.id === id) || null;
+// Search words: plurals find the singular, and "penny" or "pennies" finds every coin under five cents
+// (half cents, large cents, cents, and two- and three-cent pieces).
+const SYN = { pennies: "penny", cents: "cent", nickels: "nickel", dimes: "dime", quarters: "quarter", halves: "half", dollars: "dollar" };
+const searchWords = (q) => q.toLowerCase().split(/\s+/).filter(Boolean).map((w) => SYN[w] || w);
+const seriesText = (s) => s ? [s.name, s.den, s.group, s.note || "", ...(s.aliases || []), /^(half cents|large cents|cents|two and three cents)$/i.test(s.group) ? "penny" : ""].join(" ").toLowerCase() : "";
 const normMint = (m) => (!m || /^none/i.test(m) || m === "P") ? "P" : m;
 
 function slotsOf(s) {
@@ -1148,7 +1154,12 @@ function setBar(text, withBack, right = "") {
 async function renderHome() {
   setBar("Fred's Coins", false, '<button class="icon-btn" id="b-help" type="button">Help &amp; backup</button>');
   const q = query.trim().toLowerCase();
-  const list = q ? coins.filter((c) => [c.country, c.year, c.denomination, c.mint, c.grade, c.notes].join(" ").toLowerCase().includes(q)) : coins;
+  // Every word has to match; the coin's type counts too, so "pennies" finds all the cents.
+  const words = searchWords(q);
+  const list = q ? coins.filter((c) => {
+    const s = seriesOf(c), text = [c.country, c.year, c.denomination, c.mint, c.grade, c.notes, seriesText(s), (s && s.tags && s.tags[c.year]) || ""].join(" ").toLowerCase();
+    return words.every((w) => text.includes(w));
+  }) : coins;
   const examples = coins.filter((c) => c.example).length;
   app.innerHTML = `
     <div class="row">
@@ -1468,7 +1479,7 @@ function typeSheet(current, onPick) {
     <h2 id="ts-h">Pick the type of coin</h2>
     <div class="tlist">
       <button type="button" class="trow${current ? "" : " on"}" data-id=""><span class="tthumb" aria-hidden="true">?</span><span>Not on the list, or not sure</span></button>
-      ${GROUPS.map((g) => `<h3>${esc(g)}</h3>${SERIES.filter((s) => s.group === g).map((s) => `<button type="button" class="trow${s.id === current ? " on" : ""}" data-id="${s.id}">${thumbSpan(s.id)}<span>${esc(s.name)}<span class="yrs">${esc(String(yrs(s)))}</span></span></button>`).join("")}`).join("")}
+      ${GROUPS.map((g) => `<h3>${esc(g)}</h3>${SERIES.filter((s) => s.group === g).map((s) => `<button type="button" class="trow${s.id === current ? " on" : ""}" data-id="${s.id}">${thumbSpan(s.id)}<span>${esc(s.name)}<span class="yrs">${esc(String(yrs(s)))}${s.note ? " · " + esc(s.note) : ""}</span></span></button>`).join("")}`).join("")}
     </div>
     <p class="count">Pictures from Wikipedia. They show what the type looks like, not a particular year.</p>
     <button class="btn wide" type="button" data-a="no">Cancel</button>
@@ -1646,10 +1657,10 @@ function renderAlbums() {
   // Filters as you type: words match the album's name or group, and a year shows the albums made that year.
   const aq = document.getElementById("aq");
   aq.oninput = () => {
-    const words = aq.value.toLowerCase().split(/\s+/).filter(Boolean);
+    const words = searchWords(aq.value);
     let any = false;
     app.querySelectorAll(".alb").forEach((b) => {
-      const s = seriesById(b.dataset.id), text = [s.name, s.den, s.group].join(" ").toLowerCase();
+      const s = seriesById(b.dataset.id), text = seriesText(s);
       const ok = words.every((w) => /^\d{4}$/.test(w) ? +w >= s.from && +w <= (s.to || 9999) : text.includes(w));
       b.hidden = !ok; any = any || ok;
     });
@@ -1835,9 +1846,9 @@ function renderAlbum() {
     <section class="aprice" id="aprice" aria-live="polite"></section>
     ${shown.length ? `<div class="album-grid">${shown.map((z) => {
       const list = fill.get(z.key) || [];
-      return `<button class="slotc${list.length ? " has" : ""}${view.focus === z.key ? " focus" : ""}" type="button" data-k="${esc(z.key)}" aria-label="${esc(z.label)}${z.isKey ? ", key date" : ""}: ${list.length ? "you have it" : "empty, tap to add"}">
+      return `<button class="slotc${list.length ? " has" : ""}${view.focus === z.key ? " focus" : ""}" type="button" data-k="${esc(z.key)}" aria-label="${esc(z.label)}${s.tags && s.tags[z.year] ? ", " + esc(s.tags[z.year]).toLowerCase() : ""}${z.isKey ? ", key date" : ""}: ${list.length ? "you have it" : "empty, tap to add"}">
         <span class="ring">${list.length ? '<img alt="">' : '<span aria-hidden="true">+</span>'}</span>
-        <span class="lab">${esc(z.label)}</span>${z.isKey ? '<span class="tag">Key date</span>' : ""}${list.length > 1 ? `<span class="s">${list.length} coins</span>` : ""}</button>`;
+        <span class="lab">${esc(z.label)}</span>${s.tags && s.tags[z.year] ? `<span class="tag">${esc(s.tags[z.year])}</span>` : ""}${z.isKey ? '<span class="tag">Key date</span>' : ""}${list.length > 1 ? `<span class="s">${list.length} coins</span>` : ""}</button>`;
     }).join("")}</div>` : '<div class="empty">You have every coin in this album.</div>'}
     <h2 class="sec">About the ${esc(s.name)}</h2>
     ${aboutFacts(s)}`;
