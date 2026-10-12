@@ -2586,7 +2586,7 @@ async function openViewer(pid) {
   closeViewer();
   viewerEl = document.createElement("div");
   viewerEl.className = "viewer"; viewerEl.setAttribute("role", "dialog"); viewerEl.setAttribute("aria-label", "Zoomed photo");
-  viewerEl.innerHTML = `<button class="vx" type="button" data-z="close" aria-label="Close">×</button><div class="stage"><img alt="Coin photo, zoomed"></div>
+  viewerEl.innerHTML = `<button class="vx" type="button" aria-label="Close">×</button><div class="stage"><img alt="Coin photo, zoomed"></div>
     <div class="tools"><button class="btn" data-z="out" type="button">− Smaller</button><button class="btn" data-z="in" type="button">+ Bigger</button><button class="btn" data-z="close" type="button">Close</button></div>`;
   document.body.appendChild(viewerEl);
   const stage = viewerEl.querySelector(".stage"), img = viewerEl.querySelector("img");
@@ -2597,7 +2597,7 @@ async function openViewer(pid) {
   const zoom = (f) => { s = Math.min(12, Math.max(1, s * f)); if (s === 1) { x = 0; y = 0; } apply(); };
   viewerEl.querySelector('[data-z="in"]').onclick = () => zoom(1.6);
   viewerEl.querySelector('[data-z="out"]').onclick = () => zoom(1 / 1.6);
-  viewerEl.querySelectorAll('[data-z="close"]').forEach((b) => b.onclick = closeViewer);
+  viewerEl.querySelector('[data-z="close"]').onclick = viewerEl.querySelector(".vx").onclick = closeViewer;
   const pts = new Map(); let lastDist = 0;
   stage.onpointerdown = (e) => { stage.setPointerCapture(e.pointerId); pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); };
   stage.onpointermove = (e) => {
