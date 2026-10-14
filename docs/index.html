@@ -163,8 +163,19 @@ form { display: grid; gap: 18px }
 
 /* confirm sheet + toast */
 /* The dimmed layer itself scrolls, so a tall popup can always be scrolled (wheel, touch or keyboard) on any screen. */
-.sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 30; display: flex; flex-direction: column; align-items: center; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior: contain }
-.sheet { background: var(--surface); color: var(--ink); border-radius: var(--radius); padding: 20px; width: min(560px, 100%); display: grid; gap: 16px; margin-top: auto; flex: none }
+.sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 30; display: flex; flex-direction: column; align-items: center; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); overflow: hidden }
+/* Each popup scrolls inside its own window, with the same brass scroll bar as the Type of coin list. */
+.sheet { background: var(--surface); color: var(--ink); border-radius: var(--radius); padding: 20px; width: min(560px, 100%); display: grid; gap: 16px; margin-top: auto; flex: none; position: relative;
+  max-height: calc(100dvh - 32px - env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: auto; scrollbar-color: var(--brass) var(--bg) }
+.sheet::-webkit-scrollbar { width: 16px }
+.sheet::-webkit-scrollbar-track { background: var(--bg); border-radius: 8px }
+.sheet::-webkit-scrollbar-thumb { background: var(--brass); border-radius: 8px; border: 3px solid var(--bg) }
+/* The X in the top right corner of every popup. It stays in view while the popup scrolls. */
+.sheet-x { position: sticky; top: 0; justify-self: end; margin: -8px -8px -68px 0; width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--line); background: var(--surface); color: var(--ink);
+  font: inherit; font-size: 2rem; font-weight: 700; line-height: 1; display: grid; place-items: center; cursor: pointer; z-index: 2 }
+.sheet-x + h2 { padding-right: 56px }
+.tsheet .sheet-x { position: absolute; top: 12px; right: 12px; margin: 0 }
+.viewer .vx { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px; z-index: 2; width: 56px; height: 56px; border-radius: 50%; border: 2px solid #fff; background: rgba(0,0,0,.6); color: #fff; font: inherit; font-size: 2rem; font-weight: 700; line-height: 1; cursor: pointer }
 @media (min-width: 700px) { .sheet { margin-block: auto } }
 .sheet h2 { margin: 0; font-size: var(--step-1) }
 .sheet p { margin: 0 }
@@ -1118,7 +1129,7 @@ function priceSheet(c, onUse) {
     <div class="row"><button class="btn" type="button" data-a="ebay">Recent sold prices</button><button class="btn" type="button" data-a="web">Search the web</button></div>
     <button class="btn wide" type="button" data-a="no">Close</button>
   </div>`;
-  document.body.appendChild(sheetEl);
+  showSheet();
   const open = (u) => { try { window.open(u, "_blank", "noopener"); } catch (e) {} };
   sheetEl.querySelector('[data-a="ebay"]').onclick = () => open(ebaySold(c));
   sheetEl.querySelector('[data-a="web"]').onclick = () => open(webSearch(c));
@@ -1279,7 +1290,7 @@ function valueSheet(c) {
     <button class="btn primary wide" type="submit" id="vs-save">Save value</button>
     <button class="btn wide" type="button" data-a="no">Cancel</button>
   </form>`;
-  document.body.appendChild(sheetEl);
+  showSheet();
   const input = sheetEl.querySelector("#vs-v");
   const open = (u) => { try { window.open(u, "_blank", "noopener"); } catch (e) {} };
   sheetEl.querySelector('[data-a="ebay"]').onclick = () => open(ebaySold(c));
@@ -1321,6 +1332,7 @@ async function renderCoin() {
       ${[["Country", c.country], ["Year", c.year], ["Coin", c.denomination], ["Mint mark", c.mint], ["Condition", c.grade], ["Price paid", c.paid ? "$" + c.paid : ""], ["Worth now", toNum(c.value) !== null ? dollars(toNum(c.value)) + (c.valueDate ? ` (as of ${longDate(c.valueDate)})` : "") : ""], ["Notes", c.notes]]
         .map(([k, v]) => `<div><dt>${k}</dt><dd>${v ? esc(v) : '<span style="color:var(--muted)">Not filled in</span>'}</dd></div>`).join("")}
     </dl>
+    ${(() => { const ap = albumPriceOf(c); return ap ? `<div class="note"><p><strong>Album price for ${esc(ap.label)}:</strong> ${esc(albumLine(ap))} Your coin is worth less if it is worn.</p></div>` : ""; })()}
     <div class="row">
       <button class="btn primary" id="edit" type="button">Change details</button>
       <button class="btn" id="val" type="button">${toNum(c.value) !== null ? "Update value" : "Add value"}</button>
@@ -1503,7 +1515,7 @@ function typeSheet(current, onPick) {
     <p class="count">Pictures from Wikipedia. They show what the type looks like, not a particular year.</p>
     <button class="btn wide" type="button" data-a="no">Cancel</button>
   </div>`;
-  document.body.appendChild(sheetEl);
+  showSheet();
   fillThumbs(sheetEl);
   sheetEl.querySelectorAll(".trow").forEach((b) => b.onclick = () => { closeSheet(); onPick(b.dataset.id); });
   sheetEl.querySelector('[data-a="no"]').onclick = () => { closeSheet(); const f = document.getElementById("f-series"); if (f) f.focus(); };
@@ -1563,7 +1575,7 @@ function renderEdit() {
         <div class="field">${lab("paid", "f-paid", "Price paid ($)")}<input id="f-paid" inputmode="decimal" autocomplete="off" value="${esc(d.paid)}" placeholder="e.g. 12.50"></div>
       </div>
       <div class="two">
-        <div class="field">${lab("value", "f-value", "Worth now ($)", `<button class="btn small" id="f-check" type="button">${ICON.price} Check prices</button>`)}<span class="hint">Your best guess. You can change it any time.</span><input id="f-value" inputmode="decimal" autocomplete="off" value="${esc(d.value)}" placeholder="e.g. 45"></div>
+        <div class="field">${lab("value", "f-value", "Worth now ($)", `<button class="btn small" id="f-check" type="button">${ICON.price} Check prices</button>`)}<span class="hint">Your best guess. You can change it any time.</span>${(() => { const ap = albumPriceOf(d); return ap ? `<span class="hint" id="f-album"><strong>Album price for ${esc(ap.label)}:</strong> ${esc(albumLine(ap))}</span>` : ""; })()}<input id="f-value" inputmode="decimal" autocomplete="off" value="${esc(d.value)}" placeholder="e.g. 45"></div>
       </div>
       <div class="field">${lab("notes", "f-notes", "Notes")}<textarea id="f-notes" placeholder="Where you got it, anything special">${esc(d.notes)}</textarea></div>
       <button class="btn primary wide" type="submit">Save this coin</button>
@@ -1723,6 +1735,12 @@ function mergeAlbumPrices(inc) {
   try { localStorage.setItem(APKEY, JSON.stringify(all)); } catch (e) {}
   return n;
 }
+// The saved album price for this coin's date and mint mark (top condition), or null.
+function albumPriceOf(c) {
+  const s = seriesOf(c), z = slotOf(c, s), st = z && albumState(s.id), v = st ? st.prices.get(z.key) : null;
+  return v == null ? null : { value: v, date: st.date, label: z.label };
+}
+const albumLine = (ap) => `Up to ${dollars(ap.value)} in top condition${ap.date ? `, checked ${longDate(ap.date)}` : ""}. Source: Numista.`;
 const albumDone = (s) => { const st = albumState(s.id); return !!st && slotsOf(s).every((z) => st.prices.has(z.key)); };
 // Lookups used this month on this device. The free Numista plan allows 2,000 a month; the background
 // lookups stop at 1,500 so there are always some left for checking single coins.
@@ -2568,7 +2586,7 @@ async function openViewer(pid) {
   closeViewer();
   viewerEl = document.createElement("div");
   viewerEl.className = "viewer"; viewerEl.setAttribute("role", "dialog"); viewerEl.setAttribute("aria-label", "Zoomed photo");
-  viewerEl.innerHTML = `<div class="stage"><img alt="Coin photo, zoomed"></div>
+  viewerEl.innerHTML = `<button class="vx" type="button" aria-label="Close">×</button><div class="stage"><img alt="Coin photo, zoomed"></div>
     <div class="tools"><button class="btn" data-z="out" type="button">− Smaller</button><button class="btn" data-z="in" type="button">+ Bigger</button><button class="btn" data-z="close" type="button">Close</button></div>`;
   document.body.appendChild(viewerEl);
   const stage = viewerEl.querySelector(".stage"), img = viewerEl.querySelector("img");
@@ -2579,7 +2597,7 @@ async function openViewer(pid) {
   const zoom = (f) => { s = Math.min(12, Math.max(1, s * f)); if (s === 1) { x = 0; y = 0; } apply(); };
   viewerEl.querySelector('[data-z="in"]').onclick = () => zoom(1.6);
   viewerEl.querySelector('[data-z="out"]').onclick = () => zoom(1 / 1.6);
-  viewerEl.querySelector('[data-z="close"]').onclick = closeViewer;
+  viewerEl.querySelector('[data-z="close"]').onclick = viewerEl.querySelector(".vx").onclick = closeViewer;
   const pts = new Map(); let lastDist = 0;
   stage.onpointerdown = (e) => { stage.setPointerCapture(e.pointerId); pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); };
   stage.onpointermove = (e) => {
@@ -2601,12 +2619,21 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeVie
 
 /* ---------- confirm sheet + toast ---------- */
 let sheetEl = null;
+// Puts the popup on screen with an X in its top right corner. The X does what the popup's own
+// Close, Cancel or Keep it button does, so nothing is lost by using it.
+function showSheet() {
+  const sh = sheetEl.querySelector(".sheet"), x = document.createElement("button");
+  x.type = "button"; x.className = "sheet-x"; x.setAttribute("aria-label", "Close"); x.textContent = "×";
+  x.onclick = () => { const no = sheetEl.querySelector('[data-a="no"]'); if (no) no.click(); else closeSheet(); };
+  if (sh) sh.prepend(x);
+  document.body.appendChild(sheetEl);
+}
 function confirmSheet(head, body, okText, onOk) {
   closeSheet();
   sheetEl = document.createElement("div"); sheetEl.className = "sheet-bg";
   sheetEl.innerHTML = `<div class="sheet" role="alertdialog" aria-modal="true"><h2>${esc(head)}</h2><p>${esc(body)}</p>
     <div class="row"><button class="btn" type="button" data-a="no">Keep it</button><button class="btn danger-solid" type="button" data-a="yes">${esc(okText)}</button></div></div>`;
-  document.body.appendChild(sheetEl);
+  showSheet();
   sheetEl.querySelector('[data-a="no"]').onclick = closeSheet;
   sheetEl.querySelector('[data-a="yes"]').onclick = async () => { closeSheet(); await onOk(); };
   sheetEl.querySelector('[data-a="no"]').focus();
